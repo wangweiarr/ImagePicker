@@ -213,7 +213,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [UIView animateWithDuration:0.3 animations:^{
         _albumView.transform = CGAffineTransformMakeTranslation(0, self.view.bounds.size.height);
     } completion:^(BOOL finished) {
+        NSLog(@"显示专辑列表");
     }];
+    
 }
 /**
  *  将专辑列表移除
