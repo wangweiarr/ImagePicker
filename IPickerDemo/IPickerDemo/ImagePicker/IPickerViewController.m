@@ -18,7 +18,7 @@
 #define IS_Above_IOS7 ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
 #define IOS7_STATUS_BAR_HEGHT (IS_Above_IOS7 ? 20.0f : 0.0f)
 
-@interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate>
+@interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate>
 /**图库*/
 @property (nonatomic, strong)IPAssetManager *defaultAssetManager;
 
@@ -49,6 +49,9 @@
 
 /**相册列表view*/
 @property (nonatomic, strong)IPAlbumView *albumView;
+
+/**选中的图片数量*/
+@property (nonatomic, assign)NSUInteger selectPhotoCount;
 
 @end
 static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
@@ -118,8 +121,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     rightLabel.clipsToBounds = YES;
     rightLabel.textColor = [UIColor whiteColor];
     [rightLabel setBackgroundColor:[UIColor blueColor]];
-    [rightLabel setText:@"5"];
+    [rightLabel setText:@""];
     [rightLabel sizeToFit];
+    rightLabel.hidden = YES;
     [headerView addSubview:rightLabel];
     self.rightLabel = rightLabel;
     
@@ -156,6 +160,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     IPImageCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:IPicker_CollectionID forIndexPath:indexPath];
     IPImageModel *model = self.defaultAssetManager.currentPhotosArr[indexPath.item];
     cell.model = model;
+    cell.delegate = self;
     return cell;
 }
 
@@ -174,7 +179,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 }
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
     IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.defaultAssetManager.currentPhotosArr TargetIndex:indexPath.item];
-   
+    reader.delegate = self;
     reader.dismissBlock = ^(){
         [self.mainView reloadData];
     };
@@ -190,9 +195,37 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 /**
  *  点击cell右上角的选中按钮
  */
-- (void)clickRightCornerBtnInCell:(UIButton *)btn{
-    
+- (void)clickRightCornerBtnForView:(IPImageModel *)model{
+    if (model.isSelect) {
+        self.selectPhotoCount++;
+    }else {
+        self.selectPhotoCount--;
+    }
 }
+/**
+ *  点击大图浏览时的选中按钮的代理回调方法
+ *
+ *  @param assetModel 对应的imageModel对象
+ */
+- (void)clickSelectBtnForReaderView:(IPImageModel *)assetModel{
+    if (assetModel.isSelect) {
+        self.selectPhotoCount++;
+    }else {
+        self.selectPhotoCount--;
+    }
+}
+- (void)setSelectPhotoCount:(NSUInteger)selectPhotoCount{
+    if (_selectPhotoCount != selectPhotoCount) {
+        _selectPhotoCount = selectPhotoCount;
+        if (_selectPhotoCount == 0) {
+            self.rightLabel.hidden = YES;
+        }else {
+            self.rightLabel.hidden = NO;
+        }
+        [self.rightLabel setText:[NSString stringWithFormat:@"%tu",_selectPhotoCount]];
+    }
+}
+
 /**
  *  点击中部相册名称,展示相册列表
  */
@@ -238,6 +271,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self.defaultAssetManager getImagesForAlbumUrl:model.groupURL];
     [self shouldRemoveFrom:nil];
 }
+
 #pragma mark - lazy -
 - (IPAssetManager *)defaultAssetManager{
     if (_defaultAssetManager == nil) {

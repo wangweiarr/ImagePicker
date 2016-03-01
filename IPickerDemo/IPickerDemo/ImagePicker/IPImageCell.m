@@ -59,7 +59,7 @@
     btn.selected = !btn.selected;
     self.model.isSelect = btn.selected;
     if (self.delegate && [self.delegate respondsToSelector:@selector(clickRightCornerBtnForView:)]) {
-        [self.delegate clickRightCornerBtnForView:self.model.url];
+        [self.delegate clickRightCornerBtnForView:self.model];
     }
 }
 @end

@@ -11,7 +11,7 @@
 @class IPImageModel;
 @protocol IPImageCellDelegate<NSObject>
 
-- (void)clickRightCornerBtnForView:(NSURL *)assetURL;
+- (void)clickRightCornerBtnForView:(IPImageModel *)assetModel;
 
 @end
 @interface IPImageCell : UICollectionViewCell

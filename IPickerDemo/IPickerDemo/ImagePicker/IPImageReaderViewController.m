@@ -24,6 +24,9 @@
 
 - (instancetype)initWithFrame:(CGRect)frame{
     if (self = [super initWithFrame:frame]) {
+        
+        // Configure the cell
+        self.backgroundColor = [UIColor blackColor];
         self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         _zoomScroll  = [[IPZoomScrollView alloc]init];
         _zoomScroll.frame = self.bounds;
@@ -199,12 +202,15 @@ static NSString * const reuseIdentifier = @"Cell";
 - (void)selectBtn:(UIButton *)btn{
     btn.selected = !btn.selected;
     
-   NSArray *arr = self.collectionView.indexPathsForVisibleItems;
+    NSArray *arr = self.collectionView.indexPathsForVisibleItems;
    
     if (arr && arr.count > 0) {
         NSIndexPath *path = [arr firstObject];
         IPImageModel *model = self.dataArr[path.item];
         model.isSelect = btn.selected;
+        if (self.delegate && [self.delegate respondsToSelector:@selector(clickSelectBtnForReaderView:)]) {
+            [self.delegate clickSelectBtnForReaderView:model];
+        }
     }
 }
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
@@ -251,8 +257,6 @@ static NSString * const reuseIdentifier = @"Cell";
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
-    // Configure the cell
-    cell.backgroundColor = [UIColor blackColor];
     IPImageModel *model = [self.dataArr objectAtIndex:indexPath.item];
     cell.zoomScroll.imageModel = model;
    
@@ -288,9 +292,5 @@ static NSString * const reuseIdentifier = @"Cell";
     
 }
 
-- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
-    
-   
-}
 
 @end
