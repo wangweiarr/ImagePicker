@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class IPAssetManager,IPImageModel;
+@class IPAssetManager,IPImageModel,IPAlbumModel;
 
 @protocol IPAssetManagerDelegate <NSObject>
 
@@ -27,11 +27,11 @@
 /**相册数组*/
 @property (nonatomic, strong)NSMutableArray *albumArr;
 
-/**分类完整的照片数组*/
-@property (nonatomic, strong)NSMutableArray *photoGroupArr;
-
 /**当前显示的照片数组*/
 @property (nonatomic, strong)NSMutableArray *currentPhotosArr;
+
+/**当前显示的专辑列表*/
+@property (nonatomic, strong)IPAlbumModel *currentAlbumModel;
 
 + (instancetype)defaultAssetManager;
 

@@ -97,6 +97,7 @@
                     [weakSelf.albumArr addObject:model];
                     
                     if ([model.albumName isEqualToString:@"相机胶卷"]) {
+                        weakSelf.currentAlbumModel = model;
                         [group enumerateAssetsUsingBlock:groupEnumerAtion];
                     }
                     
@@ -175,12 +176,7 @@
     }
     return _albumArr;
 }
-- (NSMutableArray *)photoGroupArr{
-    if (_photoGroupArr == nil) {
-        _photoGroupArr = [NSMutableArray array];
-    }
-    return _photoGroupArr;
-}
+
 - (NSMutableArray *)currentPhotosArr{
     if (_currentPhotosArr == nil) {
         _currentPhotosArr = [NSMutableArray array];

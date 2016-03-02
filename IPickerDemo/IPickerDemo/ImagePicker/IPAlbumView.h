@@ -23,4 +23,7 @@
 @property (nonatomic, weak)id <IPAlbumViewDelegate> delegate;
 
 + (instancetype)albumViewWithData:(NSArray *)data;
+
+- (void)selectAlbumViewCellForIndex:(NSInteger)index;
+
 @end

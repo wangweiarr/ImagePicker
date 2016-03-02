@@ -89,7 +89,16 @@
         [self.delegate shouldRemoveFrom:self];
     }
 }
-
+- (void)selectAlbumViewCellForIndex:(NSInteger)index{
+    if (index<0) {
+        index = 0;
+    }
+    if (index > self.dataSource.count - 1) {
+        index = self.dataSource.count - 1;
+    }
+    NSIndexPath *path = [NSIndexPath indexPathForRow:index inSection:0];
+    [self.mainView selectRowAtIndexPath:path animated:YES scrollPosition:UITableViewScrollPositionNone];
+}
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
     return 1;
 }

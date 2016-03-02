@@ -14,9 +14,11 @@
 #import "IPImageModel.h"
 #import "IPAssetManager.h"
 #import "IPImageReaderViewController.h"
+#import "IPAlertView.h"
 
 #define IS_Above_IOS7 ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
 #define IOS7_STATUS_BAR_HEGHT (IS_Above_IOS7 ? 20.0f : 0.0f)
+
 
 @interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate>
 /**图库*/
@@ -31,6 +33,9 @@
 
 /**中部视图*/
 @property (nonatomic, weak)UIButton *centerBtn;
+
+/**箭头指示器*/
+@property (nonatomic, weak)UIImageView *arrowImge;
 
 /**右部LABEL*/
 @property (nonatomic, weak)UILabel *rightLabel;
@@ -53,20 +58,29 @@
 /**选中的图片数量*/
 @property (nonatomic, assign)NSUInteger selectPhotoCount;
 
+/**当前选择的图片数组*/
+@property (nonatomic, strong)NSMutableArray *pri_currentSelArr;
+
 @end
 static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 @implementation IPickerViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self reloadImagesFromLibrary];
-    [self addHeaderView];
+    self.automaticallyAdjustsScrollViewInsets = NO;
+    [self.navigationController setNavigationBarHidden:YES animated:NO];
+    [self.defaultAssetManager reloadImagesFromLibrary];
+    
     [self addMainView];
+    [self addHeaderView];
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+- (void)dealloc{
+    NSLog(@"IPickerViewController--dealloc");
 }
 #pragma mark - visible -
 - (void)viewDidLayoutSubviews{
@@ -76,15 +90,19 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     CGFloat headerH = IOS7_STATUS_BAR_HEGHT + 44.0f;
     CGFloat btnH = 44.0f;
     CGFloat btnW = 44.0f;
-    CGFloat centerBtnW = 100.0f;
+    CGFloat centerBtnW = 88.0f;
     CGFloat MaxMargin = 10.0f;
     CGFloat MinMargin = 5.0f;
     
     CGFloat labelW = 20.0f;
     self.headerView.frame = CGRectMake(0, 0, viewW, headerH);
     self.leftBtn.frame = CGRectMake(MaxMargin, IOS7_STATUS_BAR_HEGHT, btnW, btnH);
-    self.centerBtn.frame = CGRectMake(self.headerView.center.x - centerBtnW/2, IOS7_STATUS_BAR_HEGHT, centerBtnW, btnH);
+    CGSize size = [self.centerBtn sizeThatFits:CGSizeMake(centerBtnW, btnH)];
+    self.centerBtn.frame = CGRectMake(self.headerView.center.x - size.width/2, IOS7_STATUS_BAR_HEGHT, size.width, btnH);
     self.rightBtn.frame = CGRectMake(viewW - btnW -MaxMargin, IOS7_STATUS_BAR_HEGHT, btnW, btnH);
+    
+    self.arrowImge.frame = CGRectMake(CGRectGetMaxX(self.centerBtn.frame), IOS7_STATUS_BAR_HEGHT, btnW/2, btnH);
+    
     self.rightLabel.frame = CGRectMake(CGRectGetMinX(self.rightBtn.frame) - MinMargin - labelW, IOS7_STATUS_BAR_HEGHT+13, labelW, labelW);
     self.rightLabel.layer.cornerRadius = labelW/2;
     
@@ -110,11 +128,19 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     UIButton *centerBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     [centerBtn addTarget:self action:@selector(displayAlbumView:) forControlEvents:UIControlEventTouchUpInside];
     centerBtn.contentMode = UIViewContentModeCenter;
-    [centerBtn sizeToFit];
+    
     [centerBtn setTitle:@"相机胶卷" forState:UIControlStateNormal];
     [centerBtn setTitleColor:[UIColor colorWithRed:0.3 green:0.3 blue:0.3 alpha:1.0] forState:UIControlStateNormal];
+    [centerBtn sizeToFit];
     [headerView addSubview:centerBtn];
     self.centerBtn = centerBtn;
+    
+    
+    UIImageView *arrowImge = [[UIImageView alloc]init];
+    arrowImge.contentMode = UIViewContentModeCenter;
+    [arrowImge  setImage:[UIImage imageNamed:@"icon_arrow_blue"]];
+    [headerView addSubview:arrowImge];
+    self.arrowImge = arrowImge;
     
     UILabel    *rightLabel = [[UILabel alloc]init];
     rightLabel.textAlignment = NSTextAlignmentCenter;
@@ -131,6 +157,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [rightBtn sizeToFit];
     [rightBtn setTitle:@"完成" forState:UIControlStateNormal];
     [rightBtn setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
+    [rightBtn addTarget:self action:@selector(completeBtnClick) forControlEvents:UIControlEventTouchUpInside];
     [headerView addSubview:rightBtn];
     self.rightBtn = rightBtn;
     
@@ -143,7 +170,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (void)addMainView{
     _flowOut = [[UICollectionViewFlowLayout alloc]init];
     UICollectionView *mainView = [[UICollectionView alloc]initWithFrame:CGRectZero collectionViewLayout:_flowOut];
-    mainView.backgroundColor = [UIColor blackColor];
+    mainView.backgroundColor = [UIColor whiteColor];
     mainView.delegate = self;
     mainView.dataSource = self;
     [mainView registerClass:[IPImageCell class] forCellWithReuseIdentifier:IPicker_CollectionID];
@@ -179,6 +206,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 }
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
     IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.defaultAssetManager.currentPhotosArr TargetIndex:indexPath.item];
+    reader.maxCount = self.maxCount;
+    reader.currentCount = self.selectPhotoCount;
     reader.delegate = self;
     reader.dismissBlock = ^(){
         [self.mainView reloadData];
@@ -190,17 +219,57 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
  *  左上角的取消按钮点击
  */
 - (void)exitIPicker{
-    [self dismissViewControllerAnimated:YES completion:nil];
+    
+    CATransition * transition=[CATransition animation];
+    transition.duration=0.3f;
+    transition.timingFunction=[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+    transition.type=kCATransitionReveal;
+    if (self.popStyle == IPickerViewControllerPopStylePush) {
+        transition.subtype=kCATransitionFromLeft;
+    }else {
+        transition.subtype = kCATransitionFromBottom;
+    }
+    
+    transition.delegate=self;
+    if (self.navigationController) {
+        [self.navigationController.view.layer addAnimation:transition forKey:nil];
+        [self.navigationController popViewControllerAnimated:NO];
+        
+    }else if (self.isBeingPresented) {
+        
+        [self.view.layer addAnimation:transition forKey:nil];
+        [self dismissViewControllerAnimated:NO completion:nil];
+    }
+}
+/**
+ *  右上角 完成 按钮点击
+ */
+- (void)completeBtnClick{
+    if (self.delegate && [self.delegate respondsToSelector:@selector(didClickCompleteBtn:)]) {
+        [self.delegate didClickCompleteBtn:self.pri_currentSelArr];
+    }
+    [self exitIPicker];
 }
 /**
  *  点击cell右上角的选中按钮
  */
-- (void)clickRightCornerBtnForView:(IPImageModel *)model{
+- (BOOL)clickRightCornerBtnForView:(IPImageModel *)model{
     if (model.isSelect) {
+        if (self.selectPhotoCount >= self.maxCount) {
+            [IPAlertView showAlertViewAt:self.view MaxCount:self.maxCount];
+            return NO;
+        }
         self.selectPhotoCount++;
+        if (![self.pri_currentSelArr containsObject:model]) {
+            [self.pri_currentSelArr addObject:model];
+        }
     }else {
         self.selectPhotoCount--;
+        if ([self.pri_currentSelArr containsObject:model]) {
+            [self.pri_currentSelArr removeObject:model];
+        }
     }
+    return YES;
 }
 /**
  *  点击大图浏览时的选中按钮的代理回调方法
@@ -210,8 +279,16 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (void)clickSelectBtnForReaderView:(IPImageModel *)assetModel{
     if (assetModel.isSelect) {
         self.selectPhotoCount++;
+        [self.pri_currentSelArr addObject:assetModel];
+        if (![self.pri_currentSelArr containsObject:assetModel]) {
+            [self.pri_currentSelArr addObject:assetModel];
+        }
     }else {
         self.selectPhotoCount--;
+        if ([self.pri_currentSelArr containsObject:assetModel]) {
+            [self.pri_currentSelArr removeObject:assetModel];
+        }
+        
     }
 }
 - (void)setSelectPhotoCount:(NSUInteger)selectPhotoCount{
@@ -222,6 +299,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         }else {
             self.rightLabel.hidden = NO;
         }
+        
         [self.rightLabel setText:[NSString stringWithFormat:@"%tu",_selectPhotoCount]];
     }
 }
@@ -236,17 +314,24 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         _albumView.delegate =self;
         
         [_albumView setFrame:CGRectMake(0,-(self.view.bounds.size.height - IOS7_STATUS_BAR_HEGHT - 44) , self.view.bounds.size.width, self.view.bounds.size.height - IOS7_STATUS_BAR_HEGHT - 44)];
+        NSLog(@"创建专辑列表--%@",NSStringFromCGRect(_albumView.frame));
+        NSInteger currentIndex = (NSInteger)[self.defaultAssetManager.albumArr indexOfObject:self.defaultAssetManager.currentAlbumModel];
+        [_albumView selectAlbumViewCellForIndex:currentIndex];
     }
     
     if (_albumView.superview) {
+        [self shouldRemoveFrom:nil];
         return;
     }
-    
-    [self.view addSubview:_albumView];
+    [self.view insertSubview:_albumView belowSubview:self.headerView];
     [UIView animateWithDuration:0.3 animations:^{
+        
+        self.arrowImge.transform = CGAffineTransformRotate(self.arrowImge.transform,M_PI);
+        
         _albumView.transform = CGAffineTransformMakeTranslation(0, self.view.bounds.size.height);
     } completion:^(BOOL finished) {
-        NSLog(@"显示专辑列表");
+        
+        NSLog(@"显示专辑列表--%@",NSStringFromCGRect(_albumView.frame));
     }];
     
 }
@@ -255,9 +340,11 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
  */
 - (void)shouldRemoveFrom:(IPAlbumView *)view{
     [UIView animateWithDuration:0.3 animations:^{
+         self.arrowImge.transform = CGAffineTransformRotate(self.arrowImge.transform,-M_PI);
         _albumView.transform = CGAffineTransformMakeTranslation(0, self.view.bounds.size.height);
     } completion:^(BOOL finished) {
         [_albumView removeFromSuperview];
+        NSLog(@"隐藏专辑列表--%@",NSStringFromCGRect(_albumView.frame));
     }];
 }
 /**
@@ -268,8 +355,22 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
  */
 - (void)clickCellForIndex:(NSIndexPath *)indexPath ForView:(IPAlbumView *)View{
     IPAlbumModel *model = [self.defaultAssetManager.albumArr objectAtIndex:indexPath.item];
+    [self.centerBtn setTitle:model.albumName forState:UIControlStateNormal];
     [self.defaultAssetManager getImagesForAlbumUrl:model.groupURL];
     [self shouldRemoveFrom:nil];
+    self.selectPhotoCount = 0;
+    
+}
+#pragma mark 获取相册的所有图片
+
+- (void)loadImageDataFinish:(IPAssetManager *)manager{
+    if ([[NSThread currentThread] isMainThread]) {
+        [self.mainView reloadData];
+    }else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.mainView reloadData];
+        });
+    }
 }
 
 #pragma mark - lazy -
@@ -281,95 +382,17 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return _defaultAssetManager;
 }
 
-
-#pragma mark 获取相册的所有图片
-- (void)reloadImagesFromLibrary
-{
-    [self.defaultAssetManager reloadImagesFromLibrary];
-    /*
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        
-        @autoreleasepool {
-            ALAssetsLibraryAccessFailureBlock failureblock = ^(NSError *myerror){
-                NSLog(@"相册访问失败 =%@", [myerror localizedDescription]);
-                if ([myerror.localizedDescription rangeOfString:@"Global denied access"].location!=NSNotFound) {
-                    NSLog(@"无法访问相册.请在'设置->定位服务'设置为打开状态.");
-                }else{
-                    NSLog(@"相册访问失败.");
-                }
-            };
-            
-            ALAssetsGroupEnumerationResultsBlock groupEnumerAtion = ^(ALAsset *result, NSUInteger index, BOOL *stop){
-                if (result!=NULL) {
-                    
-                    if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypePhoto]) {
-                        
-                        IPImageModel *imgModel = [[IPImageModel alloc]init];
-                        
-                        imgModel.alasset = result;
-                        
-                        imgModel.thumbnail = [UIImage imageWithCGImage:result.thumbnail];
-                        
-                        imgModel.url = [result valueForProperty:ALAssetPropertyAssetURL];
-                        
-                        [self.currentPhotosArr addObject:imgModel];
-                        
-                    }
-                }
-            };
-            
-            ALAssetsLibraryGroupsEnumerationResultsBlock libraryGroupsEnumeration = ^(ALAssetsGroup* group, BOOL* stop){
-                
-                if (group == nil)
-                {
-                    NSLog(@"遍历完毕");
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [self.mainView reloadData];
-                    });
-                    
-                }
-                
-                if (group!=nil) {
-                    NSString *g=[NSString stringWithFormat:@"%@",group];//获取相簿的组
-                    NSLog(@"gg:%@",g);//gg:ALAssetsGroup - Name:Camera Roll, Type:Saved Photos, Assets count:71
-                    
-                    IPAlbumModel *model = [[IPAlbumModel alloc]init];
-                    model.posterImage = [UIImage imageWithCGImage:group.posterImage];
-                    model.imageCount = group.numberOfAssets;
-                    
-                    if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"Camera Roll"]) {
-                        model.albumName =@"相机胶卷";
-                    }else {
-                        model.albumName = (NSString *)[group valueForProperty:ALAssetsGroupPropertyName];
-                    }
-                    
-                    model.groupURL = (NSURL *)[group valueForProperty:ALAssetsGroupPropertyURL];
-                    
-                    [self.albumArr addObject:model];
-                    
-                    if ([model.albumName isEqualToString:@"相机胶卷"]) {
-                        [group enumerateAssetsUsingBlock:groupEnumerAtion];
-                    }
-                    
-                }
-                
-            };
-            
-            [self.defaultLibrary enumerateGroupsWithTypes:ALAssetsGroupAll
-                                               usingBlock:libraryGroupsEnumeration
-                                             failureBlock:failureblock];
-        }
-        
-    });
-     */
-}
-- (void)loadImageDataFinish:(IPAssetManager *)manager{
-    if ([[NSThread currentThread] isMainThread]) {
-        [self.mainView reloadData];
-    }else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.mainView reloadData];
-        });
+- (NSUInteger)maxCount{
+    if (_maxCount == 0) {
+        _maxCount = 50;
     }
+    return _maxCount;
+}
+
+- (NSMutableArray *)pri_currentSelArr{
+    if (_pri_currentSelArr == nil) {
+        _pri_currentSelArr = [NSMutableArray arrayWithCapacity:self.maxCount];
+    }
+    return _pri_currentSelArr;
 }
 @end

@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-typedef void(^DismissBlock)();
+typedef void(^FunctionBlock)();
 
 @class IPImageModel;
 @protocol IPImageReaderViewControllerDelegate<NSObject>
@@ -22,7 +22,13 @@ typedef void(^DismissBlock)();
 @property (nonatomic, weak)id <IPImageReaderViewControllerDelegate> delegate;
 
 /**退出控制器时,回调*/
-@property (nonatomic, copy)  DismissBlock dismissBlock;
+@property (nonatomic, copy)  FunctionBlock dismissBlock;
+
+/**当前选择的图片数量*/
+@property (nonatomic, assign)NSUInteger currentCount;
+
+/**最大可选择的图片数量*/
+@property (nonatomic, assign)NSUInteger maxCount;
 
 + (instancetype)imageReaderViewControllerWithData:(NSArray<IPImageModel *> *)data TargetIndex:(NSUInteger)index;
 

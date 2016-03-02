@@ -56,10 +56,19 @@
     self.rightCornerBtn.selected = model.isSelect;
 }
 - (void)clickBtnInCell:(UIButton *)btn{
+    
     btn.selected = !btn.selected;
     self.model.isSelect = btn.selected;
+    
+    BOOL denySelect;
     if (self.delegate && [self.delegate respondsToSelector:@selector(clickRightCornerBtnForView:)]) {
-        [self.delegate clickRightCornerBtnForView:self.model];
+        denySelect = [self.delegate clickRightCornerBtnForView:self.model];
     }
+    if (!denySelect) {
+        btn.selected = NO;
+        self.model.isSelect = NO;
+    }
+    
+    
 }
 @end

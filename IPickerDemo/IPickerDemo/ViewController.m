@@ -10,8 +10,9 @@
 #import "IPickerViewController.h"
 #import "IPAssetManager.h"
 
-@interface ViewController ()
-
+@interface ViewController ()<IPickerViewControllerDelegate>
+/**sdf*/
+@property (nonatomic, strong)NSArray *arr;
 @end
 
 @implementation ViewController
@@ -26,11 +27,22 @@
     // Dispose of any resources that can be recreated.
 }
 - (IBAction)test:(UIButton *)sender {
-    NSLog(@"%@",[IPAssetManager defaultAssetManager]);
+    NSLog(@"%@",self.arr);
 }
 - (IBAction)entryImagePicker {
     IPickerViewController *vc = [[IPickerViewController alloc]init];
-    [self presentViewController:vc animated:YES completion:nil];
+    vc.delegate = self;
+    vc.maxCount = 3;
+    if (self.navigationController) {
+        [self.navigationController pushViewController:vc
+                                             animated:YES];
+    }else {
+        [self presentViewController:vc animated:YES completion:nil];
+    }
+    
 }
-
+- (void)didClickCompleteBtn:(NSArray *)datas{
+    self.arr = datas;
+    NSLog(@"%@",datas);
+}
 @end

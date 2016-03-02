@@ -9,6 +9,7 @@
 #import "IPImageReaderViewController.h"
 #import "IPZoomScrollView.h"
 #import "IPImageModel.h"
+#import "IPAlertView.h"
 
 #define IS_Above_IOS7 ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
 #define IOS7_STATUS_BAR_HEGHT (IS_Above_IOS7 ? 20.0f : 0.0f)
@@ -155,36 +156,6 @@ static NSString * const reuseIdentifier = @"Cell";
         self.isRoration = NO;
     }
 }
-/*
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    [super willAnimateRotationToInterfaceOrientation:toInterfaceOrientation duration:duration];
-    self.isRoration = YES;
-    // Update the flowLayout's size to the new orientation's size
-    UICollectionViewFlowLayout *flow = (UICollectionViewFlowLayout *)self.collectionView.collectionViewLayout;
-    if (UIInterfaceOrientationIsLandscape(toInterfaceOrientation)) {
-        flow.itemSize = CGSizeMake(self.collectionView.frame.size.width, self.collectionView.frame.size.height);
-    } else {
-        flow.itemSize = CGSizeMake(self.collectionView.frame.size.width, self.collectionView.frame.size.height);
-    }
-    self.collectionView.collectionViewLayout = flow;
-    [self.collectionView.collectionViewLayout invalidateLayout];
-    
-    // Get the currently visible cell
-    IPImageReaderCell *currentCell = (IPImageReaderCell*)[self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:_currentIndex inSection:0]];
-    
-//    currentCell.zoomScroll.imageModel = self.dataArr[_currentIndex];
-    
-    // Resize the currently index to the new flow's itemSize
-    CGRect frame = currentCell.frame;
-    frame.size = flow.itemSize;
-    currentCell.frame = frame;
-    
-    // Keep the collection view centered by updating the content offset
-    CGPoint newContentOffset = CGPointMake(_currentIndex * frame.size.width, 0);
-    self.collectionView.contentOffset = newContentOffset;
-}
-*/
-
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -202,8 +173,18 @@ static NSString * const reuseIdentifier = @"Cell";
 - (void)selectBtn:(UIButton *)btn{
     btn.selected = !btn.selected;
     
+    if (btn.selected) {
+        if (self.currentCount == self.maxCount) {
+            [IPAlertView showAlertViewAt:self.view MaxCount:self.maxCount];
+            btn.selected = NO;
+            return;
+        }
+        self.currentCount ++;
+    }else {
+        self.currentCount --;
+    }
+    
     NSArray *arr = self.collectionView.indexPathsForVisibleItems;
-   
     if (arr && arr.count > 0) {
         NSIndexPath *path = [arr firstObject];
         IPImageModel *model = self.dataArr[path.item];
@@ -213,6 +194,7 @@ static NSString * const reuseIdentifier = @"Cell";
         }
     }
 }
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
     return YES;
 }

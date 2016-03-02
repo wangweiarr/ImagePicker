@@ -24,6 +24,7 @@
 		344F37F31C83D62C006063B6 /* IPZoomScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37F21C83D62C006063B6 /* IPZoomScrollView.m */; };
 		344F37F61C83DD47006063B6 /* IPAssetManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37F51C83DD47006063B6 /* IPAssetManager.m */; };
 		344F3BD91C842444006063B6 /* IPImageReaderViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F3BD81C842444006063B6 /* IPImageReaderViewController.m */; };
+		3461FC9E1C86B99100FF3015 /* IPAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3461FC9D1C86B99100FF3015 /* IPAlertView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +60,8 @@
 		344F37F51C83DD47006063B6 /* IPAssetManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPAssetManager.m; sourceTree = "<group>"; };
 		344F3BD71C842444006063B6 /* IPImageReaderViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPImageReaderViewController.h; sourceTree = "<group>"; };
 		344F3BD81C842444006063B6 /* IPImageReaderViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPImageReaderViewController.m; sourceTree = "<group>"; };
+		3461FC9C1C86B99100FF3015 /* IPAlertView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPAlertView.h; sourceTree = "<group>"; };
+		3461FC9D1C86B99100FF3015 /* IPAlertView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPAlertView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,6 +129,8 @@
 				344F37E01C83D4C0006063B6 /* IPickerViewController.m */,
 				344F3BD71C842444006063B6 /* IPImageReaderViewController.h */,
 				344F3BD81C842444006063B6 /* IPImageReaderViewController.m */,
+				3461FC9C1C86B99100FF3015 /* IPAlertView.h */,
+				3461FC9D1C86B99100FF3015 /* IPAlertView.m */,
 				344F37E11C83D4C0006063B6 /* IPImageCell.h */,
 				344F37E21C83D4C0006063B6 /* IPImageCell.m */,
 				344F37E31C83D4C0006063B6 /* IPImageModel.h */,
@@ -226,6 +231,7 @@
 				344F37F31C83D62C006063B6 /* IPZoomScrollView.m in Sources */,
 				344F37F01C83D530006063B6 /* IPTapDetectImageView.m in Sources */,
 				344F37E71C83D4C0006063B6 /* IPAlbumView.m in Sources */,
+				3461FC9E1C86B99100FF3015 /* IPAlertView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
