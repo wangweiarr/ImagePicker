@@ -7,6 +7,7 @@
 //
 
 #import "IPZoomScrollView.h"
+#import "IPImageModel.h"
 #import "IPTapDetectImageView.h"
 #import "IPTapDetectView.h"
 #import "IPAssetManager.h"

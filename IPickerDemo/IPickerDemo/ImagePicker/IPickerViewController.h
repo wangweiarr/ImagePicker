@@ -16,6 +16,8 @@ typedef NS_ENUM(NSUInteger,  IPickerViewControllerPopStyle) {
     IPickerViewControllerPopStylePush
 };
 
+@class IPImageModel;
+
 @protocol IPickerViewControllerDelegate <NSObject>
 
 - (void)didClickCompleteBtn:(NSArray *)datas;
@@ -39,4 +41,5 @@ typedef NS_ENUM(NSUInteger,  IPickerViewControllerPopStyle) {
 /**代理*/
 @property (nonatomic, weak)id<IPickerViewControllerDelegate> delegate;
 
++ (UIImage *)getFullRotationScreenImage:(IPImageModel *)imageModel;
 @end

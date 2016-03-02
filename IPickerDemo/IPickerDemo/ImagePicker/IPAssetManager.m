@@ -57,8 +57,6 @@
                         
                         imgModel.thumbnail = [UIImage imageWithCGImage:result.thumbnail];
                         
-                        imgModel.url = [result valueForProperty:ALAssetPropertyAssetURL];
-                        
                         [weakSelf.currentPhotosArr addObject:imgModel];
                         
                     }
@@ -136,8 +134,6 @@
                         imgModel.alasset = result;
                         
                         imgModel.thumbnail = [UIImage imageWithCGImage:result.thumbnail];
-                        
-                        imgModel.url = [result valueForProperty:ALAssetPropertyAssetURL];
                         
                         [weakSelf.currentPhotosArr addObject:imgModel];
                        

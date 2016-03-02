@@ -246,7 +246,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
  */
 - (void)completeBtnClick{
     if (self.delegate && [self.delegate respondsToSelector:@selector(didClickCompleteBtn:)]) {
-        [self.delegate didClickCompleteBtn:self.pri_currentSelArr];
+        [self.delegate didClickCompleteBtn:[self.pri_currentSelArr copy]];
     }
     [self exitIPicker];
 }
@@ -372,7 +372,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         });
     }
 }
-
++ (UIImage *)getFullRotationScreenImage:(IPImageModel *)imageModel{
+    return [IPAssetManager getFullScreenImage:imageModel];
+}
 #pragma mark - lazy -
 - (IPAssetManager *)defaultAssetManager{
     if (_defaultAssetManager == nil) {
@@ -382,11 +384,14 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return _defaultAssetManager;
 }
 
-- (NSUInteger)maxCount{
-    if (_maxCount == 0) {
+
+- (void)setMaxCount:(NSUInteger)maxCount{
+    NSInteger tempCount = (NSInteger)maxCount;
+    if (_maxCount != tempCount && tempCount > 0) {
+        _maxCount = tempCount;
+    }else {
         _maxCount = 50;
     }
-    return _maxCount;
 }
 
 - (NSMutableArray *)pri_currentSelArr{

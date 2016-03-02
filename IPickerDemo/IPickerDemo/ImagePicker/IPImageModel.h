@@ -18,8 +18,6 @@
 /**当前是否被选中*/
 @property (nonatomic, assign)BOOL isSelect;
 
-/**asset 唯一标识符*/
-@property (nonatomic, strong)NSURL *url;
 
 /**alasset*/
 @property (nonatomic, strong)ALAsset *alasset;

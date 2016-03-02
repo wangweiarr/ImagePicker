@@ -32,7 +32,7 @@
 - (IBAction)entryImagePicker {
     IPickerViewController *vc = [[IPickerViewController alloc]init];
     vc.delegate = self;
-    vc.maxCount = 3;
+    vc.maxCount = 20;
     if (self.navigationController) {
         [self.navigationController pushViewController:vc
                                              animated:YES];
@@ -41,6 +41,7 @@
     }
     
 }
+#pragma mark IPickerViewControllerDelegate
 - (void)didClickCompleteBtn:(NSArray *)datas{
     self.arr = datas;
     NSLog(@"%@",datas);
