@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "IPImageModel.h"
 
 /**弹出样式*/
 typedef NS_ENUM(NSUInteger,  IPickerViewControllerPopStyle) {
@@ -16,7 +17,7 @@ typedef NS_ENUM(NSUInteger,  IPickerViewControllerPopStyle) {
     IPickerViewControllerPopStylePush
 };
 
-@class IPImageModel;
+typedef void(^CreatImageModelBlock)(IPImageModel *);
 
 @protocol IPickerViewControllerDelegate <NSObject>
 
@@ -41,5 +42,5 @@ typedef NS_ENUM(NSUInteger,  IPickerViewControllerPopStyle) {
 /**代理*/
 @property (nonatomic, weak)id<IPickerViewControllerDelegate> delegate;
 
-+ (UIImage *)getFullRotationScreenImage:(IPImageModel *)imageModel;
++ (void)getImageModelWithURL:(NSURL *)url CreatBlock:(CreatImageModelBlock)block;
 @end

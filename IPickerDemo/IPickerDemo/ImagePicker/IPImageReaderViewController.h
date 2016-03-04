@@ -7,7 +7,10 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "IPAssetManager.h"
 
+
+extern NSString * const IPICKER_LOADING_DID_END_NOTIFICATION;
 typedef void(^FunctionBlock)();
 
 @class IPImageModel;
@@ -29,6 +32,9 @@ typedef void(^FunctionBlock)();
 
 /**最大可选择的图片数量*/
 @property (nonatomic, assign)NSUInteger maxCount;
+
+/**图库管理*/
+@property (nonatomic, weak)IPAssetManager *manger;
 
 + (instancetype)imageReaderViewControllerWithData:(NSArray<IPImageModel *> *)data TargetIndex:(NSUInteger)index;
 

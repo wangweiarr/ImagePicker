@@ -65,7 +65,7 @@
 - (void)prepareForReuse {
     
     self.imageModel = nil;
-   
+    self.imageModel.fullRorationImage = nil;
     _photoImageView.hidden = NO;
     _photoImageView.image = nil;
     
@@ -91,7 +91,7 @@
         
         // Get image from browser as it handles ordering of fetching
         
-        UIImage *img = [IPAssetManager getFullScreenImage:self.imageModel];
+        UIImage *img = self.imageModel.fullRorationImage;
         
         if (img) {
             

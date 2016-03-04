@@ -8,6 +8,7 @@
 
 #import "IPImageCell.h"
 #import "IPImageModel.h"
+//#import "AHUIImageNameHandle.h"
 
 @interface IPImageCell ()
 /**缩略图*/
@@ -39,8 +40,17 @@
     self.imgView = imgView;
     
     UIButton *rightCornerBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.bounds.size.width - 18-5, 5, 18, 18)];
-    [rightCornerBtn setImage:[UIImage imageNamed:@"album_icon_check"] forState:UIControlStateNormal];
-    [rightCornerBtn setImage:[UIImage imageNamed:@"album_icon_check_p"] forState:UIControlStateSelected];
+    UIImage *image,*image_p;
+    if ([UIScreen mainScreen].bounds.size.width<375) {
+        
+        image =[UIImage imageNamed:@"album_icon_check"];
+        image_p =[UIImage imageNamed:@"album_icon_check_p"];
+    }else {
+        image =[UIImage imageNamed:@"img_icon_check_Big"];
+        image_p =[UIImage imageNamed:@"img_icon_check_Big_p"];
+    }
+    [rightCornerBtn setImage:image forState:UIControlStateNormal];
+    [rightCornerBtn setImage:image_p forState:UIControlStateSelected];
     [rightCornerBtn addTarget:self action:@selector(clickBtnInCell:) forControlEvents:UIControlEventTouchUpInside];
     [self.contentView addSubview:rightCornerBtn];
     self.rightCornerBtn = rightCornerBtn;
@@ -48,7 +58,8 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     self.imgView.frame = self.bounds;
-    self.rightCornerBtn.frame = CGRectMake(self.bounds.size.width - 30, 0, 30, 30);
+    CGFloat w = self.bounds.size.width / 2.6f;
+    self.rightCornerBtn.frame = CGRectMake(self.bounds.size.width - w, 0, w, w);
 }
 - (void)setModel:(IPImageModel *)model{
     _model = model;

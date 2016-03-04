@@ -16,4 +16,5 @@
 
 - (void)prepareForReuse;
 
+- (void)displayImage;
 @end

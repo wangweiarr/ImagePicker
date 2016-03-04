@@ -63,9 +63,8 @@
     self.descLabel = descLabel;
     
     UIImageView *selectedImgView = [[UIImageView alloc]init];
-    selectedImgView.image = [UIImage imageNamed:@"album_icon_check_p"];
+    selectedImgView.image = [UIImage imageNamed:@"forms_icon_select2"];
     selectedImgView.contentMode = UIViewContentModeCenter;
-//    selectedImgView.hidden = YES;
     [self.contentView addSubview:selectedImgView];
     self.accessoryImgView = selectedImgView;
     
@@ -89,16 +88,16 @@
         self.posterView.image = model.posterImage;
         
         self.descLabel.text = [NSString stringWithFormat:@"%@ (%ld)",model.albumName, (long)model.imageCount];
-        
+        if (_model.isSelected) {
+            self.descLabel.textColor = [UIColor blueColor];
+            
+        }else {
+            
+            self.descLabel.textColor = [UIColor grayColor];
+        }
+        self.accessoryImgView.hidden = !_model.isSelected;
     }
     
-}
-- (void)setSelected:(BOOL)selected animated:(BOOL)animated {
-    [super setSelected:selected animated:animated];
-    self.accessoryImgView.hidden = !selected;
-    self.descLabel.textColor = selected ? [UIColor blueColor] : [UIColor blackColor];
-   
-    // Configure the view for the selected state
 }
 
 @end

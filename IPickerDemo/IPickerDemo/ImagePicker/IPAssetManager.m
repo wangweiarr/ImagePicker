@@ -15,20 +15,26 @@
 
 @interface IPAssetManager ()
 
-/**图库*/
-@property (nonatomic, strong)ALAssetsLibrary *defaultLibrary;
+/**数据模型暂存数组*/
+@property (nonatomic, strong)NSMutableArray *tempArray;
 
+/**全部的数据*/
+@property (nonatomic, strong)NSMutableArray *allImageModel;
 @end
 
 @implementation IPAssetManager
 + (instancetype)defaultAssetManager{
-   
+    
     IPAssetManager *manager = [[IPAssetManager alloc]init];
-   
+    
     return manager;
 }
 - (void)dealloc{
     NSLog(@"IPAssetManager--dealloc");
+}
+- (void)clearDataCache{
+    self.currentAlbumModel = nil;
+    self.currentPhotosArr = nil;
 }
 #pragma mark 获取相册的所有图片
 - (void)reloadImagesFromLibrary
@@ -38,12 +44,13 @@
         
         @autoreleasepool {
             ALAssetsLibraryAccessFailureBlock failureblock = ^(NSError *myerror){
-                NSLog(@"相册访问失败 =%@", [myerror localizedDescription]);
-                if ([myerror.localizedDescription rangeOfString:@"Global denied access"].location!=NSNotFound) {
-                    NSLog(@"无法访问相册.请在'设置->定位服务'设置为打开状态.");
-                }else{
-                    NSLog(@"相册访问失败.");
-                }
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
+                        [weakSelf.delegate loadImageDataFinish:weakSelf];
+                    }
+                });
+                
             };
             
             ALAssetsGroupEnumerationResultsBlock groupEnumerAtion = ^(ALAsset *result, NSUInteger index, BOOL *stop){
@@ -54,6 +61,8 @@
                         IPImageModel *imgModel = [[IPImageModel alloc]init];
                         
                         imgModel.alasset = result;
+                        
+                        imgModel.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
                         
                         imgModel.thumbnail = [UIImage imageWithCGImage:result.thumbnail];
                         
@@ -67,7 +76,7 @@
                 
                 if (group == nil)
                 {
-                    NSLog(@"遍历完毕");
+                    //                    NSLog(@"遍历完毕");
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
                             [weakSelf.delegate loadImageDataFinish:weakSelf];
@@ -77,8 +86,7 @@
                 }
                 
                 if (group!=nil) {
-                    NSString *g=[NSString stringWithFormat:@"%@",group];//获取相簿的组
-                    NSLog(@"gg:%@",g);//gg:ALAssetsGroup - Name:Camera Roll, Type:Saved Photos, Assets count:71
+                    //                    NSLog(@"gg:%@",g);
                     
                     IPAlbumModel *model = [[IPAlbumModel alloc]init];
                     model.posterImage = [UIImage imageWithCGImage:group.posterImage];
@@ -93,10 +101,11 @@
                     model.groupURL = (NSURL *)[group valueForProperty:ALAssetsGroupPropertyURL];
                     
                     [weakSelf.albumArr addObject:model];
-                    
                     if ([model.albumName isEqualToString:@"相机胶卷"]) {
+                        model.isSelected = YES;
                         weakSelf.currentAlbumModel = model;
                         [group enumerateAssetsUsingBlock:groupEnumerAtion];
+                        
                     }
                     
                 }
@@ -104,18 +113,11 @@
             };
             
             [weakSelf.defaultLibrary enumerateGroupsWithTypes:ALAssetsGroupAll
-                                               usingBlock:libraryGroupsEnumeration
-                                             failureBlock:failureblock];
+                                                   usingBlock:libraryGroupsEnumeration
+                                                 failureBlock:failureblock];
         }
         
     });
-}
-
-+ (UIImage *)getFullScreenImage:(IPImageModel *)model{
-    ALAsset *asset = model.alasset;
-    ALAssetRepresentation *representation = asset.defaultRepresentation;
-    UIImage *fullRotationImage = [UIImage imageWithCGImage:representation.fullResolutionImage];
-    return fullRotationImage;
 }
 
 - (void)getImagesForAlbumUrl:(NSURL *)albumUrl{
@@ -123,7 +125,11 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         @autoreleasepool {
+            if (weakSelf.allImageModel.count == 0) {
+                [weakSelf.allImageModel addObjectsFromArray:weakSelf.currentPhotosArr];
+            }
             [weakSelf.currentPhotosArr removeAllObjects];
+            [weakSelf.tempArray removeAllObjects];
             ALAssetsGroupEnumerationResultsBlock groupEnumerAtion = ^(ALAsset *result, NSUInteger index, BOOL *stop){
                 if (result!=NULL) {
                     
@@ -133,14 +139,23 @@
                         
                         imgModel.alasset = result;
                         
-                        imgModel.thumbnail = [UIImage imageWithCGImage:result.thumbnail];
+                        imgModel.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
                         
-                        [weakSelf.currentPhotosArr addObject:imgModel];
-                       
+                        imgModel.thumbnail = [UIImage imageWithCGImage:result.thumbnail];
+                        [weakSelf.allImageModel enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                            if ([obj.assetUrl isEqual:imgModel.assetUrl]) {
+                                //此处逻辑要注意..当之前的那张图片已经存在过了,就加到当前数组中
+                                [weakSelf.tempArray addObject:obj];
+                                imgModel.isSame = YES;
+                            }
+                        }];
+                        if (imgModel.isSame == NO) {
+                            [weakSelf.tempArray addObject:imgModel];
+                        }
                         
                     }
                 }else {
-                    NSLog(@"遍历完毕");
+                    [weakSelf.currentPhotosArr addObjectsFromArray:weakSelf.tempArray];
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
                             [weakSelf.delegate loadImageDataFinish:weakSelf];
@@ -151,13 +166,14 @@
             };
             [self.defaultLibrary groupForURL:albumUrl resultBlock:^(ALAssetsGroup *group) {
                 [group enumerateAssetsUsingBlock:groupEnumerAtion];
+                
             } failureBlock:^(NSError *error) {
                 
             }];
         }
         
     });
-   
+    
 }
 #pragma mark - lazy -
 - (ALAssetsLibrary *)defaultLibrary{
@@ -172,11 +188,24 @@
     }
     return _albumArr;
 }
-
-- (NSMutableArray *)currentPhotosArr{
+- (NSMutableArray *)currentPhotosArr
+{
     if (_currentPhotosArr == nil) {
         _currentPhotosArr = [NSMutableArray array];
     }
     return _currentPhotosArr;
 }
+- (NSMutableArray *)tempArray{
+    if (_tempArray == nil) {
+        _tempArray = [NSMutableArray array];
+    }
+    return _tempArray;
+}
+- (NSMutableArray *)allImageModel{
+    if (_allImageModel == nil) {
+        _allImageModel = [NSMutableArray array];
+    }
+    return _allImageModel;
+}
+
 @end

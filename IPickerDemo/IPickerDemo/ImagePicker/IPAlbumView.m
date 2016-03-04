@@ -21,6 +21,8 @@
 /**背景图*/
 @property (nonatomic, weak)UIButton *backView;
 
+/**上一个被选中cell 对应的数据*/
+@property (nonatomic, strong)IPAlbumModel *preModel;
 @end
 
 
@@ -28,6 +30,12 @@
 + (instancetype)albumViewWithData:(NSArray *)data{
     IPAlbumView *ablumView = [[self alloc]init];
     ablumView.dataSource = [NSArray arrayWithArray:data];
+    [ablumView.dataSource enumerateObjectsUsingBlock:^(IPAlbumModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj.isSelected) {
+            ablumView.preModel = obj;
+            *stop = YES;
+        }
+    }];
     return ablumView;
 }
 - (instancetype)initWithFrame:(CGRect)frame{
@@ -44,20 +52,7 @@
 }
 - (void)setUpViews{
     self.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
-    
-    
-//    CATransition * transition=[CATransition animation];
-//    transition.duration=0.3f;
-//    transition.timingFunction=[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-//    transition.type=kCATransitionReveal;
-//    transition.subtype = kCATransitionFromBottom;
-//    
-//    
-//    transition.delegate=self;
-//    [self.layer addAnimation:transition forKey:nil];
-    
-    self.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.6f];
-    
+    self.backgroundColor = [UIColor clearColor];
     UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
     [btn setBackgroundColor:[UIColor clearColor]];
     
@@ -117,11 +112,26 @@
    
     return cell;
 }
+- (void)tableView:(UITableView *)tableView didHighlightRowAtIndexPath:(NSIndexPath *)indexPath {
+    IPAlbumCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    cell.backgroundColor = [UIColor whiteColor];
+}
+- (void)tableView:(UITableView *)tableView didUnhighlightRowAtIndexPath:(NSIndexPath *)indexPath {
+    IPAlbumCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+    cell.backgroundColor = [UIColor whiteColor];
+}
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(clickCellForIndex:ForView:)]) {
         [self.delegate clickCellForIndex:indexPath ForView:self];
     }
+    IPAlbumModel *model = self.dataSource[indexPath.row];
+    model.isSelected = YES;
+    self.preModel.isSelected = NO;
+    NSInteger index = (NSInteger)[self.dataSource indexOfObject:self.preModel];
+    NSIndexPath *preIndexPath = [NSIndexPath indexPathForRow:index inSection:0];
+    [tableView reloadRowsAtIndexPaths:@[indexPath,preIndexPath] withRowAnimation:UITableViewRowAnimationNone];
+    self.preModel = model;
 }
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     return 50.0f;

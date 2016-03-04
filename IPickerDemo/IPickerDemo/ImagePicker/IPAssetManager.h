@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class IPAssetManager,IPImageModel,IPAlbumModel;
+@class IPAssetManager,IPImageModel,IPAlbumModel,ALAssetsLibrary;
 
 @protocol IPAssetManagerDelegate <NSObject>
 
@@ -35,10 +35,12 @@
 
 + (instancetype)defaultAssetManager;
 
-- (void)reloadImagesFromLibrary;
+/**图库*/
+@property (nonatomic, strong)ALAssetsLibrary *defaultLibrary;
 
-+ (UIImage *)getFullScreenImage:(IPImageModel *)imageModel;
+- (void)reloadImagesFromLibrary;
 
 - (void)getImagesForAlbumUrl:(NSURL *)albumUrl;
 
+- (void)clearDataCache;
 @end

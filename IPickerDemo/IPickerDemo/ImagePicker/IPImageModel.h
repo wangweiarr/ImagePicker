@@ -18,8 +18,18 @@
 /**当前是否被选中*/
 @property (nonatomic, assign)BOOL isSelect;
 
+/**是否存在一样的图像*/
+@property (nonatomic, assign)BOOL isSame;
+
+/**图像的url*/
+@property (nonatomic, strong)NSURL *assetUrl;
 
 /**alasset*/
 @property (nonatomic, strong)ALAsset *alasset;
 
+/**高清图*/
+@property (nonatomic, strong)UIImage *fullRorationImage;
+
+
+- (void)asynLoadFullScreenImage;
 @end

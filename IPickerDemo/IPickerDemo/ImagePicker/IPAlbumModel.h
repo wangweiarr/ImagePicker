@@ -22,5 +22,7 @@
 /**存放所有图片的数组*/
 @property (nonatomic, strong)NSURL *groupURL;
 
+/**是否被选中*/
+@property (nonatomic, assign)BOOL  isSelected;
 
 @end

@@ -6,13 +6,18 @@
 //  Copyright © 2016年 JL. All rights reserved.
 //
 
+
+
+#define IS_Above_IOS7 ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
+#define IOS7_STATUS_BAR_HEGHT (IS_Above_IOS7 ? 20.0f : 0.0f)
 #import "IPImageReaderViewController.h"
 #import "IPZoomScrollView.h"
 #import "IPImageModel.h"
 #import "IPAlertView.h"
+//#import "AHUIImageNameHandle.h"
+#import<AssetsLibrary/AssetsLibrary.h>
 
-#define IS_Above_IOS7 ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
-#define IOS7_STATUS_BAR_HEGHT (IS_Above_IOS7 ? 20.0f : 0.0f)
+NSString * const IPICKER_LOADING_DID_END_NOTIFICATION = @"IPICKER_LOADING_DID_END_NOTIFICATION";
 
 @interface IPImageReaderCell : UICollectionViewCell
 /**伸缩图*/
@@ -79,16 +84,30 @@
 
 static NSString * const reuseIdentifier = @"Cell";
 + (instancetype)imageReaderViewControllerWithData:(NSArray<IPImageModel *> *)data TargetIndex:(NSUInteger)index{
+    if (data == nil || data.count == 0 ) {
+        return nil;
+    }
     UICollectionViewFlowLayout *flow = [[UICollectionViewFlowLayout alloc]init];
     
     flow.scrollDirection = UICollectionViewScrollDirectionHorizontal;
     flow.minimumInteritemSpacing = 0;
     flow.minimumLineSpacing = 0;
     IPImageReaderViewController *vc = [[IPImageReaderViewController alloc]initWithCollectionViewLayout:flow];
-    
-    vc.dataArr = [NSArray arrayWithArray:data];
+    vc.dataArr = data;
     vc.targetIndex = index;
     return vc;
+    
+    
+}
+
+- (instancetype)initWithCollectionViewLayout:(UICollectionViewLayout *)layout{
+    if (self = [super initWithCollectionViewLayout:layout]) {
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(handleMWPhotoLoadingDidEndNotification:)
+                                                     name:IPICKER_LOADING_DID_END_NOTIFICATION
+                                                   object:nil];
+    }
+    return self;
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -106,22 +125,26 @@ static NSString * const reuseIdentifier = @"Cell";
     //添加背景图
     UIImageView *headerView = [[UIImageView alloc]init];
     headerView.userInteractionEnabled = YES;
-    headerView.image = [UIImage imageNamed:@"photobrowse_top"];
+    UIImage *headerImage =[UIImage imageNamed:@"photobrowse_top"];
+    headerView.image = headerImage;
     headerView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
     [self.view addSubview:headerView];
     self.headerView = headerView;
     
     UIButton *leftBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     leftBtn.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleWidth;
-    [leftBtn setImage:[UIImage imageNamed:@"bar_btn_icon_returntext_white"] forState:UIControlStateNormal];
+    UIImage *leftBtnImage =[UIImage imageNamed:@"bar_btn_icon_returntext_white"];
+    [leftBtn setImage:leftBtnImage forState:UIControlStateNormal];
     [leftBtn addTarget:self action:@selector(cancle) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:leftBtn];
     self.leftButton = leftBtn;
     
     UIButton *rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     rightBtn.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
-    [rightBtn setImage:[UIImage imageNamed:@"img_icon_check"] forState:UIControlStateNormal];
-    [rightBtn setImage:[UIImage imageNamed:@"img_icon_check_p"] forState:UIControlStateSelected];
+    UIImage *image =[UIImage imageNamed:@"img_icon_check"];
+    UIImage *image_p =[UIImage imageNamed:@"img_icon_check_p"];
+    [rightBtn setImage:image forState:UIControlStateNormal];
+    [rightBtn setImage:image_p forState:UIControlStateSelected];
     [rightBtn addTarget:self action:@selector(selectBtn:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:rightBtn];
     self.rightButton = rightBtn;
@@ -135,8 +158,8 @@ static NSString * const reuseIdentifier = @"Cell";
 - (void)viewDidLayoutSubviews{
     [super viewDidLayoutSubviews];
     self.headerView.frame = CGRectMake(0, 0, self.view.bounds.size.width, IOS7_STATUS_BAR_HEGHT + 44);
-    self.leftButton.frame = CGRectMake(10, IOS7_STATUS_BAR_HEGHT, 44, 44);
-    self.rightButton.frame = CGRectMake(self.view.bounds.size.width - 54, IOS7_STATUS_BAR_HEGHT, 44, 44);
+    self.leftButton.frame = CGRectMake(-5, IOS7_STATUS_BAR_HEGHT, 44, 44);
+    self.rightButton.frame = CGRectMake(self.view.bounds.size.width - 44, IOS7_STATUS_BAR_HEGHT, 44, 44);
     
     NSUInteger maxIndex = self.dataArr.count - 1;
     NSUInteger minIndex = 0;
@@ -145,7 +168,11 @@ static NSString * const reuseIdentifier = @"Cell";
     } else if (self.targetIndex > self.targetIndex) {
         self.targetIndex = maxIndex;
     }
-    if (!self.isFirst) {
+    if (self.isFirst == NO) {
+        if (self.targetIndex == 0) {//当滚动到0的位置时,默认是不调用scrolldidscroll方法的,所以在此时设置按钮高度
+            IPImageModel *model = self.dataArr[0];
+            self.rightButton.selected = model.isSelect;
+        }
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.targetIndex inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
         self.isFirst = YES;
@@ -159,16 +186,23 @@ static NSString * const reuseIdentifier = @"Cell";
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
+    [self.dataArr enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        obj.fullRorationImage = nil;
+    }];
     // Dispose of any resources that can be recreated.
 }
 - (void)dealloc{
+    [self.dataArr enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        obj.fullRorationImage = nil;
+    }];
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     NSLog(@"IPImageReaderViewController---dealloc");
 }
 - (void)cancle{
     if (self.dismissBlock) {
         self.dismissBlock();
     }
-  [self dismissViewControllerAnimated:YES completion:nil];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 - (void)selectBtn:(UIButton *)btn{
     btn.selected = !btn.selected;
@@ -240,8 +274,8 @@ static NSString * const reuseIdentifier = @"Cell";
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     IPImageModel *model = [self.dataArr objectAtIndex:indexPath.item];
+    [model asynLoadFullScreenImage];
     cell.zoomScroll.imageModel = model;
-   
     return cell;
 }
 
@@ -249,7 +283,7 @@ static NSString * const reuseIdentifier = @"Cell";
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath{
-
+    
     return self.view.bounds.size;
 }
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageReaderCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
@@ -271,8 +305,33 @@ static NSString * const reuseIdentifier = @"Cell";
         IPImageModel *model = self.dataArr[_currentIndex];
         self.rightButton.selected = model.isSelect;
     }
+}
+- (IPZoomScrollView *)pageDisplayingPhoto:(IPImageModel *)model {
+    IPZoomScrollView *thePage = nil;
+    for (IPImageReaderCell *cell in self.collectionView.visibleCells) {
+        if (cell.zoomScroll.imageModel == model) {
+            thePage = cell.zoomScroll; break;
+        }
+    }
+    return thePage;
+}
+- (void)handleMWPhotoLoadingDidEndNotification:(NSNotification *)notification {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        IPImageModel *model = [notification object];
+        IPZoomScrollView *page = [self pageDisplayingPhoto:model];
+        if (page) {
+            if ([model fullRorationImage]) {
+                // Successful load
+                [page displayImage];
+            } else {
+                
+            }
+        }
+    });
     
 }
 
 
+
 @end
+
