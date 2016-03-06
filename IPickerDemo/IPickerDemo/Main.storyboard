@@ -37,7 +37,7 @@
                                 <rect key="frame" x="270" y="285" width="60" height="30"/>
                                 <state key="normal" title="选择图片"/>
                                 <connections>
-                                    <action selector="entryImagePicker" destination="BYZ-38-t0r" eventType="touchUpInside" id="tad-vM-IZs"/>
+                                    <action selector="popIPicker:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ZIW-n4-Qhl"/>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hYN-Be-uE7">
