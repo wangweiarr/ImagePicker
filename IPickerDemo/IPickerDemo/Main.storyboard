@@ -40,20 +40,11 @@
                                     <action selector="popIPicker:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ZIW-n4-Qhl"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="hYN-Be-uE7">
-                                <rect key="frame" x="277" y="315" width="46" height="30"/>
-                                <state key="normal" title="Button"/>
-                                <connections>
-                                    <action selector="test:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fw3-Y8-GeB"/>
-                                </connections>
-                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="hYN-Be-uE7" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="JAB-3I-3Fz"/>
                             <constraint firstItem="n1z-Rl-E7h" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Ph0-fO-U1w"/>
                             <constraint firstItem="n1z-Rl-E7h" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="WLV-ao-u7F"/>
-                            <constraint firstItem="hYN-Be-uE7" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" constant="30" id="u82-Id-v0s"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="Lbv-Xd-rS7"/>
