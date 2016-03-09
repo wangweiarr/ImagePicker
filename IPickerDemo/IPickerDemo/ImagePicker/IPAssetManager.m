@@ -39,6 +39,9 @@
 #pragma mark 获取相册的所有图片
 - (void)reloadImagesFromLibrary
 {
+    ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
+    NSLog(@"%tu",status);
+    
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
@@ -46,8 +49,8 @@
             ALAssetsLibraryAccessFailureBlock failureblock = ^(NSError *myerror){
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
-                        [weakSelf.delegate loadImageDataFinish:weakSelf];
+                    if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:FirstAccess:)]) {
+                        [weakSelf.delegate loadImageDataFinish:weakSelf FirstAccess:YES];
                     }
                 });
                 
@@ -78,8 +81,8 @@
                 {
                     //                    NSLog(@"遍历完毕");
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
-                            [weakSelf.delegate loadImageDataFinish:weakSelf];
+                        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:FirstAccess:)]) {
+                            [weakSelf.delegate loadImageDataFinish:weakSelf FirstAccess:YES];
                         }
                     });
                     
@@ -94,14 +97,17 @@
                     
                     if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"Camera Roll"]) {
                         model.albumName =@"相机胶卷";
-                    }else {
+                    }else if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"Recently Added"]){
+                        model.albumName =@"最近添加";
+                    }
+                    else {
                         model.albumName = (NSString *)[group valueForProperty:ALAssetsGroupPropertyName];
                     }
                     
                     model.groupURL = (NSURL *)[group valueForProperty:ALAssetsGroupPropertyURL];
-                    
+                    NSLog(@"%@",model.albumName);
                     [weakSelf.albumArr addObject:model];
-                    if ([model.albumName isEqualToString:@"相机胶卷"]) {
+                    if ([model.albumName isEqualToString:@"相机胶卷"] ||[model.albumName isEqualToString:@"最近添加"]) {
                         model.isSelected = YES;
                         weakSelf.currentAlbumModel = model;
                         [group enumerateAssetsUsingBlock:groupEnumerAtion];
@@ -131,6 +137,7 @@
             [weakSelf.currentPhotosArr removeAllObjects];
             [weakSelf.tempArray removeAllObjects];
             ALAssetsGroupEnumerationResultsBlock groupEnumerAtion = ^(ALAsset *result, NSUInteger index, BOOL *stop){
+                NSLog(@"%@",result);
                 if (result!=NULL) {
                     
                     if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypePhoto]) {
@@ -157,8 +164,8 @@
                 }else {
                     [weakSelf.currentPhotosArr addObjectsFromArray:weakSelf.tempArray];
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
-                            [weakSelf.delegate loadImageDataFinish:weakSelf];
+                        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:FirstAccess:)]) {
+                            [weakSelf.delegate loadImageDataFinish:weakSelf FirstAccess:NO];
                         }
                     });
                 }

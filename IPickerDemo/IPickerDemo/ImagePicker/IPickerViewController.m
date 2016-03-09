@@ -447,29 +447,32 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 }
 #pragma mark 获取相册的所有图片
 
-- (void)loadImageDataFinish:(IPAssetManager *)manager{
+- (void)loadImageDataFinish:(IPAssetManager *)manager FirstAccess:(BOOL)isFirst{
     if (manager.currentPhotosArr.count == 0) {
-        NSString *message = @"请在设置->通用->访问限制->照片 启用访问图片的权限!";
-        if ([[[UIDevice currentDevice]systemVersion]floatValue]<6.0) {
-            message = @"请在设置->通用->访问限制->位置 启用定位服务!";
+        if (isFirst) {
+            NSString *message = @"请在设置->通用->访问限制->照片 启用访问图片的权限!";
+            if ([[[UIDevice currentDevice]systemVersion]floatValue]<6.0) {
+                message = @"请在设置->通用->访问限制->位置 启用定位服务!";
+            }
+            UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片访问失败" message:message delegate:self cancelButtonTitle:@"关闭" otherButtonTitles:nil];
+            [alertView show];
+            
+            [self.centerBtn setTitle:@"访问相册失败" forState:UIControlStateNormal];
+            [self.centerBtn sizeToFit];
+            [self.view setNeedsLayout];
+            return;
         }
-        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片访问失败" message:message delegate:self cancelButtonTitle:@"关闭" otherButtonTitles:nil];
-        [alertView show];
-        
-        [self.centerBtn setTitle:@"访问相册失败" forState:UIControlStateNormal];
-        [self.centerBtn sizeToFit];
-        [self.view setNeedsLayout];
-        
-        return;
     }
     
     self.curImageModelArr = [NSArray arrayWithArray:self.defaultAssetManager.currentPhotosArr];
     [self.imageModelDic setObject:self.curImageModelArr forKey:self.defaultAssetManager.currentAlbumModel.albumName];
     
     if ([[NSThread currentThread] isMainThread]) {
+        [self.centerBtn setTitle:self.defaultAssetManager.currentAlbumModel.albumName forState:UIControlStateNormal];
         [self.mainView reloadData];
     }else {
         dispatch_async(dispatch_get_main_queue(), ^{
+            [self.centerBtn setTitle:self.defaultAssetManager.currentAlbumModel.albumName forState:UIControlStateNormal];
             [self.mainView reloadData];
         });
     }
