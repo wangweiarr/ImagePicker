@@ -40,6 +40,13 @@
     self.imgView = imgView;
     
     UIButton *rightCornerBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.bounds.size.width - 18-5, 5, 18, 18)];
+   
+    [rightCornerBtn addTarget:self action:@selector(clickBtnInCell:) forControlEvents:UIControlEventTouchUpInside];
+    [self.contentView addSubview:rightCornerBtn];
+    self.rightCornerBtn = rightCornerBtn;
+}
+- (void)layoutSubviews {
+    [super layoutSubviews];
     UIImage *image,*image_p;
     if ([UIScreen mainScreen].bounds.size.width<375) {
         
@@ -49,14 +56,9 @@
         image =[UIImage imageNamed:@"img_icon_check_Big"];
         image_p =[UIImage imageNamed:@"img_icon_check_Big_p"];
     }
-    [rightCornerBtn setImage:image forState:UIControlStateNormal];
-    [rightCornerBtn setImage:image_p forState:UIControlStateSelected];
-    [rightCornerBtn addTarget:self action:@selector(clickBtnInCell:) forControlEvents:UIControlEventTouchUpInside];
-    [self.contentView addSubview:rightCornerBtn];
-    self.rightCornerBtn = rightCornerBtn;
-}
-- (void)layoutSubviews {
-    [super layoutSubviews];
+    [self.rightCornerBtn setImage:image forState:UIControlStateNormal];
+    [self.rightCornerBtn setImage:image_p forState:UIControlStateSelected];
+    
     self.imgView.frame = self.bounds;
     CGFloat w = self.bounds.size.width / 2.6f;
     self.rightCornerBtn.frame = CGRectMake(self.bounds.size.width - w, 0, w, w);

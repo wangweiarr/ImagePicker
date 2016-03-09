@@ -42,9 +42,15 @@
     ip.delegate = self;
     ip.maxCount = 11;
     ip.popStyle = IPickerViewControllerPopStylePush;
-    [self.navigationController pushViewController:ip animated:YES];
-    //    [self presentViewController:ip animated:YES completion:nil];
+//    [self.navigationController pushViewController:ip animated:YES];
+        [self presentViewController:ip animated:YES completion:nil];
     
+}
+- (BOOL)shouldAutorotate{
+    return NO;
+}
+- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation{
+    return UIInterfaceOrientationPortrait;
 }
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

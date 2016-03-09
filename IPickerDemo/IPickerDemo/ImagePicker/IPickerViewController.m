@@ -165,6 +165,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     self.arrowImge = arrowImge;
     
     UILabel    *rightLabel = [[UILabel alloc]init];
+    rightLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewContentModeBottom | UIViewContentModeBottomRight;
     rightLabel.font = [UIFont systemFontOfSize:12];
     rightLabel.textAlignment = NSTextAlignmentCenter;
     rightLabel.clipsToBounds = YES;
@@ -208,9 +209,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     self.mainView = mainView;
     [self.view addSubview:mainView];
 }
-- (BOOL)shouldAutorotate{
-    return NO;
-}
+
 #pragma mark - collectionview-
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
@@ -445,6 +444,20 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     
 }
+//- (BOOL)shouldAutorotate{
+//    return NO;
+//}
+//- (UIInterfaceOrientationMask)supportedInterfaceOrientations{
+//    return UIInterfaceOrientationMaskPortrait;
+//}
+
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+    
+    
+    [self.mainView reloadData];
+    
+}
+
 #pragma mark 获取相册的所有图片
 
 - (void)loadImageDataFinish:(IPAssetManager *)manager FirstAccess:(BOOL)isFirst{
