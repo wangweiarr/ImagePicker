@@ -13,7 +13,9 @@
 @protocol IPAssetManagerDelegate <NSObject>
 
 
-- (void)loadImageDataFinish:(IPAssetManager *)manager FirstAccess:(BOOL)isFirst;
+- (void)loadImageDataFinish:(IPAssetManager *)manager;
+
+- (void)loadImageUserDeny:(IPAssetManager *)manager;
 
 @end
 

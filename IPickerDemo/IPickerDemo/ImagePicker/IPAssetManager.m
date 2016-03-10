@@ -47,12 +47,7 @@
         
         @autoreleasepool {
             ALAssetsLibraryAccessFailureBlock failureblock = ^(NSError *myerror){
-                
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:FirstAccess:)]) {
-                        [weakSelf.delegate loadImageDataFinish:weakSelf FirstAccess:YES];
-                    }
-                });
+                [weakSelf performDelegateWithSuccess:NO];
                 
             };
             
@@ -80,11 +75,7 @@
                 if (group == nil)
                 {
                     //                    NSLog(@"遍历完毕");
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:FirstAccess:)]) {
-                            [weakSelf.delegate loadImageDataFinish:weakSelf FirstAccess:YES];
-                        }
-                    });
+                   [weakSelf performDelegateWithSuccess:YES];
                     
                 }
                 
@@ -125,7 +116,21 @@
         
     });
 }
-
+- (void)performDelegateWithSuccess:(BOOL)success{
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
+        if (status == ALAuthorizationStatusAuthorized) {
+            if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
+                [self.delegate loadImageDataFinish:self];
+            }
+        }else {
+            if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageUserDeny:)]) {
+                [self.delegate loadImageUserDeny:self];
+            }
+        }
+    });
+}
 - (void)getImagesForAlbumUrl:(NSURL *)albumUrl{
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -163,11 +168,7 @@
                     }
                 }else {
                     [weakSelf.currentPhotosArr addObjectsFromArray:weakSelf.tempArray];
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(loadImageDataFinish:FirstAccess:)]) {
-                            [weakSelf.delegate loadImageDataFinish:weakSelf FirstAccess:NO];
-                        }
-                    });
+                    [self performDelegateWithSuccess:YES];
                 }
                 
             };
@@ -175,7 +176,7 @@
                 [group enumerateAssetsUsingBlock:groupEnumerAtion];
                 
             } failureBlock:^(NSError *error) {
-                
+                [self performDelegateWithSuccess:NO];
             }];
         }
         
