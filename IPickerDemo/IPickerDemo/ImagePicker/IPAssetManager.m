@@ -35,6 +35,8 @@
 - (void)clearDataCache{
     self.currentAlbumModel = nil;
     self.currentPhotosArr = nil;
+    [self.tempArray removeAllObjects];
+    [self.allImageModel removeAllObjects];
 }
 #pragma mark 获取相册的所有图片
 - (void)reloadImagesFromLibrary
@@ -120,15 +122,25 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
-        if (status == ALAuthorizationStatusAuthorized) {
-            if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
-                [self.delegate loadImageDataFinish:self];
-            }
-        }else {
+        if (status == ALAuthorizationStatusDenied) {
             if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageUserDeny:)]) {
                 [self.delegate loadImageUserDeny:self];
             }
+        }else {
+            if (success == NO) {
+                if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageOccurError:)]) {
+                    [self.delegate loadImageOccurError:self];
+                }
+            }else {
+                if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
+                    [self.delegate loadImageDataFinish:self];
+                }
+            }
+            
+            
         }
+        
+        
     });
 }
 - (void)getImagesForAlbumUrl:(NSURL *)albumUrl{

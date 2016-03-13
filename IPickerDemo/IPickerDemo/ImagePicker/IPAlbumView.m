@@ -126,6 +126,9 @@
         [self.delegate clickCellForIndex:indexPath ForView:self];
     }
     IPAlbumModel *model = self.dataSource[indexPath.row];
+    if (model == self.preModel) {
+        return;
+    }
     model.isSelected = YES;
     self.preModel.isSelected = NO;
     NSInteger index = (NSInteger)[self.dataSource indexOfObject:self.preModel];

@@ -91,6 +91,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
+    [self.imageModelDic removeAllObjects];
     [self.defaultAssetManager clearDataCache];
 }
 - (void)dealloc{
@@ -428,6 +429,10 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
  */
 - (void)clickCellForIndex:(NSIndexPath *)indexPath ForView:(IPAlbumView *)View{
     IPAlbumModel *model = [self.defaultAssetManager.albumArr objectAtIndex:indexPath.item];
+    if (model == self.defaultAssetManager.currentAlbumModel) {
+        [self shouldRemoveFrom:View];
+        return;
+    }
     [self.centerBtn setTitle:model.albumName forState:UIControlStateNormal];
     self.defaultAssetManager.currentAlbumModel = model;
     [self shouldRemoveFrom:View];
@@ -437,6 +442,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         self.curImageModelArr = [self.imageModelDic objectForKey:model.albumName];
         [self.mainView reloadData];
     }else {
+        NSLog(@"内存警告");
         [self.defaultAssetManager getImagesForAlbumUrl:model.groupURL];
     }
     
@@ -465,6 +471,16 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         message = @"请在设置->通用->访问限制->位置 启用定位服务!";
     }
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片访问失败" message:message delegate:self cancelButtonTitle:@"关闭" otherButtonTitles:nil];
+    [alertView show];
+    
+    [self.centerBtn setTitle:@"访问相册失败" forState:UIControlStateNormal];
+    [self.centerBtn sizeToFit];
+    [self.view setNeedsLayout];
+}
+- (void)loadImageOccurError:(IPAssetManager *)manager{
+    NSString *message = @"访问相册失败,请重试";
+    
+    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片访问失败" message:message delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil];
     [alertView show];
     
     [self.centerBtn setTitle:@"访问相册失败" forState:UIControlStateNormal];

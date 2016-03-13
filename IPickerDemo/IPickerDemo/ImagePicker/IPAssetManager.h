@@ -16,6 +16,7 @@
 - (void)loadImageDataFinish:(IPAssetManager *)manager;
 
 - (void)loadImageUserDeny:(IPAssetManager *)manager;
+- (void)loadImageOccurError:(IPAssetManager *)manager;
 
 @end
 
