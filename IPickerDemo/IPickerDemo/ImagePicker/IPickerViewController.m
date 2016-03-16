@@ -114,13 +114,15 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     CGSize tempSize = [IPickerViewController stringFontSizeWithString:@"这里是汽车之家的测试" font:[UIFont systemFontOfSize:15] constrainedToSize:CGSizeMake(200, btnH)];
     CGSize size = [self.centerBtn sizeThatFits:tempSize];
+    CGFloat minMargin = 0;
     if (size.width > tempSize.width) {
         size = tempSize;
+        minMargin = 8;
     }
     self.centerBtn.frame = CGRectMake(self.headerView.center.x - size.width/2, IOS7_STATUS_BAR_HEGHT, size.width, btnH);
     self.rightBtn.frame = CGRectMake(viewW - btnW -MaxMargin, IOS7_STATUS_BAR_HEGHT, btnW, btnH);
     
-    self.arrowImge.frame = CGRectMake(CGRectGetMaxX(self.centerBtn.frame), IOS7_STATUS_BAR_HEGHT, btnW/2, btnH);
+    self.arrowImge.frame = CGRectMake(CGRectGetMaxX(self.centerBtn.frame)- minMargin, IOS7_STATUS_BAR_HEGHT, btnW/2, btnH);
     
     
     

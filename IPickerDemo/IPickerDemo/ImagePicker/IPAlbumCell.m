@@ -59,6 +59,7 @@
     self.posterView = post;
     
     UILabel *descLabel = [[UILabel alloc]init];
+    descLabel.lineBreakMode = NSLineBreakByTruncatingMiddle;
     [self.contentView addSubview:descLabel];
     self.descLabel = descLabel;
     
@@ -77,7 +78,7 @@
     
     self.spliteline.frame = CGRectMake(0, 0, viewW, 0.5);
     self.posterView.frame = CGRectMake(0, 0, viewH, viewH);
-    self.descLabel.frame = CGRectMake(viewH + MaxMargin, 0, viewW - viewH -MaxMargin, viewH);
+    self.descLabel.frame = CGRectMake(viewH + MaxMargin, 0, viewW - viewH - 2*MaxMargin - 20, viewH);
     self.accessoryImgView.frame = CGRectMake(viewW - MaxMargin - 20, 0, 20, viewH);
 
     
