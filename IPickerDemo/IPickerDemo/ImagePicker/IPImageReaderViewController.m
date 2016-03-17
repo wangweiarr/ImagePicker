@@ -286,7 +286,7 @@ static NSString * const reuseIdentifier = @"Cell";
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageReaderCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
     NSLog(@"%tu",indexPath.item);
     IPImageModel *model = [self.dataArr objectAtIndex:indexPath.item];
-    [model stopasyncLoadFullImage];
+    [model stopAsyncLoadFullImage];
     [cell.zoomScroll prepareForReuse];
     
 }

@@ -24,7 +24,7 @@
 
 - (void)asynLoadFullScreenImage;
 - (void)asynLoadThumibImage;
-- (void)stopasyncLoadFullImage;
+- (void)stopAsyncLoadFullImage;
 
 /**
  *  以下两个属性是可以直接访问,并且有值的.上面的属性方法勿用..
