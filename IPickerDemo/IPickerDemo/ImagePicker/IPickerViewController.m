@@ -113,7 +113,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     NSLog(@"didReceiveMemoryWarning--IPickerViewController");
-    [self.imageModelDic removeAllObjects];
+    
     [self.defaultAssetManager clearDataCache];
 }
 - (void)dealloc{
@@ -140,19 +140,22 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         //        NSMutableParagraphStyle *paragraph=[[NSMutableParagraphStyle alloc]init];
         //        paragraph.lineBreakMode=NSLineBreakByTruncatingMiddle;
         NSDictionary *attribute = @{NSFontAttributeName: [UIFont systemFontOfSize:15.0f]/*,NSParagraphStyleAttributeName:paragraph*/};
-        tempSize = [@"这里是汽车之家的测试" boundingRectWithSize:CGSizeMake(MAXFLOAT, btnH) options: NSStringDrawingTruncatesLastVisibleLine |
+        tempSize = [@"这里是汽车之家测试" boundingRectWithSize:CGSizeMake(MAXFLOAT, btnH) options: NSStringDrawingTruncatesLastVisibleLine |
                     NSStringDrawingUsesLineFragmentOrigin |
                     NSStringDrawingUsesFontLeading attributes:attribute context:nil].size;
         
     }else {
-        tempSize = [@"这里是汽车之家的测试" sizeWithFont:[UIFont systemFontOfSize:15.0f] constrainedToSize:CGSizeMake(MAXFLOAT, btnH) lineBreakMode:NSLineBreakByTruncatingMiddle];
+        tempSize = [@"这里是汽车之家测试" sizeWithFont:[UIFont systemFontOfSize:15.0f] constrainedToSize:CGSizeMake(MAXFLOAT, btnH) lineBreakMode:NSLineBreakByTruncatingMiddle];
     }
     
     CGSize size = [self.centerBtn sizeThatFits:tempSize];
     CGFloat minMargin = 0;
     if (size.width > tempSize.width) {
         size = tempSize;
-        minMargin = 3;
+        minMargin = 6;
+        if ([[UIDevice currentDevice].systemVersion doubleValue] >= 9.0) {
+            minMargin = 3;
+        }
     }
     self.centerBtn.frame = CGRectMake(self.headerView.center.x - size.width/2, IOS7_STATUS_BAR_HEGHT, size.width, btnH);
     self.rightBtn.frame = CGRectMake(viewW - btnW -MaxMargin, IOS7_STATUS_BAR_HEGHT, btnW, btnH);

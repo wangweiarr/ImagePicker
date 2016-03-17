@@ -187,6 +187,7 @@ static NSString * const reuseIdentifier = @"Cell";
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
+     NSLog(@"IPImageReaderViewController---didReceiveMemoryWarning");
     [self.dataArr enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         obj.fullRorationImage = nil;
     }];
@@ -305,7 +306,7 @@ static NSString * const reuseIdentifier = @"Cell";
         IPImageModel *model = self.dataArr[_currentIndex];
         self.rightButton.selected = model.isSelect;
     }
-    
+   
 }
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView{
     
