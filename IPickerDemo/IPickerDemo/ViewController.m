@@ -40,7 +40,7 @@
 - (IBAction)popIPicker:(UIButton *)sender{
     IPickerViewController *ip = [[IPickerViewController alloc]init];
     ip.delegate = self;
-    ip.maxCount = 11;
+    ip.maxCount = 50;
     ip.popStyle = IPickerViewControllerPopStylePush;
 //    [self.navigationController pushViewController:ip animated:YES];
         [self presentViewController:ip animated:YES completion:nil];
@@ -57,7 +57,7 @@
     // Dispose of any resources that can be recreated.
 }
 - (void)didClickCompleteBtn:(NSArray *)datas{
-    NSLog(@"%@",datas);
+//    NSLog(@"%@",datas);
     
     [datas enumerateObjectsUsingBlock:^(IPImageModel * obj, NSUInteger idx, BOOL * _Nonnull stop) {
         if (idx == 0) {

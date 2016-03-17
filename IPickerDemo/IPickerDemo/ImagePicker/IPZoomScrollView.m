@@ -63,10 +63,8 @@
 
 }
 - (void)prepareForReuse {
-    
-    self.imageModel = nil;
     self.imageModel.fullRorationImage = nil;
-    _photoImageView.hidden = NO;
+    _photoImageView.hidden = YES;
     _photoImageView.image = nil;
     
 }

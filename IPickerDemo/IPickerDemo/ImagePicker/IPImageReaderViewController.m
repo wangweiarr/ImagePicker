@@ -136,7 +136,7 @@ static NSString * const reuseIdentifier = @"Cell";
     UIImage *leftBtnImage =[UIImage imageNamed:@"bar_btn_icon_returntext_white"];
     [leftBtn setImage:leftBtnImage forState:UIControlStateNormal];
     [leftBtn addTarget:self action:@selector(cancle) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:leftBtn];
+    [self.headerView addSubview:leftBtn];
     self.leftButton = leftBtn;
     
     UIButton *rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -146,7 +146,7 @@ static NSString * const reuseIdentifier = @"Cell";
     [rightBtn setImage:image forState:UIControlStateNormal];
     [rightBtn setImage:image_p forState:UIControlStateSelected];
     [rightBtn addTarget:self action:@selector(selectBtn:) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:rightBtn];
+    [self.headerView addSubview:rightBtn];
     self.rightButton = rightBtn;
     
     
@@ -182,6 +182,7 @@ static NSString * const reuseIdentifier = @"Cell";
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
         self.isRoration = NO;
     }
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -217,16 +218,13 @@ static NSString * const reuseIdentifier = @"Cell";
     }else {
         self.currentCount --;
     }
-    
-    NSArray *arr = self.collectionView.indexPathsForVisibleItems;
-    if (arr && arr.count > 0) {
-        NSIndexPath *path = [arr firstObject];
-        IPImageModel *model = self.dataArr[path.item];
-        model.isSelect = btn.selected;
-        if (self.delegate && [self.delegate respondsToSelector:@selector(clickSelectBtnForReaderView:)]) {
-            [self.delegate clickSelectBtnForReaderView:model];
-        }
+//    NSLog(@"%tu",_currentIndex);
+    IPImageModel *model = self.dataArr[_currentIndex];
+    model.isSelect = btn.selected;
+    if (self.delegate && [self.delegate respondsToSelector:@selector(clickSelectBtnForReaderView:)]) {
+        [self.delegate clickSelectBtnForReaderView:model];
     }
+    
 }
 
 - (BOOL)shouldAutorotate{
@@ -286,6 +284,9 @@ static NSString * const reuseIdentifier = @"Cell";
     return self.view.bounds.size;
 }
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageReaderCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
+    NSLog(@"%tu",indexPath.item);
+    IPImageModel *model = [self.dataArr objectAtIndex:indexPath.item];
+    [model stopasyncLoadFullImage];
     [cell.zoomScroll prepareForReuse];
     
 }
@@ -304,7 +305,25 @@ static NSString * const reuseIdentifier = @"Cell";
         IPImageModel *model = self.dataArr[_currentIndex];
         self.rightButton.selected = model.isSelect;
     }
+    
 }
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView{
+    
+    [UIView animateWithDuration:0.3
+                     animations:^{
+                         
+                         self.headerView.alpha = 0.0f;
+                     }completion:nil];
+}
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
+    [UIView animateWithDuration:0.3
+                     animations:^{
+                         
+                         self.headerView.alpha = 1.0f;
+                     }completion:nil];
+    
+}
+
 - (IPZoomScrollView *)pageDisplayingPhoto:(IPImageModel *)model {
     IPZoomScrollView *thePage = nil;
     for (IPImageReaderCell *cell in self.collectionView.visibleCells) {

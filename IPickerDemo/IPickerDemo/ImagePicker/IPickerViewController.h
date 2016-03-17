@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import "IPImageModel.h"
 
+extern NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION;
+
 /**弹出样式*/
 typedef NS_ENUM(NSUInteger,  IPickerViewControllerPopStyle) {
     /**由上到下*/

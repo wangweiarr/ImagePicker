@@ -41,8 +41,8 @@
 #pragma mark 获取相册的所有图片
 - (void)reloadImagesFromLibrary
 {
-    ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
-    NSLog(@"%tu",status);
+//    ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
+    
     
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -59,12 +59,8 @@
                     if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypePhoto]) {
                         
                         IPImageModel *imgModel = [[IPImageModel alloc]init];
-                        
-                        imgModel.alasset = result;
-                        
+                    
                         imgModel.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
-                        
-                        imgModel.thumbnail = [UIImage imageWithCGImage:result.thumbnail];
                         
                         [weakSelf.currentPhotosArr addObject:imgModel];
                         
@@ -76,13 +72,11 @@
                 
                 if (group == nil)
                 {
-                    //                    NSLog(@"遍历完毕");
                    [weakSelf performDelegateWithSuccess:YES];
                     
                 }
                 
                 if (group!=nil) {
-                    //                    NSLog(@"gg:%@",g);
                     
                     IPAlbumModel *model = [[IPAlbumModel alloc]init];
                     model.posterImage = [UIImage imageWithCGImage:group.posterImage];
@@ -98,7 +92,7 @@
                     }
                     
                     model.groupURL = (NSURL *)[group valueForProperty:ALAssetsGroupPropertyURL];
-                    NSLog(@"%@",model.albumName);
+                   
                     [weakSelf.albumArr addObject:model];
                     if ([model.albumName isEqualToString:@"相机胶卷"] ||[model.albumName isEqualToString:@"最近添加"]) {
                         model.isSelected = YES;
@@ -148,43 +142,32 @@
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
         @autoreleasepool {
-            if (weakSelf.allImageModel.count == 0) {
-                [weakSelf.allImageModel addObjectsFromArray:weakSelf.currentPhotosArr];
-            }
-            [weakSelf.currentPhotosArr removeAllObjects];
-            [weakSelf.tempArray removeAllObjects];
+            
             ALAssetsGroupEnumerationResultsBlock groupEnumerAtion = ^(ALAsset *result, NSUInteger index, BOOL *stop){
-                NSLog(@"%@",result);
                 if (result!=NULL) {
                     
                     if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypePhoto]) {
                         
-                        IPImageModel *imgModel = [[IPImageModel alloc]init];
-                        
-                        imgModel.alasset = result;
-                        
-                        imgModel.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
-                        
-                        imgModel.thumbnail = [UIImage imageWithCGImage:result.thumbnail];
                         [weakSelf.allImageModel enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                            if ([obj.assetUrl isEqual:imgModel.assetUrl]) {
+                            if ([obj.assetUrl isEqual:[result valueForProperty:ALAssetPropertyAssetURL]]) {
                                 //此处逻辑要注意..当之前的那张图片已经存在过了,就加到当前数组中
                                 [weakSelf.tempArray addObject:obj];
-                                imgModel.isSame = YES;
                             }
                         }];
-                        if (imgModel.isSame == NO) {
-                            [weakSelf.tempArray addObject:imgModel];
-                        }
                         
                     }
                 }else {
                     [weakSelf.currentPhotosArr addObjectsFromArray:weakSelf.tempArray];
                     [self performDelegateWithSuccess:YES];
+                    [weakSelf.tempArray removeAllObjects];
                 }
                 
             };
             [self.defaultLibrary groupForURL:albumUrl resultBlock:^(ALAssetsGroup *group) {
+                if (weakSelf.allImageModel.count == 0) {
+                    [weakSelf.allImageModel addObjectsFromArray:weakSelf.currentPhotosArr];
+                }
+                [weakSelf.currentPhotosArr removeAllObjects];
                 [group enumerateAssetsUsingBlock:groupEnumerAtion];
                 
             } failureBlock:^(NSError *error) {

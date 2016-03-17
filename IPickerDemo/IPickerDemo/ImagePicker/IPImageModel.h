@@ -19,14 +19,12 @@
 /**是否存在一样的图像*/
 @property (nonatomic, assign)BOOL isSame;
 
-
-/**alasset*/
-@property (nonatomic, strong)ALAsset *alasset;
-
 /**高清图*/
 @property (nonatomic, strong)UIImage *fullRorationImage;
 
 - (void)asynLoadFullScreenImage;
+- (void)asynLoadThumibImage;
+- (void)stopasyncLoadFullImage;
 
 /**
  *  以下两个属性是可以直接访问,并且有值的.上面的属性方法勿用..

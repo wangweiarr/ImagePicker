@@ -20,6 +20,7 @@
 #define IS_Above_IOS7 ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
 #define IOS7_STATUS_BAR_HEGHT (IS_Above_IOS7 ? 20.0f : 0.0f)
 #define headerHeight 44.0f
+NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION";
 
 @interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate>
 /**图库*/
@@ -71,10 +72,30 @@
 /**当前显示的图片数组*/
 @property (nonatomic, strong)NSArray *curImageModelArr;
 
+
 @end
 static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 @implementation IPickerViewController
-
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil{
+    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+        self.maxCount = 50;
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(handleThumbnailLoadingDidEndNotification:)
+                                                     name:IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION
+                                                   object:nil];
+    }
+    return self;
+}
+- (instancetype)init{
+    if (self = [super init]) {
+        self.maxCount = 50;
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(handleThumbnailLoadingDidEndNotification:)
+                                                     name:IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION
+                                                   object:nil];
+    }
+    return self;
+}
 - (void)viewDidLoad {
     [super viewDidLoad];
     if (IS_Above_IOS7) {
@@ -91,11 +112,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
+    NSLog(@"didReceiveMemoryWarning--IPickerViewController");
     [self.imageModelDic removeAllObjects];
     [self.defaultAssetManager clearDataCache];
 }
 - (void)dealloc{
     NSLog(@"IPickerViewController--dealloc");
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 #pragma mark - UI -
@@ -112,18 +135,29 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     self.headerView.frame = CGRectMake(0, 0, viewW, headerH);
     self.leftBtn.frame = CGRectMake(MaxMargin, IOS7_STATUS_BAR_HEGHT, btnW, btnH);
     
-    CGSize tempSize = [IPickerViewController stringFontSizeWithString:@"这里是汽车之家的测试" font:[UIFont systemFontOfSize:15] constrainedToSize:CGSizeMake(200, btnH)];
+    CGSize tempSize = CGSizeZero;
+    if ([[UIDevice currentDevice].systemVersion doubleValue]>= 7.0f) {
+        //        NSMutableParagraphStyle *paragraph=[[NSMutableParagraphStyle alloc]init];
+        //        paragraph.lineBreakMode=NSLineBreakByTruncatingMiddle;
+        NSDictionary *attribute = @{NSFontAttributeName: [UIFont systemFontOfSize:15.0f]/*,NSParagraphStyleAttributeName:paragraph*/};
+        tempSize = [@"这里是汽车之家的测试" boundingRectWithSize:CGSizeMake(MAXFLOAT, btnH) options: NSStringDrawingTruncatesLastVisibleLine |
+                    NSStringDrawingUsesLineFragmentOrigin |
+                    NSStringDrawingUsesFontLeading attributes:attribute context:nil].size;
+        
+    }else {
+        tempSize = [@"这里是汽车之家的测试" sizeWithFont:[UIFont systemFontOfSize:15.0f] constrainedToSize:CGSizeMake(MAXFLOAT, btnH) lineBreakMode:NSLineBreakByTruncatingMiddle];
+    }
+    
     CGSize size = [self.centerBtn sizeThatFits:tempSize];
     CGFloat minMargin = 0;
     if (size.width > tempSize.width) {
         size = tempSize;
-        minMargin = 8;
+        minMargin = 3;
     }
     self.centerBtn.frame = CGRectMake(self.headerView.center.x - size.width/2, IOS7_STATUS_BAR_HEGHT, size.width, btnH);
     self.rightBtn.frame = CGRectMake(viewW - btnW -MaxMargin, IOS7_STATUS_BAR_HEGHT, btnW, btnH);
     
     self.arrowImge.frame = CGRectMake(CGRectGetMaxX(self.centerBtn.frame)- minMargin, IOS7_STATUS_BAR_HEGHT, btnW/2, btnH);
-    
     
     
     self.spliteView.frame = CGRectMake(0, headerH - 0.5,viewW, 0.5);
@@ -221,6 +255,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (IPImageCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     IPImageCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:IPicker_CollectionID forIndexPath:indexPath];
     IPImageModel *model = self.curImageModelArr[indexPath.item];
+    [model asynLoadThumibImage];
     cell.model = model;
     cell.delegate = self;
     return cell;
@@ -251,6 +286,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         [self presentViewController:reader animated:YES completion:nil];
     }else {
         NSLog(@"内存吃紧啊");
+    }
+    
+}
+- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
+    if (self.curImageModelArr.count > 0 && self.curImageModelArr.count > indexPath.item) {
+        IPImageModel *model = self.curImageModelArr[indexPath.item];
+        model.thumbnail = nil;
     }
     
 }
@@ -422,6 +464,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
             }
         }];
     }];
+    
 }
 /**
  *  选中专辑列表的某个cell时的回调方法
@@ -442,9 +485,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     if ([self.imageModelDic objectForKey:model.albumName]) {
         self.curImageModelArr = [self.imageModelDic objectForKey:model.albumName];
+
         [self.mainView reloadData];
     }else {
-        NSLog(@"内存警告");
         [self.defaultAssetManager getImagesForAlbumUrl:model.groupURL];
     }
     
@@ -494,8 +537,12 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     self.curImageModelArr = [NSArray arrayWithArray:self.defaultAssetManager.currentPhotosArr];
     [self.imageModelDic setObject:self.curImageModelArr forKey:self.defaultAssetManager.currentAlbumModel.albumName];
     
+    
     if ([[NSThread currentThread] isMainThread]) {
         [self.centerBtn setTitle:self.defaultAssetManager.currentAlbumModel.albumName forState:UIControlStateNormal];
+//        [self.priCurrentSelArr enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+//            NSLog(@"第一次--%d",obj.isSelect);
+//        }];
         [self.mainView reloadData];
     }else {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -508,7 +555,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     ALAssetsLibrary *lib = [[ALAssetsLibrary alloc] init];
     [lib assetForURL:url resultBlock:^(ALAsset *asset) {
         IPImageModel *model = [[IPImageModel alloc]init];
-        model.alasset = asset;
+        
         model.thumbnail = [UIImage imageWithCGImage:asset.thumbnail];
         ALAssetRepresentation *representation = asset.defaultRepresentation;
         model.fullRorationImage = [UIImage imageWithCGImage:representation.fullScreenImage];
@@ -554,18 +601,29 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     return _imageModelDic;
 }
-+ (CGSize)stringFontSizeWithString:(NSString *)string font:(UIFont *)font constrainedToSize:(CGSize)size
-{
-    if (string == nil || [string isEqualToString:@""] || font == nil){
-        
-        return CGSizeMake(0, 0);
-    }
-    NSAttributedString *attributedText = [[NSAttributedString alloc] initWithString:string
-                                                                         attributes:@{NSFontAttributeName: font}];
-    CGRect rect = [attributedText boundingRectWithSize:size
-                                               options:NSStringDrawingUsesLineFragmentOrigin
-                                               context:nil];
+
+- (void)handleThumbnailLoadingDidEndNotification:(NSNotification *)notification {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        IPImageModel *model = [notification object];
+        IPImageCell *page = [self cellDisplayingPhoto:model];
+        if (page) {
+            if ([model thumbnail]) {
+                // Successful load
+                page.model = model;
+            } else {
+                
+            }
+        }
+    });
     
-    return rect.size;
+}
+- (IPImageCell *)cellDisplayingPhoto:(IPImageModel *)model {
+    IPImageCell *thePage = nil;
+    for (IPImageCell *cell in self.mainView.visibleCells) {
+        if (cell.model == model) {
+            thePage = cell; break;
+        }
+    }
+    return thePage;
 }
 @end
