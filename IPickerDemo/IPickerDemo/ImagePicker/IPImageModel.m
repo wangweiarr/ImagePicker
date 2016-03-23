@@ -10,7 +10,11 @@
 #import "IPImageReaderViewController.h"
 #import "IPickerViewController.h"
 #import <AssetsLibrary/AssetsLibrary.h>
+#import <Photos/Photos.h>
 
+#define iOS7Later ([UIDevice currentDevice].systemVersion.floatValue >= 7.0f)
+#define iOS8Later ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f)
+#define iOS9Later ([UIDevice currentDevice].systemVersion.floatValue >= 9.0f)
 /**弹出样式*/
 typedef NS_ENUM(NSUInteger,  LoadImage) {
     /**由上到下*/
@@ -28,24 +32,43 @@ typedef NS_ENUM(NSUInteger,  LoadImage) {
     if (self.thumbnail) {
         return;
     }
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        @autoreleasepool {
-            @try {
-                ALAssetsLibrary *assetslibrary = [[ALAssetsLibrary alloc] init];
-                [assetslibrary assetForURL:self.assetUrl
-                               resultBlock:^(ALAsset *asset){
-                                   
-                                   self.thumbnail = [UIImage imageWithCGImage:asset.thumbnail];
-                                   [self postCompleteNotification:LoadImageThumibal];
-                               }
-                              failureBlock:^(NSError *error) {
-                                  [self postCompleteNotification:LoadImageThumibal];
-                                  
-                              }];
-            } @catch (NSException *e) {
+    if (iOS8Later) {
+        PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+        options.resizeMode = PHImageRequestOptionsResizeModeNone;
+        PHAsset *phAsset = self.imageAsset;
+        // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
+        CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
+        CGFloat multiple = [UIScreen mainScreen].scale;
+        CGFloat pixelWidth = self.imageSize.width * multiple;
+        CGFloat pixelHeight = pixelWidth / aspectRatio;
+        [[PHImageManager defaultManager] requestImageForAsset:self.imageAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+            if (downloadFinined) {
+                self.thumbnail = result;
+                [self postCompleteNotification:LoadImageThumibal];
             }
-        }
-    });
+        }];
+    }else {
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            @autoreleasepool {
+                @try {
+                    ALAssetsLibrary *assetslibrary = [[ALAssetsLibrary alloc] init];
+                    [assetslibrary assetForURL:self.assetUrl
+                                   resultBlock:^(ALAsset *asset){
+                                       
+                                       self.thumbnail = [UIImage imageWithCGImage:asset.thumbnail];
+                                       [self postCompleteNotification:LoadImageThumibal];
+                                   }
+                                  failureBlock:^(NSError *error) {
+                                      [self postCompleteNotification:LoadImageThumibal];
+                                      
+                                  }];
+                } @catch (NSException *e) {
+                }
+            }
+        });
+    }
 }
 - (void)asynLoadFullScreenImage{
     if (self.fullRorationImage) {

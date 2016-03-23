@@ -72,6 +72,9 @@ NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOAD
 /**当前显示的图片数组*/
 @property (nonatomic, strong)NSArray *curImageModelArr;
 
+/**size*/
+@property (nonatomic, assign)CGSize contentImageSize;
+
 
 @end
 static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
@@ -258,6 +261,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (IPImageCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     IPImageCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:IPicker_CollectionID forIndexPath:indexPath];
     IPImageModel *model = self.curImageModelArr[indexPath.item];
+    model.imageSize = self.contentImageSize;
     [model asynLoadThumibImage];
     cell.model = model;
     cell.delegate = self;
@@ -269,6 +273,11 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     NSUInteger rowCount = 4;
     NSUInteger margin = 5;
     CGFloat itemWidth = (collectionView.frame.size.width - (rowCount-1)*margin)/rowCount;
+    
+    if (!CGSizeEqualToSize(self.contentImageSize, CGSizeZero)) {
+        self.contentImageSize = CGSizeMake(itemWidth, itemWidth);
+    }
+    
     return CGSizeMake(itemWidth, itemWidth);
 }
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section{
@@ -413,8 +422,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     if (_albumView == nil) {
         _albumView = [IPAlbumView albumViewWithData:self.defaultAssetManager.albumArr];
         _albumView.delegate =self;
-        NSInteger currentIndex = (NSInteger)[self.defaultAssetManager.albumArr indexOfObject:self.defaultAssetManager.currentAlbumModel];
-        [_albumView selectAlbumViewCellForIndex:currentIndex];
+        
+       
     }
     if (_albumBackView == nil) {
         _albumBackView = [[UIView alloc]initWithFrame:CGRectMake(0, IOS7_STATUS_BAR_HEGHT + headerHeight, self.view.bounds.size.width, self.view.bounds.size.height - IOS7_STATUS_BAR_HEGHT - headerHeight)];
@@ -491,7 +500,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
         [self.mainView reloadData];
     }else {
-        [self.defaultAssetManager getImagesForAlbumUrl:model.groupURL];
+        [self.defaultAssetManager getImagesForAlbumUrl:model];
     }
     
     
@@ -543,9 +552,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     if ([[NSThread currentThread] isMainThread]) {
         [self.centerBtn setTitle:self.defaultAssetManager.currentAlbumModel.albumName forState:UIControlStateNormal];
-//        [self.priCurrentSelArr enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//            NSLog(@"第一次--%d",obj.isSelect);
-//        }];
+
         [self.mainView reloadData];
     }else {
         dispatch_async(dispatch_get_main_queue(), ^{

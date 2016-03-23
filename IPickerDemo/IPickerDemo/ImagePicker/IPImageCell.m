@@ -35,6 +35,8 @@
 }
 - (void)creatSubViews{
     UIImageView *imgView = [[UIImageView alloc]initWithFrame:self.bounds];
+    imgView.contentMode = UIViewContentModeScaleAspectFill;
+    imgView.clipsToBounds = YES;
     [self.contentView addSubview:imgView];
     imgView.image = self.model.thumbnail;
     self.imgView = imgView;

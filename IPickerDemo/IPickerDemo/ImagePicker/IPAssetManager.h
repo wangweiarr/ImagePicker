@@ -43,7 +43,7 @@
 
 - (void)reloadImagesFromLibrary;
 
-- (void)getImagesForAlbumUrl:(NSURL *)albumUrl;
+- (void)getImagesForAlbumUrl:(IPAlbumModel *)albumModel;
 
 - (void)clearDataCache;
 @end

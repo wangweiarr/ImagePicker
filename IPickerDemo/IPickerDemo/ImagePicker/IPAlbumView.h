@@ -24,6 +24,5 @@
 
 + (instancetype)albumViewWithData:(NSArray *)data;
 
-- (void)selectAlbumViewCellForIndex:(NSInteger)index;
 
 @end

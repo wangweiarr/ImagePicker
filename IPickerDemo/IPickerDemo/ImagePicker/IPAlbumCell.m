@@ -55,6 +55,8 @@
     [self.contentView addSubview:spliteline];
     
     UIImageView *post = [[UIImageView alloc]init];
+    post.clipsToBounds = YES;
+    post.contentMode = UIViewContentModeScaleAspectFill;
     [self.contentView addSubview:post];
     self.posterView = post;
     
@@ -64,8 +66,9 @@
     self.descLabel = descLabel;
     
     UIImageView *selectedImgView = [[UIImageView alloc]init];
-    selectedImgView.image = [UIImage imageNamed:@"forms_icon_select2"];
     selectedImgView.contentMode = UIViewContentModeCenter;
+    selectedImgView.image = [UIImage imageNamed:@"forms_icon_select2"];
+   
     [self.contentView addSubview:selectedImgView];
     self.accessoryImgView = selectedImgView;
     

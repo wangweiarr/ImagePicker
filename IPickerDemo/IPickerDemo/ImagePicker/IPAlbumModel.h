@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-
+@class PHFetchResult;
 @interface IPAlbumModel : NSObject
 /**封面图片*/
 @property (nonatomic, strong)UIImage *posterImage;
@@ -21,7 +21,8 @@
 
 /**存放所有图片的数组*/
 @property (nonatomic, strong)NSURL *groupURL;
-
+/***/
+@property (nonatomic, strong)PHFetchResult *groupAsset;
 /**是否被选中*/
 @property (nonatomic, assign)BOOL  isSelected;
 

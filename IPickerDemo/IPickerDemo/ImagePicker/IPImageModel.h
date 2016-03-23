@@ -8,7 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
-@class ALAsset;
+typedef enum : NSUInteger {
+    IPAssetModelMediaTypePhoto = 0,
+    IPAssetModelMediaTypeLivePhoto,
+    IPAssetModelMediaTypeVideo,
+    IPAssetModelMediaTypeAudio
+} IPAssetModelMediaType;
+@class ALAsset,PHAsset;
 
 @interface IPImageModel : NSObject
 
@@ -18,9 +24,15 @@
 
 /**是否存在一样的图像*/
 @property (nonatomic, assign)BOOL isSame;
+/**数据对象*/
+@property (nonatomic, strong)PHAsset *imageAsset;
 
+/**size*/
+@property (nonatomic, assign)CGSize imageSize;
 /**高清图*/
 @property (nonatomic, strong)UIImage *fullRorationImage;
+/**唯一标识符*/
+@property (nonatomic, copy)NSString *localIdentiy;
 
 - (void)asynLoadFullScreenImage;
 - (void)asynLoadThumibImage;
