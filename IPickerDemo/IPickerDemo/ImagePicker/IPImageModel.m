@@ -74,31 +74,50 @@ typedef NS_ENUM(NSUInteger,  LoadImage) {
     if (self.fullRorationImage) {
         return;
     }
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        @autoreleasepool {
-            @try {
-                ALAssetsLibrary *assetslibrary = [[ALAssetsLibrary alloc] init];
-                [assetslibrary assetForURL:self.assetUrl
-                               resultBlock:^(ALAsset *asset){
-                                   
-                                   ALAssetRepresentation *rep = [asset defaultRepresentation];
-                                   CGImageRef iref = [rep fullScreenImage];
-                                   if (iref) {
-                                       self.fullRorationImage = [UIImage imageWithCGImage:iref];
-                                       [self postCompleteNotification:LoadImageFullScreen];
-                                   }
-                                   
-                               }
-                              failureBlock:^(NSError *error) {
-                                  self.fullRorationImage = nil;
-                                  [self postCompleteNotification:LoadImageFullScreen];
-                                  
-                              }];
-            } @catch (NSException *e) {
-                
+    if (iOS8Later) {
+        PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+        options.resizeMode = PHImageRequestOptionsResizeModeNone;
+        PHAsset *phAsset = self.imageAsset;
+        // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
+        CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
+        CGFloat multiple = [UIScreen mainScreen].scale;
+        CGFloat pixelWidth = [UIScreen mainScreen].bounds.size.width * multiple;
+        CGFloat pixelHeight = pixelWidth / aspectRatio;
+        [[PHImageManager defaultManager] requestImageForAsset:self.imageAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+            if (downloadFinined) {
+                self.fullRorationImage = result;
+                [self postCompleteNotification:LoadImageFullScreen];
             }
-        }
-    });
+        }];
+    }else {
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            @autoreleasepool {
+                @try {
+                    ALAssetsLibrary *assetslibrary = [[ALAssetsLibrary alloc] init];
+                    [assetslibrary assetForURL:self.assetUrl
+                                   resultBlock:^(ALAsset *asset){
+                                       
+                                       ALAssetRepresentation *rep = [asset defaultRepresentation];
+                                       CGImageRef iref = [rep fullScreenImage];
+                                       if (iref) {
+                                           self.fullRorationImage = [UIImage imageWithCGImage:iref];
+                                           [self postCompleteNotification:LoadImageFullScreen];
+                                       }
+                                       
+                                   }
+                                  failureBlock:^(NSError *error) {
+                                      self.fullRorationImage = nil;
+                                      [self postCompleteNotification:LoadImageFullScreen];
+                                      
+                                  }];
+                } @catch (NSException *e) {
+                    
+                }
+            }
+        });
+    }
 }
 - (void)stopAsyncLoadFullImage{
     if (self.fullRorationImage) {

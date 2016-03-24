@@ -29,6 +29,7 @@ typedef enum : NSUInteger {
 
 /**size*/
 @property (nonatomic, assign)CGSize imageSize;
+
 /**高清图*/
 @property (nonatomic, strong)UIImage *fullRorationImage;
 /**唯一标识符*/

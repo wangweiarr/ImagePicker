@@ -47,7 +47,7 @@ static UIViewController *vc;
     ip.delegate = self;
     ip.maxCount = 50;
     ip.popStyle = IPickerViewControllerPopStylePush;
-//    [self.navigationController pushViewController:ip animated:YES];
+    [self.navigationController pushViewController:ip animated:YES];
 //    [self presentViewController:ip animated:YES completion:nil];
     vc = nil;
 //    free((__bridge void *)(vc));
