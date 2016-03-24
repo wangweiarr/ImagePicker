@@ -52,4 +52,7 @@ typedef enum : NSUInteger {
 /**缩略图*/
 @property (nonatomic, strong)UIImage *thumbnail;
 
+/**缩略图*/
+@property (nonatomic, strong)UIImage *aspectThumbnail;
+
 @end

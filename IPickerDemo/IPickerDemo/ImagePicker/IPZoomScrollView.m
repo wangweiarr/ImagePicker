@@ -70,12 +70,36 @@
 }
 
 - (void)setImageModel:(IPImageModel *)imageModel{
-    if (_imageModel != imageModel) {
+    
        
         _imageModel = imageModel;
         
         [self displayImage];
+    
+}
+- (void)displayImageWithFullScreenImage:(UIImage *)img{
+   
+    if (img) {
+        self.zoomScale = 1;
+        self.contentSize = CGSizeMake(0, 0);
+        
+        // Set image
+        _photoImageView.image = img;
+        
+        // Setup photo frame
+        CGRect photoImageViewFrame;
+        photoImageViewFrame.origin = CGPointZero;
+        photoImageViewFrame.size = img.size;
+        _photoImageView.frame = photoImageViewFrame;
+        self.contentSize = photoImageViewFrame.size;
+        
+        // Set zoom to minimum zoom
+        [self setMaxMinZoomScalesForCurrentBounds];
+        
+    } else  {
+        
     }
+    [self setNeedsLayout];
 }
 // Get and display image
 - (void)displayImage {
@@ -89,7 +113,7 @@
         
         // Get image from browser as it handles ordering of fetching
         
-        UIImage *img = self.imageModel.fullRorationImage;
+        UIImage *img = self.imageModel.aspectThumbnail;
         
         if (img) {
             

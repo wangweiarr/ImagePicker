@@ -273,6 +273,8 @@ static NSString * const reuseIdentifier = @"Cell";
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     IPImageModel *model = [self.dataArr objectAtIndex:indexPath.item];
     [model asynLoadFullScreenImage];
+    NSLog(@"%@",model.aspectThumbnail);
+//    [model asynLoadThumibImage];
     cell.zoomScroll.imageModel = model;
     return cell;
 }
@@ -341,7 +343,7 @@ static NSString * const reuseIdentifier = @"Cell";
         if (page) {
             if ([model fullRorationImage]) {
                 // Successful load
-                [page displayImage];
+                [page displayImageWithFullScreenImage:model.fullRorationImage];
             } else {
                 
             }
