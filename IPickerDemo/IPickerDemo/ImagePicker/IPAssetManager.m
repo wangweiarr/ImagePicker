@@ -79,7 +79,7 @@
 }
 - (void)getImagesForAlbumUrl:(IPAlbumModel *)albumModel{
     if (iOS8Later) {
-        [self getImagesForAlbumUrl:albumModel];
+        [self getImagesWithGroupModel:albumModel];
 //        if (self.allImageModel.count == 0) {
 //            [self.allImageModel addObjectsFromArray:self.currentPhotosArr];
 //        }
@@ -87,7 +87,7 @@
 //        [self.tempArray removeAllObjects];
 //        [self getAssetsFromFetchResult:albumModel.groupAsset];
     }else{
-        [self getImagesForAlbumUrl:albumModel];
+        [self getImagesWithGroupModel:albumModel];
     }
     
 }
