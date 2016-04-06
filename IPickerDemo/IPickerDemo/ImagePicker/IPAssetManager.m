@@ -124,16 +124,16 @@
                 if (group == nil)
                 {
                     if (weakSelf.currentPhotosArr.count == 0) {
-//                        IPAlbumModel *model = [weakSelf.albumArr lastObject];
-//                        model.isSelected = YES;
-//                        weakSelf.currentAlbumModel = model;
-//                        
-//                        [weakSelf.defaultLibrary groupForURL:model.groupURL resultBlock:^(ALAssetsGroup *group) {
-//                            [group enumerateAssetsUsingBlock:groupEnumerAtion];
-//                            [weakSelf performDelegateWithSuccess:YES];
-//                        } failureBlock:^(NSError *error) {
-//                             [weakSelf performDelegateWithSuccess:NO];
-//                        }];
+                        IPAlbumModel *model = [weakSelf.albumArr lastObject];
+                        model.isSelected = YES;
+                        weakSelf.currentAlbumModel = model;
+                        
+                        [weakSelf.defaultLibrary groupForURL:model.groupURL resultBlock:^(ALAssetsGroup *group) {
+                            [group enumerateAssetsUsingBlock:groupEnumerAtion];
+                            [weakSelf performDelegateWithSuccess:YES];
+                        } failureBlock:^(NSError *error) {
+                             [weakSelf performDelegateWithSuccess:NO];
+                        }];
                         
                     }else {
                         [weakSelf performDelegateWithSuccess:YES];
@@ -169,7 +169,7 @@
                         [weakSelf.albumArr addObject:model];
                     }
                     //||[model.albumName isEqualToString:@"所有照片"]
-                    if ([model.albumName isEqualToString:@"相机胶卷"] ||[model.albumName isEqualToString:@"最近添加"]) {
+                    if ([model.albumName isEqualToString:@"相机胶卷"] ||[model.albumName isEqualToString:@"最近添加"]||[model.albumName isEqualToString:@"所有照片"]) {
                         model.isSelected = YES;
                         weakSelf.currentAlbumModel = model;
                         [group enumerateAssetsUsingBlock:groupEnumerAtion];
