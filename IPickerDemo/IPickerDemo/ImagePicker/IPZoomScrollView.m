@@ -43,15 +43,15 @@
     _tapView = [[IPTapDetectView alloc] initWithFrame:self.bounds];
     _tapView.tapDelegate = self;
     _tapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    _tapView.backgroundColor = [UIColor blackColor];
+    _tapView.backgroundColor = [UIColor blueColor];
     [self addSubview:_tapView];
     
     // Image view
     _photoImageView = [[IPTapDetectImageView alloc] initWithFrame:CGRectZero];
     _photoImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     _photoImageView.tapDelegate = self;
-    _photoImageView.contentMode = UIViewContentModeCenter;
-    _photoImageView.backgroundColor = [UIColor blackColor];
+//    _photoImageView.contentMode = UIViewContentModeCenter;
+    _photoImageView.backgroundColor = [UIColor redColor];
     [self addSubview:_photoImageView];
     
     self.backgroundColor = [UIColor blackColor];
@@ -80,65 +80,66 @@
 - (void)displayImageWithFullScreenImage:(UIImage *)img{
    
     if (img) {
-        self.zoomScale = 1;
-        self.contentSize = CGSizeMake(0, 0);
         
         // Set image
         _photoImageView.image = img;
-        
+        _photoImageView.contentMode = UIViewContentModeCenter;
         // Setup photo frame
         CGRect photoImageViewFrame;
         photoImageViewFrame.origin = CGPointZero;
-        photoImageViewFrame.size = img.size;
+        CGFloat width = self.bounds.size.width;
+       
+        CGFloat height = width * img.size.height /img.size.width;
+        photoImageViewFrame.size = CGSizeMake(width, height);
+        
         _photoImageView.frame = photoImageViewFrame;
+        _photoImageView.center = self.center;
         self.contentSize = photoImageViewFrame.size;
         
         // Set zoom to minimum zoom
         [self setMaxMinZoomScalesForCurrentBounds];
         
-    } else  {
-        
     }
+    
     [self setNeedsLayout];
+    
 }
+
+
 // Get and display image
 - (void)displayImage {
     if (_imageModel && _photoImageView.image == nil) {
         
-        // Reset
-        self.maximumZoomScale = 1;
-        self.minimumZoomScale = 1;
-        self.zoomScale = 1;
-        self.contentSize = CGSizeMake(0, 0);
+        
         
         // Get image from browser as it handles ordering of fetching
-        
-        UIImage *img = self.imageModel.aspectThumbnail;
-        
-        if (img) {
-            
-            
-            // Set image
-            _photoImageView.image = img;
-            _photoImageView.hidden = NO;
-            
-            // Setup photo frame
-            CGRect photoImageViewFrame;
-            photoImageViewFrame.origin = CGPointZero;
-            photoImageViewFrame.size = img.size;
-            _photoImageView.frame = photoImageViewFrame;
-            self.contentSize = photoImageViewFrame.size;
-            
-            // Set zoom to minimum zoom
-            [self setMaxMinZoomScalesForCurrentBounds];
-            
-        } else  {
-            
-            // Show image failure
-//            [self displayImageFailure];
-            
-        }
-        [self setNeedsLayout];
+        [[IPAssetManager defaultAssetManager]getAspectPhotoWithAsset:_imageModel photoWidth:0 completion:^(UIImage *img, NSDictionary *info) {
+            if (img) {
+                
+                // Reset
+                self.maximumZoomScale = 1;
+                self.minimumZoomScale = 1;
+                self.zoomScale = 1;
+                
+                 _photoImageView.contentMode = UIViewContentModeScaleToFill;
+                // Set image
+                _photoImageView.image = img;
+                _photoImageView.hidden = NO;
+                
+                // Setup photo frame
+                CGRect photoImageViewFrame;
+                
+                CGFloat width = self.bounds.size.width;
+                CGFloat height = width * img.size.height /img.size.width;
+                
+                photoImageViewFrame.origin = CGPointMake(0, (self.bounds.size.height - height)/2);
+                photoImageViewFrame.size = CGSizeMake(width, height);
+                _photoImageView.frame = photoImageViewFrame;
+                _photoImageView.center = self.center;
+            }
+            [self setNeedsLayout];
+        }];
+    
     }
 }
 //设置当前情况下,最大和最小伸缩比
@@ -194,8 +195,6 @@
     
     // Disable scrolling initially until the first pinch to fix issues with swiping on an initally zoomed in photo
     self.scrollEnabled = NO;
-    
-   
     
     // Layout
     [self setNeedsLayout];

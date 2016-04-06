@@ -169,12 +169,15 @@ static NSString * const reuseIdentifier = @"Cell";
         self.targetIndex = maxIndex;
     }
     if (self.isFirst == NO) {
+        
         if (self.targetIndex == 0) {//当滚动到0的位置时,默认是不调用scrolldidscroll方法的,所以在此时设置按钮高度
             IPImageModel *model = self.dataArr[0];
             self.rightButton.selected = model.isSelect;
         }
+        
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.targetIndex inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
+        
         self.isFirst = YES;
     }
     if (self.isRoration) {
@@ -185,6 +188,11 @@ static NSString * const reuseIdentifier = @"Cell";
     
 }
 
+-(void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    IPImageModel *model = self.dataArr[_targetIndex];
+    [model asynLoadFullScreenImage];
+}
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
      NSLog(@"IPImageReaderViewController---didReceiveMemoryWarning");
@@ -272,7 +280,7 @@ static NSString * const reuseIdentifier = @"Cell";
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     IPImageModel *model = [self.dataArr objectAtIndex:indexPath.item];
-    [model asynLoadFullScreenImage];
+//    [model asynLoadFullScreenImage];
     NSLog(@"%@",model.aspectThumbnail);
 //    [model asynLoadThumibImage];
     cell.zoomScroll.imageModel = model;
@@ -293,6 +301,7 @@ static NSString * const reuseIdentifier = @"Cell";
     [cell.zoomScroll prepareForReuse];
     
 }
+
 #pragma mark <UICollectionViewDelegate>
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView{
     if (self.isRoration) {
@@ -311,7 +320,7 @@ static NSString * const reuseIdentifier = @"Cell";
    
 }
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView{
-    
+   
     [UIView animateWithDuration:0.3
                      animations:^{
                          
@@ -325,6 +334,11 @@ static NSString * const reuseIdentifier = @"Cell";
                          self.headerView.alpha = 1.0f;
                      }completion:nil];
     
+}
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
+    IPImageModel *model = self.dataArr[_currentIndex];
+    [model asynLoadFullScreenImage];
+    NSLog(@"scrollViewDidEndDecelerating");
 }
 
 - (IPZoomScrollView *)pageDisplayingPhoto:(IPImageModel *)model {

@@ -44,6 +44,6 @@
 - (void)reloadImagesFromLibrary;
 
 - (void)getImagesForAlbumUrl:(IPAlbumModel *)albumModel;
-
+- (void)getAspectPhotoWithAsset:(IPImageModel *)albumModel photoWidth:(CGFloat)photoWidth completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 - (void)clearDataCache;
 @end

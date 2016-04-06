@@ -114,6 +114,8 @@
                         [weakSelf.currentPhotosArr addObject:imgModel];
                         
                     }
+                }else {
+                    NSLog(@"遍历相册完毕");
                 }
             };
             
@@ -121,7 +123,22 @@
                 
                 if (group == nil)
                 {
-                    [weakSelf performDelegateWithSuccess:YES];
+                    if (weakSelf.currentPhotosArr.count == 0) {
+//                        IPAlbumModel *model = [weakSelf.albumArr lastObject];
+//                        model.isSelected = YES;
+//                        weakSelf.currentAlbumModel = model;
+//                        
+//                        [weakSelf.defaultLibrary groupForURL:model.groupURL resultBlock:^(ALAssetsGroup *group) {
+//                            [group enumerateAssetsUsingBlock:groupEnumerAtion];
+//                            [weakSelf performDelegateWithSuccess:YES];
+//                        } failureBlock:^(NSError *error) {
+//                             [weakSelf performDelegateWithSuccess:NO];
+//                        }];
+                        
+                    }else {
+                        [weakSelf performDelegateWithSuccess:YES];
+                    }
+                    
                     
                 }
                 
@@ -139,13 +156,19 @@
                     else if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"My Photo Stream"]){
                         model.albumName =@"我的照片流";
                     }
+                    else if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"All Photos"]){
+                        model.albumName =@"所有照片";
+                    }
                     else {
                         model.albumName = (NSString *)[group valueForProperty:ALAssetsGroupPropertyName];
                     }
-                    
+                    NSLog(@"%@",(NSString *)[group valueForProperty:ALAssetsGroupPropertyName]);
                     model.groupURL = (NSURL *)[group valueForProperty:ALAssetsGroupPropertyURL];
                     
-                    [weakSelf.albumArr addObject:model];
+                    if (![model.albumName  isEqualToString:@"我的照片流"]){
+                        [weakSelf.albumArr addObject:model];
+                    }
+                    //||[model.albumName isEqualToString:@"所有照片"]
                     if ([model.albumName isEqualToString:@"相机胶卷"] ||[model.albumName isEqualToString:@"最近添加"]) {
                         model.isSelected = YES;
                         weakSelf.currentAlbumModel = model;
@@ -361,7 +384,36 @@
     }];
 }
 
+- (void)getAspectPhotoWithAsset:(IPImageModel *)albumModel photoWidth:(CGFloat)photoWidth completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+ 
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            @autoreleasepool {
+                @try {
+                    
+                    [self.defaultLibrary assetForURL:albumModel.assetUrl
+                                   resultBlock:^(ALAsset *asset){
+                                       
+                                       UIImage *aspectThumbnail = [UIImage imageWithCGImage:asset.aspectRatioThumbnail];
+                                       dispatch_async(dispatch_get_main_queue(), ^{
+                                           completion(aspectThumbnail,nil);
+                                       });
+                                   }
+                                  failureBlock:^(NSError *error) {
+                                      dispatch_async(dispatch_get_main_queue(), ^{
+                                          completion(nil,nil);
+                                      });
+                                      
+                                  }];
+                } @catch (NSException *e) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(nil,nil);
+                    });
+                }
+            }
+        });
+    
 
+}
 
 //- (UIImage *)originImage {
 //    

@@ -547,16 +547,21 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (void)loadImageDataFinish:(IPAssetManager *)manager{
     
     self.curImageModelArr = [NSArray arrayWithArray:self.defaultAssetManager.currentPhotosArr];
-    [self.imageModelDic setObject:self.curImageModelArr forKey:self.defaultAssetManager.currentAlbumModel.albumName];
+    if (self.defaultAssetManager.currentAlbumModel.albumName) {
+        [self.imageModelDic setObject:self.curImageModelArr forKey:self.defaultAssetManager.currentAlbumModel.albumName];
+    }
     
     
     if ([[NSThread currentThread] isMainThread]) {
         [self.centerBtn setTitle:self.defaultAssetManager.currentAlbumModel.albumName forState:UIControlStateNormal];
-
+        [self.centerBtn sizeToFit];
+        [self.view setNeedsLayout];
         [self.mainView reloadData];
     }else {
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.centerBtn setTitle:self.defaultAssetManager.currentAlbumModel.albumName forState:UIControlStateNormal];
+            [self.centerBtn sizeToFit];
+            [self.view setNeedsLayout];
             [self.mainView reloadData];
         });
     }

@@ -24,7 +24,8 @@ typedef NS_ENUM(NSUInteger,  LoadImage) {
 };
 
 @interface IPImageModel ()
-
+/**是否加载中*/
+@property (nonatomic,assign) BOOL loading;
 @end
 
 @implementation IPImageModel
@@ -93,6 +94,7 @@ typedef NS_ENUM(NSUInteger,  LoadImage) {
  *  加载高清图
  */
 - (void)IOS7_AsyncLoadFullScreenImage{
+    self.loading = YES;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         @autoreleasepool {
             @try {
@@ -106,7 +108,7 @@ typedef NS_ENUM(NSUInteger,  LoadImage) {
                                        self.fullRorationImage = [UIImage imageWithCGImage:iref];
                                        [self postCompleteNotification:LoadImageFullScreen];
                                    }
-                                   
+                                   self.loading = NO;
                                }
                               failureBlock:^(NSError *error) {
                                   self.fullRorationImage = nil;
