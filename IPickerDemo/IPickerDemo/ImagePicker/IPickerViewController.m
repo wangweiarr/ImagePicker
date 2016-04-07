@@ -121,6 +121,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 }
 - (void)dealloc{
     NSLog(@"IPickerViewController--dealloc");
+    [IPAssetManager freeAssetManger];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -262,7 +263,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     IPImageCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:IPicker_CollectionID forIndexPath:indexPath];
     IPImageModel *model = self.curImageModelArr[indexPath.item];
     model.imageSize = self.contentImageSize;
-    [model asynLoadThumibImage];
+//    [model asynLoadThumibImage];
     cell.model = model;
     cell.delegate = self;
     return cell;
@@ -274,7 +275,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     NSUInteger margin = 5;
     CGFloat itemWidth = (collectionView.frame.size.width - (rowCount-1)*margin)/rowCount;
     
-    if (!CGSizeEqualToSize(self.contentImageSize, CGSizeZero)) {
+    if (CGSizeEqualToSize(self.contentImageSize, CGSizeZero) && !CGSizeEqualToSize(self.contentImageSize, CGSizeMake(itemWidth, itemWidth))) {
         self.contentImageSize = CGSizeMake(itemWidth, itemWidth);
     }
     
@@ -617,28 +618,28 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return _imageModelDic;
 }
 
-- (void)handleThumbnailLoadingDidEndNotification:(NSNotification *)notification {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        IPImageModel *model = [notification object];
-        IPImageCell *page = [self cellDisplayingPhoto:model];
-        if (page) {
-            if ([model thumbnail]) {
-                // Successful load
-                page.model = model;
-            } else {
-                
-            }
-        }
-    });
-    
-}
-- (IPImageCell *)cellDisplayingPhoto:(IPImageModel *)model {
-    IPImageCell *thePage = nil;
-    for (IPImageCell *cell in self.mainView.visibleCells) {
-        if (cell.model == model) {
-            thePage = cell; break;
-        }
-    }
-    return thePage;
-}
+//- (void)handleThumbnailLoadingDidEndNotification:(NSNotification *)notification {
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//        IPImageModel *model = [notification object];
+//        IPImageCell *page = [self cellDisplayingPhoto:model];
+//        if (page) {
+//            if ([model thumbnail]) {
+//                // Successful load
+//                page.model = model;
+//            } else {
+//                
+//            }
+//        }
+//    });
+//    
+//}
+//- (IPImageCell *)cellDisplayingPhoto:(IPImageModel *)model {
+//    IPImageCell *thePage = nil;
+//    for (IPImageCell *cell in self.mainView.visibleCells) {
+//        if (cell.model == model) {
+//            thePage = cell; break;
+//        }
+//    }
+//    return thePage;
+//}
 @end

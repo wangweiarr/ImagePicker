@@ -37,13 +37,15 @@
 @property (nonatomic, strong)IPAlbumModel *currentAlbumModel;
 
 + (instancetype)defaultAssetManager;
-
++ (void)freeAssetManger;
 /**图库*/
 @property (nonatomic, strong)ALAssetsLibrary *defaultLibrary;
 
 - (void)reloadImagesFromLibrary;
 
 - (void)getImagesForAlbumUrl:(IPAlbumModel *)albumModel;
-- (void)getAspectPhotoWithAsset:(IPImageModel *)albumModel photoWidth:(CGFloat)photoWidth completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+- (void)getAspectPhotoWithAsset:(IPImageModel *)albumModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+- (void)getFullScreenImageWithAsset:(IPImageModel *)albumModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+- (void)getThumibImageWithAsset:(IPImageModel *)albumModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 - (void)clearDataCache;
 @end

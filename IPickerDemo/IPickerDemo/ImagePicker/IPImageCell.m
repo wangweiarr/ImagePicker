@@ -8,6 +8,7 @@
 
 #import "IPImageCell.h"
 #import "IPImageModel.h"
+#import "IPAssetManager.h"
 //#import "AHUIImageNameHandle.h"
 
 @interface IPImageCell ()
@@ -67,8 +68,13 @@
 }
 - (void)setModel:(IPImageModel *)model{
     _model = model;
-    self.imgView.image = model.thumbnail;
+    
+    __weak typeof(self) weakSelf = self;
     self.rightCornerBtn.selected = model.isSelect;
+    [[IPAssetManager defaultAssetManager]getThumibImageWithAsset:_model photoWidth:_model.imageSize completion:^(UIImage *photo, NSDictionary *info) {
+        weakSelf.imgView.image = photo;
+    }];
+    
 }
 - (void)clickBtnInCell:(UIButton *)btn{
     

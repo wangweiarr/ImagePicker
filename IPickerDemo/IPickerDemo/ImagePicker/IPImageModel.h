@@ -24,6 +24,7 @@ typedef enum : NSUInteger {
 
 /**是否存在一样的图像*/
 @property (nonatomic, assign)BOOL isSame;
+
 /**数据对象*/
 @property (nonatomic, strong)PHAsset *imageAsset;
 
@@ -32,6 +33,7 @@ typedef enum : NSUInteger {
 
 /**高清图*/
 @property (nonatomic, strong)UIImage *fullRorationImage;
+
 /**唯一标识符*/
 @property (nonatomic, copy)NSString *localIdentiy;
 

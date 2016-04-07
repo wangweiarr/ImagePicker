@@ -192,6 +192,7 @@ static NSString * const reuseIdentifier = @"Cell";
     [super viewDidAppear:animated];
     IPImageModel *model = self.dataArr[_targetIndex];
     [model asynLoadFullScreenImage];
+   
 }
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -336,8 +337,13 @@ static NSString * const reuseIdentifier = @"Cell";
     
 }
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
+    UICollectionView *collectionView = (UICollectionView *)scrollView;
+    [collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:_currentIndex inSection:0]];
     IPImageModel *model = self.dataArr[_currentIndex];
-    [model asynLoadFullScreenImage];
+//    [model asynLoadFullScreenImage];
+    IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
+    [thePage displayImageWithFullScreenImage];
+    
     NSLog(@"scrollViewDidEndDecelerating");
 }
 

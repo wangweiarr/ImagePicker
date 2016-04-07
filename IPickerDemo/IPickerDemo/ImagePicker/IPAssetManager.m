@@ -7,12 +7,15 @@
 //
 
 #import "IPAssetManager.h"
+
 #import<AssetsLibrary/AssetsLibrary.h>
+#import <Photos/Photos.h>
+
 #import "IPAlbumModel.h"
 #import "IPAlbumView.h"
 #import "IPImageCell.h"
 #import "IPImageModel.h"
-#import <Photos/Photos.h>
+
 #define iOS7Later ([UIDevice currentDevice].systemVersion.floatValue >= 7.0f)
 #define iOS8Later ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f)
 #define iOS9Later ([UIDevice currentDevice].systemVersion.floatValue >= 9.0f)
@@ -26,11 +29,18 @@
 @end
 
 @implementation IPAssetManager
+
+static IPAssetManager *manager;
+
 + (instancetype)defaultAssetManager{
-    
-    IPAssetManager *manager = [[IPAssetManager alloc]init];
+    if (manager == nil) {
+        manager = [[IPAssetManager alloc]init];
+    }
     
     return manager;
+}
++ (void)freeAssetManger{
+    manager = nil;
 }
 - (void)dealloc{
     NSLog(@"IPAssetManager--dealloc");
@@ -45,7 +55,7 @@
 - (void)reloadImagesFromLibrary
 {
     if (iOS8Later) {
-        [self getAllAlbumsIOS7];
+        [self getAllAlbumsIOS8];
     }else{
         [self getAllAlbumsIOS7];
 
@@ -80,12 +90,12 @@
 - (void)getImagesForAlbumUrl:(IPAlbumModel *)albumModel{
     if (iOS8Later) {
         [self getImagesWithGroupModel:albumModel];
-//        if (self.allImageModel.count == 0) {
-//            [self.allImageModel addObjectsFromArray:self.currentPhotosArr];
-//        }
-//        [self.currentPhotosArr removeAllObjects];
-//        [self.tempArray removeAllObjects];
-//        [self getAssetsFromFetchResult:albumModel.groupAsset];
+        if (self.allImageModel.count == 0) {
+            [self.allImageModel addObjectsFromArray:self.currentPhotosArr];
+        }
+        [self.currentPhotosArr removeAllObjects];
+        [self.tempArray removeAllObjects];
+        [self getAssetsFromFetchResult:albumModel.groupAsset];
     }else{
         [self getImagesWithGroupModel:albumModel];
     }
@@ -123,22 +133,29 @@
                 
                 if (group == nil)
                 {
-                    if (weakSelf.currentPhotosArr.count == 0) {
-                        IPAlbumModel *model = [weakSelf.albumArr lastObject];
-                        model.isSelected = YES;
-                        weakSelf.currentAlbumModel = model;
-                        
-                        [weakSelf.defaultLibrary groupForURL:model.groupURL resultBlock:^(ALAssetsGroup *group) {
-                            [group enumerateAssetsUsingBlock:groupEnumerAtion];
-                            [weakSelf performDelegateWithSuccess:YES];
-                        } failureBlock:^(NSError *error) {
-                             [weakSelf performDelegateWithSuccess:NO];
-                        }];
-                        
-                    }else {
-                        [weakSelf performDelegateWithSuccess:YES];
-                    }
+//                    if (weakSelf.currentPhotosArr.count == 0) {
+//                        IPAlbumModel *model = [weakSelf.albumArr lastObject];
+//                        model.isSelected = YES;
+//                        weakSelf.currentAlbumModel = model;
+//                        
+//                        [weakSelf.defaultLibrary groupForURL:model.groupURL resultBlock:^(ALAssetsGroup *group) {
+//                            [group enumerateAssetsUsingBlock:groupEnumerAtion];
+//                            [weakSelf performDelegateWithSuccess:YES];
+//                        } failureBlock:^(NSError *error) {
+//                             [weakSelf performDelegateWithSuccess:NO];
+//                        }];
+//                        
+//                    }else {
+//                        [weakSelf performDelegateWithSuccess:YES];
+//                    }
                     
+                    weakSelf.currentAlbumModel.isSelected = YES;
+                    [weakSelf.defaultLibrary groupForURL:weakSelf.currentAlbumModel.groupURL resultBlock:^(ALAssetsGroup *group) {
+                        [group enumerateAssetsUsingBlock:groupEnumerAtion];
+                        [weakSelf performDelegateWithSuccess:YES];
+                    } failureBlock:^(NSError *error) {
+                        [weakSelf performDelegateWithSuccess:NO];
+                    }];
                     
                 }
                 
@@ -168,14 +185,16 @@
                     if (![model.albumName  isEqualToString:@"我的照片流"]){
                         [weakSelf.albumArr addObject:model];
                     }
-                    //||[model.albumName isEqualToString:@"所有照片"]
-                    if ([model.albumName isEqualToString:@"相机胶卷"] ||[model.albumName isEqualToString:@"最近添加"]||[model.albumName isEqualToString:@"所有照片"]) {
-                        model.isSelected = YES;
-                        weakSelf.currentAlbumModel = model;
-                        [group enumerateAssetsUsingBlock:groupEnumerAtion];
+//                    if ([model.albumName isEqualToString:@"相机胶卷"] ||[model.albumName isEqualToString:@"最近添加"]||[model.albumName isEqualToString:@"所有照片"]) {
+//                        model.isSelected = YES;
+//                        weakSelf.currentAlbumModel = model;
+//                        [group enumerateAssetsUsingBlock:groupEnumerAtion];
+//                        
+//                    }
+                    if (weakSelf.currentAlbumModel == nil || weakSelf.currentAlbumModel.imageCount < model.imageCount) {
                         
+                        weakSelf.currentAlbumModel = model;
                     }
-                    
                 }
                 
             };
@@ -265,22 +284,26 @@
     return _allImageModel;
 }
 #pragma mark - iOS8 -
+/**
+ *  遍历图库,获得所有相册数据
+ */
 - (void)getAllAlbumsIOS8{
     
     
-        PHFetchOptions *option = [[PHFetchOptions alloc] init];
-        option.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
-        option.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
-        
         PHAssetCollectionSubtype smartAlbumSubtype = PHAssetCollectionSubtypeSmartAlbumUserLibrary | PHAssetCollectionSubtypeSmartAlbumRecentlyAdded ;
         // For iOS 9, We need to show ScreenShots Album && SelfPortraits Album
         if (iOS9Later) {
-            smartAlbumSubtype = PHAssetCollectionSubtypeSmartAlbumUserLibrary | PHAssetCollectionSubtypeSmartAlbumRecentlyAdded | PHAssetCollectionSubtypeSmartAlbumScreenshots | PHAssetCollectionSubtypeSmartAlbumSelfPortraits | PHAssetCollectionSubtypeSmartAlbumVideos;
+            smartAlbumSubtype = PHAssetCollectionSubtypeSmartAlbumUserLibrary | PHAssetCollectionSubtypeSmartAlbumRecentlyAdded | PHAssetCollectionSubtypeSmartAlbumScreenshots | PHAssetCollectionSubtypeSmartAlbumSelfPortraits | PHAssetCollectionSubtypeSmartAlbumFavorites|PHAssetCollectionSubtypeAlbumMyPhotoStream ;
         }
-        PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:smartAlbumSubtype options:nil];
+    
+        //获取智能相册
+        PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
+        imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+        imageOption.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
+    
+        PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum  subtype:smartAlbumSubtype options:nil];
         for (PHAssetCollection *collection in smartAlbums) {
-            PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
-//            NSLog(@"smartAlbums--%@",collection.localizedTitle);
+            PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
             if (fetchResult.count < 1) continue;
             if ([collection.localizedTitle containsString:@"Deleted"]) continue;
             
@@ -293,11 +316,12 @@
             }
             [self.albumArr addObject:model];
         }
-        
+    
+        //获取普通相册
         PHFetchResult *albums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumRegular | PHAssetCollectionSubtypeAlbumSyncedAlbum options:nil];
         for (PHAssetCollection *collection in albums) {
-            PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:option];
-//            NSLog(@"albums--%@",collection.localizedTitle);
+            PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
+
             if (fetchResult.count < 1) continue;
             
             [self.albumArr addObject:[self modelWithResult:fetchResult name:collection.localizedTitle]];
@@ -305,7 +329,14 @@
         }
     
 }
-
+/**
+ *  生成相册模型数据
+ *
+ *  @param result 系统模型
+ *  @param name   系统相册名称
+ *
+ *  @return 自定义的相册模型
+ */
 - (IPAlbumModel *)modelWithResult:(id)result name:(NSString *)name{
     IPAlbumModel *model = [[IPAlbumModel alloc] init];
     model.groupAsset = result;
@@ -317,6 +348,13 @@
     }
     return model;
 }
+/**
+ *  将英文相册名称转换为中文名称
+ *
+ *  @param name 英文名
+ *
+ *  @return 中文名
+ */
 - (NSString *)getNewAlbumName:(NSString *)name {
     if (iOS8Later) {
         NSString *newName;
@@ -326,13 +364,20 @@
         else if ([name containsString:@"Selfies"]) newName = @"自拍";
         else if ([name containsString:@"shots"])   newName = @"截屏";
         else if ([name containsString:@"Videos"])  newName = @"视频";
+        else if ([name containsString:@"Favorites"])  newName = @"个人收藏";
+        else if ([name containsString:@"Panoramas"])  newName = @"全景照片";
+        else if ([name containsString:@"All Photos"])  newName = @"全部照片";
         else newName = name;
         return newName;
     } else {
         return name;
     }
 }
-/// Get Asset 获得照片数组
+/**
+ *  根据一个 相册集合 对象生成对应的 图片模型
+ *
+ *  @param result 相册集合
+ */
 - (void)getAssetsFromFetchResult:(PHFetchResult *)result{
     [result enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL * _Nonnull stop) {
         
@@ -347,7 +392,7 @@
         
         imgModel.imageAsset = asset;
         imgModel.localIdentiy = asset.localIdentifier;
-        NSLog(@"%@",asset.localIdentifier);
+        
         if (self.allImageModel.count > 0) {
             [self.allImageModel enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 if ([obj.localIdentiy isEqualToString:asset.localIdentifier]) {
@@ -357,7 +402,7 @@
                 
             }];
         }
-        if (!imgModel.isSame) {
+        if (imgModel.isSame == NO) {
             [self.tempArray addObject:imgModel];
         }
         
@@ -365,16 +410,22 @@
     [self.currentPhotosArr addObjectsFromArray:self.tempArray];
     [self performDelegateWithSuccess:YES];
 }
+/**
+ *  获取相册的专辑图片
+ *
+ *  @param albumModel 相册模型
+ *  @param photoSize  相框尺寸
+ */
 - (void)getPhotoWithAsset:(IPAlbumModel *)albumModel photoWidth:(CGSize)photoSize{
     PHAsset *phAsset = [albumModel.groupAsset lastObject];
     // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
-    CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
+   
     CGFloat multiple = [UIScreen mainScreen].scale;
     CGFloat pixelWidth = photoSize.width * multiple;
-    CGFloat pixelHeight = pixelWidth / aspectRatio;
-//    CGFloat pixelHeight = photoSize.height * multiple;
+    CGFloat pixelHeight = photoSize.height * multiple;
+    
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
-//    options.resizeMode = PHImageRequestOptionsResizeModeExact;
+    options.resizeMode = PHImageRequestOptionsResizeModeExact;
     
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFill options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
@@ -384,26 +435,28 @@
     }];
 }
 
-- (void)getAspectPhotoWithAsset:(IPImageModel *)albumModel photoWidth:(CGFloat)photoWidth completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
- 
+- (void)getAspectPhotoWithAsset:(IPImageModel *)albumModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    if (iOS8Later) {
+        [self ios8_AsyncLoadAspectThumbilImageWithSize:photoSize asset:albumModel completion:completion];
+    }else {//ios8之前
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             @autoreleasepool {
                 @try {
                     
                     [self.defaultLibrary assetForURL:albumModel.assetUrl
-                                   resultBlock:^(ALAsset *asset){
-                                       
-                                       UIImage *aspectThumbnail = [UIImage imageWithCGImage:asset.aspectRatioThumbnail];
-                                       dispatch_async(dispatch_get_main_queue(), ^{
-                                           completion(aspectThumbnail,nil);
-                                       });
-                                   }
-                                  failureBlock:^(NSError *error) {
-                                      dispatch_async(dispatch_get_main_queue(), ^{
-                                          completion(nil,nil);
-                                      });
-                                      
-                                  }];
+                                         resultBlock:^(ALAsset *asset){
+                                             
+                                             UIImage *aspectThumbnail = [UIImage imageWithCGImage:asset.aspectRatioThumbnail];
+                                             dispatch_async(dispatch_get_main_queue(), ^{
+                                                 completion(aspectThumbnail,nil);
+                                             });
+                                         }
+                                        failureBlock:^(NSError *error) {
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                completion(nil,nil);
+                                            });
+                                            
+                                        }];
                 } @catch (NSException *e) {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         completion(nil,nil);
@@ -411,69 +464,183 @@
                 }
             }
         });
+    }
+}
+- (void)getFullScreenImageWithAsset:(IPImageModel *)albumModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     
-
+    if (iOS8Later) {
+        [self ios8_AsyncLoadFullScreenImageWithSize:photoSize asset:albumModel completion:completion];
+    }else {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            @autoreleasepool {
+                @try {
+                    
+                    [self.defaultLibrary assetForURL:albumModel.assetUrl
+                                         resultBlock:^(ALAsset *asset){
+                                             
+                                             ALAssetRepresentation *rep = [asset defaultRepresentation];
+                                             CGImageRef iref = [rep fullScreenImage];
+                                             UIImage *fullScreenImage;
+                                             if (iref) {
+                                                 fullScreenImage = [UIImage imageWithCGImage:iref];
+                                                 
+                                             }
+                                             
+                                             dispatch_async(dispatch_get_main_queue(), ^{
+                                                 completion(fullScreenImage,nil);
+                                             });
+                                         }
+                                        failureBlock:^(NSError *error) {
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                completion(nil,nil);
+                                            });
+                                            
+                                        }];
+                } @catch (NSException *e) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(nil,nil);
+                    });
+                }
+            }
+        });
+    }
+    
+    
+}
+- (void)getThumibImageWithAsset:(IPImageModel *)albumModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    if(iOS8Later){
+        [self ios8_asynLoadThumibImageWithSize:photoSize asset:albumModel completion:completion];
+    }else {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            @autoreleasepool {
+                @try {
+                    
+                    [self.defaultLibrary assetForURL:albumModel.assetUrl
+                                         resultBlock:^(ALAsset *asset){
+                                             
+                                             UIImage *aspectThumbnail = [UIImage imageWithCGImage:asset.thumbnail];
+                                             dispatch_async(dispatch_get_main_queue(), ^{
+                                                 completion(aspectThumbnail,nil);
+                                             });
+                                             
+                                             dispatch_async(dispatch_get_main_queue(), ^{
+                                                 completion(aspectThumbnail,nil);
+                                             });
+                                         }
+                                        failureBlock:^(NSError *error) {
+                                            dispatch_async(dispatch_get_main_queue(), ^{
+                                                completion(nil,nil);
+                                            });
+                                            
+                                        }];
+                } @catch (NSException *e) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completion(nil,nil);
+                    });
+                }
+            }
+        });
+    }
+        
+    
 }
 
-//- (UIImage *)originImage {
-//    
-//    __block UIImage *resultImage;
-//    if (iOS8Later) {
-//        PHImageRequestOptions *phImageRequestOptions = [[PHImageRequestOptions alloc] init];
-//        phImageRequestOptions.synchronous = YES;
-//        [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset
-//                                                                              targetSize:PHImageManagerMaximumSize
-//                                                                             contentMode:PHImageContentModeDefault
-//                                                                                 options:phImageRequestOptions
-//                                                                           resultHandler:^(UIImage *result, NSDictionary *info) {
-//                                                                               resultImage = result;
-//                                                                           }];
-//    } else {
-//        CGImageRef fullResolutionImageRef = [_alAssetRepresentation fullResolutionImage];
-//        // 通过 fullResolutionImage 获取到的的高清图实际上并不带上在照片应用中使用“编辑”处理的效果，需要额外在 AlAssetRepresentation 中获取这些信息
-//        NSString *adjustment = [[_alAssetRepresentation metadata] objectForKey:@"AdjustmentXMP"];
-//        if (adjustment) {
-//            // 如果有在照片应用中使用“编辑”效果，则需要获取这些编辑后的滤镜，手工叠加到原图中
-//            NSData *xmpData = [adjustment dataUsingEncoding:NSUTF8StringEncoding];
-//            CIImage *tempImage = [CIImage imageWithCGImage:fullResolutionImageRef];
-//            
-//            NSError *error;
-//            NSArray *filterArray = [CIFilter filterArrayFromSerializedXMP:xmpData
-//                                                         inputImageExtent:tempImage.extent
-//                                                                    error:&error];
-//            CIContext *context = [CIContext contextWithOptions:nil];
-//            if (filterArray && !error) {
-//                for (CIFilter *filter in filterArray) {
-//                    [filter setValue:tempImage forKey:kCIInputImageKey];
-//                    tempImage = [filter outputImage];
-//                }
-//                fullResolutionImageRef = [context createCGImage:tempImage fromRect:[tempImage extent]];
-//            }
-//        }
-//        // 生成最终返回的 UIImage，同时把图片的 orientation 也补充上去
-//        resultImage = [UIImage imageWithCGImage:fullResolutionImageRef scale:[_alAssetRepresentation scale] orientation:(UIImageOrientation)[_alAssetRepresentation orientation]];
-//    }
-//    _originImage = resultImage;
-//    return resultImage;
-//}
-//
-//- (NSInteger)requestOriginImageWithCompletion:(void (^)(UIImage *, NSDictionary *))completion withProgressHandler:(PHAssetImageProgressHandler)phProgressHandler {
+#pragma mark - ios8later -
+/**
+ *  正方形缩略图
+ *
+ *  @param imageSize 图片size
+ *  @param imagModel 图片模型
+ */
+- (void)ios8_asynLoadThumibImageWithSize:(CGSize)imageSize asset:(IPImageModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+    options.resizeMode = PHImageRequestOptionsResizeModeExact;
+    PHAsset *phAsset = imagModel.imageAsset;
+    // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
+    
+    CGFloat multiple = [UIScreen mainScreen].scale;
+    CGFloat pixelWidth = imageSize.width * multiple;
+    CGFloat pixelHeight = imageSize.height * multiple;
+    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFill options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+        BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+        if (downloadFinined) {
+            completion(result,nil);
+            
+        }else {
+            completion(nil,nil);
+        }
+    }];
+}
+/**
+ *  加载高清图
+ */
+- (void)ios8_AsyncLoadFullScreenImageWithSize:(CGSize)imageSize asset:(IPImageModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+    options.resizeMode = PHImageRequestOptionsResizeModeExact;
+//    options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    PHAsset *phAsset = imagModel.imageAsset;
+    // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
+    CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
+    CGFloat multiple = [UIScreen mainScreen].scale;
+    CGFloat pixelWidth = imageSize.width * multiple;
+   
+    CGFloat pixelHeight = pixelWidth / aspectRatio;
+     NSLog(@"pixelWidth%tu--pixelHeight%tu--scale%f",phAsset.pixelWidth,phAsset.pixelHeight,aspectRatio);
+    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+        BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+        if (downloadFinined) {
+            completion(result,nil);
+            
+        }else {
+            completion(nil,nil);
+        }
+    }];
+}
+/**
+ *  高清预览图
+ */
+- (void)ios8_AsyncLoadAspectThumbilImageWithSize:(CGSize)imageSize asset:(IPImageModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+    options.resizeMode = PHImageRequestOptionsResizeModeFast;
+//    options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
+    PHAsset *phAsset = imagModel.imageAsset;
+    // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
+    CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
+    CGFloat multiple = [UIScreen mainScreen].scale;
+    CGFloat pixelWidth = imageSize.width * multiple;
+    CGFloat pixelHeight = pixelWidth / aspectRatio;
+    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+        // 排除取消，错误，低清图三种情况，即已经获取到了高清图时，把这张高清图
+        BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+        if (downloadFinined) {
+            completion(result,nil);
+            
+        }else {
+            completion(nil,nil);
+        }
+    }];
+}
+
+ //////////////////////////////////////
+
+
+
+//- (NSInteger)requestThumbnailImageWithSize:(CGSize)size completion:(void (^)(UIImage *, NSDictionary *))completion {
 //    if (_usePhotoKit) {
-//        if (_originImage) {
-//            // 如果已经有缓存的图片则直接拿缓存的图片
+//        if (_thumbnailImage) {
 //            if (completion) {
-//                completion(_originImage, nil);
+//                completion(_thumbnailImage, nil);
 //            }
 //            return 0;
 //        } else {
 //            PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
-//            imageRequestOptions.networkAccessAllowed = YES; // 允许访问网络
-//            imageRequestOptions.progressHandler = phProgressHandler;
-//            return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeDefault options:imageRequestOptions resultHandler:^(UIImage *result, NSDictionary *info) {
-//                // 排除取消，错误，低清图三种情况，即已经获取到了高清图时，把这张高清图缓存到 _originImage 中
+//            imageRequestOptions.resizeMode = PHImageRequestOptionsResizeModeExact;
+//            // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
+//            return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset targetSize:CGSizeMake(size.width * ScreenScale, size.height * ScreenScale) contentMode:PHImageContentModeAspectFill options:imageRequestOptions resultHandler:^(UIImage *result, NSDictionary *info) {
+//                // 排除取消，错误，低清图三种情况，即已经获取到了高清图时，把这张高清图缓存到 _thumbnailImage 中
 //                BOOL downloadFinined = ![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue];
 //                if (downloadFinined) {
-//                    _originImage = result;
+//                    _thumbnailImage = result;
 //                }
 //                if (completion) {
 //                    completion(result, info);
@@ -482,7 +649,7 @@
 //        }
 //    } else {
 //        if (completion) {
-//            completion([self originImage], nil);
+//            completion([self thumbnailWithSize:size], nil);
 //        }
 //        return 0;
 //    }
