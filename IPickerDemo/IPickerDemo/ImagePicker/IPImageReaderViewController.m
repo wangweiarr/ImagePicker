@@ -192,15 +192,10 @@ static NSString * const reuseIdentifier = @"Cell";
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
      NSLog(@"IPImageReaderViewController---didReceiveMemoryWarning");
-    [self.dataArr enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        obj.fullRorationImage = nil;
-    }];
+    
     // Dispose of any resources that can be recreated.
 }
 - (void)dealloc{
-    [self.dataArr enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        obj.fullRorationImage = nil;
-    }];
     
     NSLog(@"IPImageReaderViewController---dealloc");
 }
@@ -276,9 +271,6 @@ static NSString * const reuseIdentifier = @"Cell";
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     IPImageModel *model = [self.dataArr objectAtIndex:indexPath.item];
-//    [model asynLoadFullScreenImage];
-    NSLog(@"%@",model.aspectThumbnail);
-//    [model asynLoadThumibImage];
     cell.zoomScroll.imageModel = model;
     return cell;
 }

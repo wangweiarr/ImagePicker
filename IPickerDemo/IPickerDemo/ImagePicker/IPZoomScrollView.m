@@ -62,7 +62,7 @@
 
 }
 - (void)prepareForReuse {
-    self.imageModel.fullRorationImage = nil;
+    _imageModel = nil;
     _photoImageView.hidden = YES;
     _photoImageView.image = nil;
     
@@ -70,11 +70,11 @@
 
 - (void)setImageModel:(IPImageModel *)imageModel{
     
-       
+    if (_imageModel != imageModel && imageModel != nil) {
         _imageModel = imageModel;
         
         [self displayImage];
-    
+    }
 }
 - (void)displayImageWithFullScreenImage{
     

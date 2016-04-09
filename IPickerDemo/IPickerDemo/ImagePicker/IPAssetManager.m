@@ -40,6 +40,9 @@ static IPAssetManager *manager;
     return manager;
 }
 + (void)freeAssetManger{
+    [manager.allImageModel removeAllObjects];
+    [manager.albumArr removeAllObjects];
+    [manager.currentPhotosArr removeAllObjects];
     manager = nil;
 }
 - (void)dealloc{
@@ -89,7 +92,6 @@ static IPAssetManager *manager;
 }
 - (void)getImagesForAlbumModel:(IPAlbumModel *)albumModel{
     if (iOS8Later) {
-        [self getImagesWithGroupModel:albumModel];
         if (self.allImageModel.count == 0) {
             [self.allImageModel addObjectsFromArray:self.currentPhotosArr];
         }
@@ -120,6 +122,7 @@ static IPAssetManager *manager;
                     if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypePhoto]) {
                         
                         IPImageModel *imgModel = [[IPImageModel alloc]init];
+                        imgModel.mediaType = IPAssetModelMediaTypePhoto;
                         
                         imgModel.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
                         
@@ -375,15 +378,9 @@ static IPAssetManager *manager;
         }
         
         IPImageModel *imgModel = [[IPImageModel alloc]init];
-        
-        imgModel.imageAsset = asset;
+        imgModel.mediaType = type;
         imgModel.localIdentiy = asset.localIdentifier;
-        if (result.count == 3) {
-             NSLog(@"我的照片流--%@",imgModel.localIdentiy);
-        }
-        if (result.count == 544) {
-            NSLog(@"相机胶卷--%@",imgModel.localIdentiy);
-        }
+        
         if (self.allImageModel.count > 0) {
             [self.allImageModel enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 
@@ -403,7 +400,7 @@ static IPAssetManager *manager;
     [self performDelegateWithSuccess:YES];
 }
 /**
- *  获取相册的专辑图片
+ *  获取相册的封面图片
  *
  *  @param albumModel 相册模型
  *  @param photoSize  相框尺寸
@@ -548,7 +545,19 @@ static IPAssetManager *manager;
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
     options.resizeMode = PHImageRequestOptionsResizeModeExact;
     options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-    PHAsset *phAsset = imagModel.imageAsset;
+    __block PHAsset *phAsset = nil;
+    PHFetchResult *result = [PHAsset fetchAssetsWithLocalIdentifiers:@[imagModel.localIdentiy] options:nil];
+    NSLog(@"标识符为%@总共有%tu的资源图片",imagModel.localIdentiy,[result count]);
+    [result enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj) {
+            phAsset = obj;
+            *stop = YES;
+        }
+        
+    }];
+    
+//    PHAsset *phAsset = imagModel.imageAsset;
+    
     // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
     
     CGFloat multiple = [UIScreen mainScreen].scale;
@@ -571,21 +580,21 @@ static IPAssetManager *manager;
 - (void)ios8_AsyncLoadFullScreenImageWithSize:(CGSize)imageSize asset:(IPImageModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
     options.networkAccessAllowed = YES;
-    options.progressHandler = ^(double progress, NSError *__nullable error, BOOL *stop, NSDictionary *__nullable info){
-        NSLog(@"%f",progress);
-        if (progress == 1) {
-            NSLog(@"%@",info);
-        }
-    };
     options.resizeMode = PHImageRequestOptionsResizeModeExact;
     options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-    PHAsset *phAsset = imagModel.imageAsset;
+    __block PHAsset *phAsset = nil;
+    PHFetchResult *result = [PHAsset fetchAssetsWithLocalIdentifiers:@[imagModel.localIdentiy] options:nil];
+    NSLog(@"标识符为%@总共有%tu的资源图片",imagModel.localIdentiy,[result count]);
+    [result enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj) {
+            phAsset = obj;
+            *stop = YES;
+        }
+        
+    }];
     
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
 //        NSLog(@"高清图--%@",info);
-        if ([info objectForKey:PHImageResultIsInCloudKey]) {
-            NSLog(@"iCloud中的照片");
-        }
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (downloadFinined) {
             completion(result,nil);
@@ -602,8 +611,17 @@ static IPAssetManager *manager;
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
     options.resizeMode = PHImageRequestOptionsResizeModeFast;
     options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
-//    options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
-    PHAsset *phAsset = imagModel.imageAsset;
+    __block PHAsset *phAsset = nil;
+    PHFetchResult *result = [PHAsset fetchAssetsWithLocalIdentifiers:@[imagModel.localIdentiy] options:nil];
+    NSLog(@"标识符为%@总共有%tu的资源图片",imagModel.localIdentiy,[result count]);
+    [result enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj) {
+            phAsset = obj;
+            *stop = YES;
+        }
+        
+    }];
+//    PHAsset *phAsset = imagModel.imageAsset;
     // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
     CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
     CGFloat multiple = [UIScreen mainScreen].scale;
@@ -622,37 +640,4 @@ static IPAssetManager *manager;
     }];
 }
 
- //////////////////////////////////////
-
-
-
-//- (NSInteger)requestThumbnailImageWithSize:(CGSize)size completion:(void (^)(UIImage *, NSDictionary *))completion {
-//    if (_usePhotoKit) {
-//        if (_thumbnailImage) {
-//            if (completion) {
-//                completion(_thumbnailImage, nil);
-//            }
-//            return 0;
-//        } else {
-//            PHImageRequestOptions *imageRequestOptions = [[PHImageRequestOptions alloc] init];
-//            imageRequestOptions.resizeMode = PHImageRequestOptionsResizeModeExact;
-//            // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
-//            return [[[QMUIAssetsManager sharedInstance] phCachingImageManager] requestImageForAsset:_phAsset targetSize:CGSizeMake(size.width * ScreenScale, size.height * ScreenScale) contentMode:PHImageContentModeAspectFill options:imageRequestOptions resultHandler:^(UIImage *result, NSDictionary *info) {
-//                // 排除取消，错误，低清图三种情况，即已经获取到了高清图时，把这张高清图缓存到 _thumbnailImage 中
-//                BOOL downloadFinined = ![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue];
-//                if (downloadFinined) {
-//                    _thumbnailImage = result;
-//                }
-//                if (completion) {
-//                    completion(result, info);
-//                }
-//            }];
-//        }
-//    } else {
-//        if (completion) {
-//            completion([self thumbnailWithSize:size], nil);
-//        }
-//        return 0;
-//    }
-//}
 @end

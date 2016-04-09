@@ -42,7 +42,7 @@
     imgView.contentMode = UIViewContentModeScaleAspectFill;
     imgView.clipsToBounds = YES;
     [self.contentView addSubview:imgView];
-    imgView.image = self.model.thumbnail;
+    imgView.image = [UIImage imageNamed:@"default_8_120"];
     self.imgView = imgView;
     
     UIButton *rightCornerBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.bounds.size.width - 18-5, 5, 18, 18)];

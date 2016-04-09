@@ -115,6 +115,10 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 }
 - (void)dealloc{
     NSLog(@"IPickerViewController--dealloc");
+    [self.imageModelDic removeAllObjects];
+    self.imageModelDic = nil;
+    
+    
     [IPAssetManager freeAssetManger];
 }
 
@@ -256,7 +260,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     IPImageCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:IPicker_CollectionID forIndexPath:indexPath];
     IPImageModel *model = self.curImageModelArr[indexPath.item];
     model.imageSize = self.contentImageSize;
-//    [model asynLoadThumibImage];
     cell.model = model;
     cell.delegate = self;
     return cell;
