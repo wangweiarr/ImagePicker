@@ -72,9 +72,8 @@ NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOAD
 /**当前显示的图片数组*/
 @property (nonatomic, strong)NSArray *curImageModelArr;
 
-/**size*/
-@property (nonatomic, assign)CGSize contentImageSize;
-
+/**显示样式*/
+@property (nonatomic, assign)IPickerViewControllerDisplayStyle style;
 
 @end
 static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
@@ -100,11 +99,20 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     
     [self.navigationController setNavigationBarHidden:YES animated:NO];
-    [self.defaultAssetManager reloadImagesFromLibrary];
+    
+    
     
     [self addMainView];
     [self addHeaderView];
-    
+    if (self.style == IPickerViewControllerDisplayStyleVideo) {
+        self.arrowImge.hidden = YES;
+        self.centerBtn.userInteractionEnabled = NO;
+        [self.centerBtn setTitle:@"全部视频" forState:UIControlStateNormal];
+        [self.defaultAssetManager reloadVideosFromLibrary];
+        
+    }else {
+        [self.defaultAssetManager reloadImagesFromLibrary];
+    }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -259,7 +267,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (IPImageCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     IPImageCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:IPicker_CollectionID forIndexPath:indexPath];
     IPImageModel *model = self.curImageModelArr[indexPath.item];
-    model.imageSize = self.contentImageSize;
     cell.model = model;
     cell.delegate = self;
     return cell;
@@ -270,11 +277,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     NSUInteger rowCount = 4;
     NSUInteger margin = 5;
     CGFloat itemWidth = (collectionView.frame.size.width - (rowCount-1)*margin)/rowCount;
-    
-    if (CGSizeEqualToSize(self.contentImageSize, CGSizeZero) && !CGSizeEqualToSize(self.contentImageSize, CGSizeMake(itemWidth, itemWidth))) {
-        self.contentImageSize = CGSizeMake(itemWidth, itemWidth);
-    }
-    
     return CGSizeMake(itemWidth, itemWidth);
 }
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section{
@@ -298,11 +300,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     
 }
-- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
-    IPImageCell *imageCell = (IPImageCell *)cell;
-    [imageCell prepareForReuse];
-    
-}
+
 #pragma  mark - 导航条左右按钮的处理逻辑 -
 /**
  *  左上角的取消按钮点击
@@ -599,6 +597,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 #pragma mark interface
 + (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style{
     IPickerViewController *ipVC = [[IPickerViewController alloc]init];
+    
+    ipVC.style = style;
     return ipVC;
 }
 + (void)getImageModelWithURL:(NSURL *)url RequestBlock:(RequestImageBlock)block{

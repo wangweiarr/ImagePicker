@@ -43,7 +43,7 @@ static UIViewController *vc;
     
 }
 - (IBAction)popIPicker:(UIButton *)sender{
-    IPickerViewController *ip = [[IPickerViewController alloc]init];
+    IPickerViewController *ip = [IPickerViewController instanceWithDisplayStyle:IPickerViewControllerDisplayStyleVideo];
     ip.delegate = self;
     ip.maxCount = 50;
     ip.popStyle = IPickerViewControllerPopStylePush;

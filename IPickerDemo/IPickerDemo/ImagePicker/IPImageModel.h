@@ -27,14 +27,17 @@ typedef enum : NSUInteger {
 /**比例缩略图高宽比例*/
 @property (nonatomic, assign)CGFloat thumbnailScale;
 
-/**缩略图宽高*/
-@property (nonatomic, assign)CGSize imageSize;
-
 /**唯一标识符*/
 @property (nonatomic, copy)NSString *localIdentiy;
 
 /**图像的url*/
 @property (nonatomic, strong)NSURL *assetUrl;
+
+/**asset*/
+@property (nonatomic, strong)id asset;
+
+/**长度*/
+@property (nonatomic, copy)NSString *videoDuration;
 
 /**类型*/
 @property (nonatomic, assign)IPAssetModelMediaType mediaType;
