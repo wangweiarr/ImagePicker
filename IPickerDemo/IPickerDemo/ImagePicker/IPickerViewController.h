@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 #import "IPImageModel.h"
 
-extern NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION;
 
 /**弹出样式*/
 typedef NS_ENUM(NSUInteger,  IPickerViewControllerPopStyle) {
@@ -18,8 +17,14 @@ typedef NS_ENUM(NSUInteger,  IPickerViewControllerPopStyle) {
     /**由左到右*/
     IPickerViewControllerPopStylePush
 };
-
-typedef void(^CreatImageModelBlock)(IPImageModel *);
+/**展示样式*/
+typedef NS_ENUM(NSUInteger,  IPickerViewControllerDisplayStyle) {
+    /**展示相册*/
+    IPickerViewControllerDisplayStyleImage,
+    /**展示视频*/
+    IPickerViewControllerDisplayStyleVideo
+};
+typedef void(^RequestImageBlock)(UIImage *image,NSDictionary *info);
 
 @protocol IPickerViewControllerDelegate <NSObject>
 
@@ -43,6 +48,19 @@ typedef void(^CreatImageModelBlock)(IPImageModel *);
 
 /**代理*/
 @property (nonatomic, weak)id<IPickerViewControllerDelegate> delegate;
-
-+ (void)getImageModelWithURL:(NSURL *)url CreatBlock:(CreatImageModelBlock)block;
+/**
+ *  创建对象
+ *
+ *  @param style 样式
+ *
+ *  @return 实例
+ */
++ (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style;
+/**
+ *  通过url获取图片
+ *
+ *  @param url   图片资源的唯一标识
+ *  @param block 完成block
+ */
++ (void)getImageModelWithURL:(NSURL *)url RequestBlock:(RequestImageBlock)block;
 @end

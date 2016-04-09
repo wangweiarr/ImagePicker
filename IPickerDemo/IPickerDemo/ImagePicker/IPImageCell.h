@@ -21,4 +21,6 @@
 @property (nonatomic, weak)id <IPImageCellDelegate> delegate;
 /**数据模型*/
 @property (nonatomic, strong)IPImageModel *model;
+
+- (void)prepareForReuse;
 @end

@@ -43,7 +43,7 @@
 
 - (void)reloadImagesFromLibrary;
 
-- (void)getImagesForAlbumUrl:(IPAlbumModel *)albumModel;
+- (void)getImagesForAlbumModel:(IPAlbumModel *)albumModel;
 - (void)getAspectPhotoWithAsset:(IPImageModel *)albumModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 - (void)getFullScreenImageWithAsset:(IPImageModel *)albumModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 - (void)getThumibImageWithAsset:(IPImageModel *)albumModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;

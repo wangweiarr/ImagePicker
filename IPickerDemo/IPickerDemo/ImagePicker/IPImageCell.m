@@ -20,6 +20,9 @@
 @end
 
 @implementation IPImageCell
+- (void)prepareForReuse{
+    self.imgView.image = nil;
+}
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame:frame]) {

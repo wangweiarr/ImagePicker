@@ -9,8 +9,6 @@
 #import <UIKit/UIKit.h>
 #import "IPAssetManager.h"
 
-
-extern NSString * const IPICKER_LOADING_DID_END_NOTIFICATION;
 typedef void(^FunctionBlock)();
 
 @class IPImageModel;

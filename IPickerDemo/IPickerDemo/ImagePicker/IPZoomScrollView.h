@@ -17,5 +17,6 @@
 - (void)prepareForReuse;
 
 - (void)displayImage;
-- (void)displayImageWithFullScreenImage:(UIImage *)img;
+//- (void)displayImageWithFullScreenImage:(UIImage *)img;
+- (void)displayImageWithFullScreenImage;
 @end

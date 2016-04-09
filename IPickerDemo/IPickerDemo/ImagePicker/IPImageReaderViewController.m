@@ -17,7 +17,6 @@
 //#import "AHUIImageNameHandle.h"
 #import<AssetsLibrary/AssetsLibrary.h>
 
-NSString * const IPICKER_LOADING_DID_END_NOTIFICATION = @"IPICKER_LOADING_DID_END_NOTIFICATION";
 
 @interface IPImageReaderCell : UICollectionViewCell
 /**伸缩图*/
@@ -100,15 +99,6 @@ static NSString * const reuseIdentifier = @"Cell";
     
 }
 
-- (instancetype)initWithCollectionViewLayout:(UICollectionViewLayout *)layout{
-    if (self = [super initWithCollectionViewLayout:layout]) {
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleMWPhotoLoadingDidEndNotification:)
-                                                     name:IPICKER_LOADING_DID_END_NOTIFICATION
-                                                   object:nil];
-    }
-    return self;
-}
 - (void)viewDidLoad {
     [super viewDidLoad];
     
@@ -170,7 +160,7 @@ static NSString * const reuseIdentifier = @"Cell";
     }
     if (self.isFirst == NO) {
         
-        if (self.targetIndex == 0) {//当滚动到0的位置时,默认是不调用scrolldidscroll方法的,所以在此时设置按钮高度
+        if (self.targetIndex == 0) {//当滚动到0的位置时,默认是不调用scrolldidscroll方法的
             IPImageModel *model = self.dataArr[0];
             self.rightButton.selected = model.isSelect;
         }
@@ -184,15 +174,20 @@ static NSString * const reuseIdentifier = @"Cell";
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentIndex inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
         self.isRoration = NO;
+        IPImageModel *model = self.dataArr[_currentIndex];
+        IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
+        [thePage displayImageWithFullScreenImage];
     }
     
 }
 
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
+//    IPImageModel *model = self.dataArr[_targetIndex];
+//    [model asynLoadFullScreenImage];
     IPImageModel *model = self.dataArr[_targetIndex];
-    [model asynLoadFullScreenImage];
-   
+    IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
+    [thePage displayImageWithFullScreenImage];
 }
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -206,7 +201,7 @@ static NSString * const reuseIdentifier = @"Cell";
     [self.dataArr enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
         obj.fullRorationImage = nil;
     }];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    
     NSLog(@"IPImageReaderViewController---dealloc");
 }
 - (void)cancle{
@@ -297,8 +292,6 @@ static NSString * const reuseIdentifier = @"Cell";
 }
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageReaderCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
     NSLog(@"%tu",indexPath.item);
-    IPImageModel *model = [self.dataArr objectAtIndex:indexPath.item];
-    [model stopAsyncLoadFullImage];
     [cell.zoomScroll prepareForReuse];
     
 }
@@ -337,10 +330,7 @@ static NSString * const reuseIdentifier = @"Cell";
     
 }
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
-    UICollectionView *collectionView = (UICollectionView *)scrollView;
-    [collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:_currentIndex inSection:0]];
     IPImageModel *model = self.dataArr[_currentIndex];
-//    [model asynLoadFullScreenImage];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
     [thePage displayImageWithFullScreenImage];
     
@@ -356,21 +346,7 @@ static NSString * const reuseIdentifier = @"Cell";
     }
     return thePage;
 }
-- (void)handleMWPhotoLoadingDidEndNotification:(NSNotification *)notification {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        IPImageModel *model = [notification object];
-        IPZoomScrollView *page = [self pageDisplayingPhoto:model];
-        if (page) {
-            if ([model fullRorationImage]) {
-                // Successful load
-                [page displayImageWithFullScreenImage:model.fullRorationImage];
-            } else {
-                
-            }
-        }
-    });
-    
-}
+
 
 
 

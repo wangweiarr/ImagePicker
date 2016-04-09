@@ -28,18 +28,15 @@ typedef enum : NSUInteger {
 /**数据对象*/
 @property (nonatomic, strong)PHAsset *imageAsset;
 
-/**size*/
+/**缩略图高宽比例*/
+@property (nonatomic, assign)CGFloat thumbnailScale;
+/**缩略图宽高*/
 @property (nonatomic, assign)CGSize imageSize;
-
 /**高清图*/
 @property (nonatomic, strong)UIImage *fullRorationImage;
 
 /**唯一标识符*/
 @property (nonatomic, copy)NSString *localIdentiy;
-
-- (void)asynLoadFullScreenImage;
-- (void)asynLoadThumibImage;
-- (void)stopAsyncLoadFullImage;
 
 /**
  *  以下两个属性是可以直接访问,并且有值的.上面的属性方法勿用..

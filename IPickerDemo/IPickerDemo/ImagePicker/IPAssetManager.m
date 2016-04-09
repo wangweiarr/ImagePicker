@@ -87,7 +87,7 @@ static IPAssetManager *manager;
         
     });
 }
-- (void)getImagesForAlbumUrl:(IPAlbumModel *)albumModel{
+- (void)getImagesForAlbumModel:(IPAlbumModel *)albumModel{
     if (iOS8Later) {
         [self getImagesWithGroupModel:albumModel];
         if (self.allImageModel.count == 0) {
@@ -103,6 +103,8 @@ static IPAssetManager *manager;
 }
 #pragma mark - ios6_ios7 - 
 - (void)getAllAlbumsIOS7{
+    //关闭监听共享照片流产生的频繁通知信息
+    [ALAssetsLibrary disableSharedPhotoStreamsSupport];
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         
@@ -133,21 +135,6 @@ static IPAssetManager *manager;
                 
                 if (group == nil)
                 {
-//                    if (weakSelf.currentPhotosArr.count == 0) {
-//                        IPAlbumModel *model = [weakSelf.albumArr lastObject];
-//                        model.isSelected = YES;
-//                        weakSelf.currentAlbumModel = model;
-//                        
-//                        [weakSelf.defaultLibrary groupForURL:model.groupURL resultBlock:^(ALAssetsGroup *group) {
-//                            [group enumerateAssetsUsingBlock:groupEnumerAtion];
-//                            [weakSelf performDelegateWithSuccess:YES];
-//                        } failureBlock:^(NSError *error) {
-//                             [weakSelf performDelegateWithSuccess:NO];
-//                        }];
-//                        
-//                    }else {
-//                        [weakSelf performDelegateWithSuccess:YES];
-//                    }
                     
                     weakSelf.currentAlbumModel.isSelected = YES;
                     [weakSelf.defaultLibrary groupForURL:weakSelf.currentAlbumModel.groupURL resultBlock:^(ALAssetsGroup *group) {
@@ -164,37 +151,31 @@ static IPAssetManager *manager;
                     IPAlbumModel *model = [[IPAlbumModel alloc]init];
                     model.posterImage = [UIImage imageWithCGImage:group.posterImage];
                     model.imageCount = group.numberOfAssets;
-                    
-                    if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"Camera Roll"]) {
-                        model.albumName =@"相机胶卷";
-                    }else if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"Recently Added"]){
-                        model.albumName =@"最近添加";
-                    }
-                    else if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"My Photo Stream"]){
-                        model.albumName =@"我的照片流";
-                    }
-                    else if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"All Photos"]){
-                        model.albumName =@"所有照片";
-                    }
-                    else {
-                        model.albumName = (NSString *)[group valueForProperty:ALAssetsGroupPropertyName];
-                    }
-                    NSLog(@"%@",(NSString *)[group valueForProperty:ALAssetsGroupPropertyName]);
-                    model.groupURL = (NSURL *)[group valueForProperty:ALAssetsGroupPropertyURL];
-                    
-                    if (![model.albumName  isEqualToString:@"我的照片流"]){
+                    if (model.imageCount > 0) {
+                        if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"Camera Roll"]) {
+                            model.albumName =@"相机胶卷";
+                        }else if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"Recently Added"]){
+                            model.albumName =@"最近添加";
+                        }
+                        else if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"My Photo Stream"]){
+                            model.albumName =@"我的照片流";
+                        }
+                        else if ([(NSString *)[group valueForProperty:ALAssetsGroupPropertyName] isEqualToString:@"All Photos"]){
+                            model.albumName =@"所有照片";
+                        }
+                        else {
+                            model.albumName = (NSString *)[group valueForProperty:ALAssetsGroupPropertyName];
+                        }
+                        NSLog(@"%@",(NSString *)[group valueForProperty:ALAssetsGroupPropertyName]);
+                        model.groupURL = (NSURL *)[group valueForProperty:ALAssetsGroupPropertyURL];
                         [weakSelf.albumArr addObject:model];
+                        if (weakSelf.currentAlbumModel == nil || weakSelf.currentAlbumModel.imageCount < model.imageCount) {
+                            
+                            weakSelf.currentAlbumModel = model;
+                        }
                     }
-//                    if ([model.albumName isEqualToString:@"相机胶卷"] ||[model.albumName isEqualToString:@"最近添加"]||[model.albumName isEqualToString:@"所有照片"]) {
-//                        model.isSelected = YES;
-//                        weakSelf.currentAlbumModel = model;
-//                        [group enumerateAssetsUsingBlock:groupEnumerAtion];
-//                        
-//                    }
-                    if (weakSelf.currentAlbumModel == nil || weakSelf.currentAlbumModel.imageCount < model.imageCount) {
                         
-                        weakSelf.currentAlbumModel = model;
-                    }
+                    
                 }
                 
             };
@@ -308,13 +289,11 @@ static IPAssetManager *manager;
             if ([collection.localizedTitle containsString:@"Deleted"]) continue;
             
             IPAlbumModel * model = [self modelWithResult:fetchResult name:collection.localizedTitle];
-            if ([collection.localizedTitle isEqualToString:@"Camera Roll"]) {
+            [self.albumArr addObject:model];
+            if (self.currentAlbumModel == nil || self.currentAlbumModel.imageCount < model.imageCount) {
                 
-                [self getAssetsFromFetchResult:fetchResult];
-                model.isSelected = YES;
                 self.currentAlbumModel = model;
             }
-            [self.albumArr addObject:model];
         }
     
         //获取普通相册
@@ -323,10 +302,17 @@ static IPAssetManager *manager;
             PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
 
             if (fetchResult.count < 1) continue;
-            
-            [self.albumArr addObject:[self modelWithResult:fetchResult name:collection.localizedTitle]];
+            IPAlbumModel * model = [self modelWithResult:fetchResult name:collection.localizedTitle];
+            [self.albumArr addObject:model];
+            if (self.currentAlbumModel == nil || self.currentAlbumModel.imageCount < model.imageCount) {
+                
+                self.currentAlbumModel = model;
+            }
             
         }
+       [self getAssetsFromFetchResult:self.currentAlbumModel.groupAsset];
+       self.currentAlbumModel.isSelected = YES;
+    
     
 }
 /**
@@ -392,9 +378,15 @@ static IPAssetManager *manager;
         
         imgModel.imageAsset = asset;
         imgModel.localIdentiy = asset.localIdentifier;
-        
+        if (result.count == 3) {
+             NSLog(@"我的照片流--%@",imgModel.localIdentiy);
+        }
+        if (result.count == 544) {
+            NSLog(@"相机胶卷--%@",imgModel.localIdentiy);
+        }
         if (self.allImageModel.count > 0) {
             [self.allImageModel enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                
                 if ([obj.localIdentiy isEqualToString:asset.localIdentifier]) {
                     imgModel.isSame = YES;
                     [self.tempArray addObject:obj];
@@ -555,14 +547,16 @@ static IPAssetManager *manager;
 - (void)ios8_asynLoadThumibImageWithSize:(CGSize)imageSize asset:(IPImageModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
     options.resizeMode = PHImageRequestOptionsResizeModeExact;
+    options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
     PHAsset *phAsset = imagModel.imageAsset;
     // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
     
     CGFloat multiple = [UIScreen mainScreen].scale;
     CGFloat pixelWidth = imageSize.width * multiple;
     CGFloat pixelHeight = imageSize.height * multiple;
-    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFill options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+        
         if (downloadFinined) {
             completion(result,nil);
             
@@ -576,17 +570,22 @@ static IPAssetManager *manager;
  */
 - (void)ios8_AsyncLoadFullScreenImageWithSize:(CGSize)imageSize asset:(IPImageModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+    options.networkAccessAllowed = YES;
+    options.progressHandler = ^(double progress, NSError *__nullable error, BOOL *stop, NSDictionary *__nullable info){
+        NSLog(@"%f",progress);
+        if (progress == 1) {
+            NSLog(@"%@",info);
+        }
+    };
     options.resizeMode = PHImageRequestOptionsResizeModeExact;
-//    options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
     PHAsset *phAsset = imagModel.imageAsset;
-    // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
-    CGFloat aspectRatio = phAsset.pixelWidth / (CGFloat)phAsset.pixelHeight;
-    CGFloat multiple = [UIScreen mainScreen].scale;
-    CGFloat pixelWidth = imageSize.width * multiple;
-   
-    CGFloat pixelHeight = pixelWidth / aspectRatio;
-     NSLog(@"pixelWidth%tu--pixelHeight%tu--scale%f",phAsset.pixelWidth,phAsset.pixelHeight,aspectRatio);
-    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+    
+    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+//        NSLog(@"高清图--%@",info);
+        if ([info objectForKey:PHImageResultIsInCloudKey]) {
+            NSLog(@"iCloud中的照片");
+        }
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (downloadFinined) {
             completion(result,nil);
@@ -602,6 +601,7 @@ static IPAssetManager *manager;
 - (void)ios8_AsyncLoadAspectThumbilImageWithSize:(CGSize)imageSize asset:(IPImageModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
     options.resizeMode = PHImageRequestOptionsResizeModeFast;
+    options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
 //    options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
     PHAsset *phAsset = imagModel.imageAsset;
     // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
@@ -610,8 +610,9 @@ static IPAssetManager *manager;
     CGFloat pixelWidth = imageSize.width * multiple;
     CGFloat pixelHeight = pixelWidth / aspectRatio;
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-        // 排除取消，错误，低清图三种情况，即已经获取到了高清图时，把这张高清图
-        BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+//        NSLog(@"高清缩略图--%@",info);
+        // 排除取消，错误，得到低清图三种情况，即已经获取到了低清图
+        BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && [[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (downloadFinined) {
             completion(result,nil);
             

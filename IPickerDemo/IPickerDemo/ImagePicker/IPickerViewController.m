@@ -82,20 +82,14 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil{
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.maxCount = 50;
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleThumbnailLoadingDidEndNotification:)
-                                                     name:IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION
-                                                   object:nil];
+        
     }
     return self;
 }
 - (instancetype)init{
     if (self = [super init]) {
         self.maxCount = 50;
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(handleThumbnailLoadingDidEndNotification:)
-                                                     name:IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION
-                                                   object:nil];
+        
     }
     return self;
 }
@@ -122,7 +116,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (void)dealloc{
     NSLog(@"IPickerViewController--dealloc");
     [IPAssetManager freeAssetManger];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 #pragma mark - UI -
@@ -194,7 +187,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     centerBtn.contentMode = UIViewContentModeCenter;
     centerBtn.titleLabel.font = [UIFont systemFontOfSize:15];//textsize04
     centerBtn.backgroundColor = [UIColor clearColor];
-    [centerBtn setTitle:@"相机胶卷" forState:UIControlStateNormal];
+    [centerBtn setTitle:@"选择相册" forState:UIControlStateNormal];
     [centerBtn setTitleColor:[UIColor colorWithRed:0.3 green:0.3 blue:0.3 alpha:1.0] forState:UIControlStateNormal];
     [centerBtn sizeToFit];
     [headerView addSubview:centerBtn];
@@ -303,10 +296,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
 }
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
-    if (self.curImageModelArr.count > 0 && self.curImageModelArr.count > indexPath.item) {
-        IPImageModel *model = self.curImageModelArr[indexPath.item];
-        model.thumbnail = nil;
-    }
+    IPImageCell *imageCell = (IPImageCell *)cell;
+    [imageCell prepareForReuse];
     
 }
 #pragma  mark - 导航条左右按钮的处理逻辑 -
@@ -501,7 +492,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
         [self.mainView reloadData];
     }else {
-        [self.defaultAssetManager getImagesForAlbumUrl:model];
+        [self.defaultAssetManager getImagesForAlbumModel:model];
     }
     
     
@@ -567,21 +558,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         });
     }
 }
-+ (void)getImageModelWithURL:(NSURL *)url CreatBlock:(CreatImageModelBlock)block{
-    ALAssetsLibrary *lib = [[ALAssetsLibrary alloc] init];
-    [lib assetForURL:url resultBlock:^(ALAsset *asset) {
-        IPImageModel *model = [[IPImageModel alloc]init];
-        
-        model.thumbnail = [UIImage imageWithCGImage:asset.thumbnail];
-        ALAssetRepresentation *representation = asset.defaultRepresentation;
-        model.fullRorationImage = [UIImage imageWithCGImage:representation.fullScreenImage];
-        if (block) {
-            block(model);
-        }
-    } failureBlock:^(NSError *error) {
-        
-    }];
-}
+
 #pragma mark - alert框的处理 -
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     [self exitIPicker];
@@ -595,7 +572,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     return _defaultAssetManager;
 }
-
 
 - (void)setMaxCount:(NSUInteger)maxCount{
     NSInteger tempCount = (NSInteger)maxCount;
@@ -617,29 +593,23 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     return _imageModelDic;
 }
-
-//- (void)handleThumbnailLoadingDidEndNotification:(NSNotification *)notification {
-//    dispatch_async(dispatch_get_main_queue(), ^{
-//        IPImageModel *model = [notification object];
-//        IPImageCell *page = [self cellDisplayingPhoto:model];
-//        if (page) {
-//            if ([model thumbnail]) {
-//                // Successful load
-//                page.model = model;
-//            } else {
-//                
-//            }
-//        }
-//    });
-//    
-//}
-//- (IPImageCell *)cellDisplayingPhoto:(IPImageModel *)model {
-//    IPImageCell *thePage = nil;
-//    for (IPImageCell *cell in self.mainView.visibleCells) {
-//        if (cell.model == model) {
-//            thePage = cell; break;
-//        }
-//    }
-//    return thePage;
-//}
+#pragma mark interface
++ (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style{
+    IPickerViewController *ipVC = [[IPickerViewController alloc]init];
+    return ipVC;
+}
++ (void)getImageModelWithURL:(NSURL *)url RequestBlock:(RequestImageBlock)block{
+    ALAssetsLibrary *lib = [[ALAssetsLibrary alloc] init];
+    [lib assetForURL:url resultBlock:^(ALAsset *asset) {
+        ALAssetRepresentation *representation = asset.defaultRepresentation;
+        UIImage *img = [UIImage imageWithCGImage:representation.fullScreenImage];
+        if (block) {
+            block(img,nil);
+        }
+    } failureBlock:^(NSError *error) {
+        if (block) {
+            block(nil,nil);
+        }
+    }];
+}
 @end
