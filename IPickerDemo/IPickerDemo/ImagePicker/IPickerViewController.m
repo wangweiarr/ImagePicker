@@ -8,6 +8,7 @@
 
 #import "IPickerViewController.h"
 #import<AssetsLibrary/AssetsLibrary.h>
+#import <Photos/Photos.h>
 #import "IPAlbumModel.h"
 #import "IPAlbumView.h"
 #import "IPImageCell.h"
@@ -602,17 +603,49 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return ipVC;
 }
 + (void)getImageModelWithURL:(NSURL *)url RequestBlock:(RequestImageBlock)block{
-    ALAssetsLibrary *lib = [[ALAssetsLibrary alloc] init];
-    [lib assetForURL:url resultBlock:^(ALAsset *asset) {
-        ALAssetRepresentation *representation = asset.defaultRepresentation;
-        UIImage *img = [UIImage imageWithCGImage:representation.fullScreenImage];
-        if (block) {
-            block(img,nil);
+    
+    
+    if ([[UIDevice currentDevice].systemVersion doubleValue]>=8.0) {
+        PHFetchResult *results = nil;
+        if ([url.absoluteString containsString:@"library:"]) {
+            //是真正的url
+            results = [PHAsset fetchAssetsWithALAssetURLs:@[url] options:nil];
+        }else {
+            results = [PHAsset fetchAssetsWithLocalIdentifiers:@[url.absoluteString] options:nil];
         }
-    } failureBlock:^(NSError *error) {
-        if (block) {
-            block(nil,nil);
-        }
-    }];
+        
+        PHAsset *asset = [results lastObject];
+        
+        PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+        options.networkAccessAllowed = YES;
+        options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+        [[PHImageManager defaultManager]requestImageForAsset:asset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+            if (downloadFinined) {
+                if (block) {
+                    block(result,nil);
+                }
+                
+            }else {
+                if (block) {
+                    block(nil,nil);
+                }
+            }
+        }];
+    }else {
+        ALAssetsLibrary *lib = [[ALAssetsLibrary alloc] init];
+        [lib assetForURL:url resultBlock:^(ALAsset *asset) {
+            ALAssetRepresentation *representation = asset.defaultRepresentation;
+            UIImage *img = [UIImage imageWithCGImage:representation.fullScreenImage];
+            if (block) {
+                block(img,nil);
+            }
+        } failureBlock:^(NSError *error) {
+            if (block) {
+                block(nil,nil);
+            }
+        }];
+    }
+    
 }
 @end

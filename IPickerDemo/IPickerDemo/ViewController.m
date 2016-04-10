@@ -43,7 +43,7 @@ static UIViewController *vc;
     
 }
 - (IBAction)popIPicker:(UIButton *)sender{
-    IPickerViewController *ip = [IPickerViewController instanceWithDisplayStyle:IPickerViewControllerDisplayStyleVideo];
+    IPickerViewController *ip = [IPickerViewController instanceWithDisplayStyle:IPickerViewControllerDisplayStyleImage];
     ip.delegate = self;
     ip.maxCount = 50;
     ip.popStyle = IPickerViewControllerPopStylePush;
@@ -67,36 +67,27 @@ static UIViewController *vc;
     // Dispose of any resources that can be recreated.
 }
 - (void)didClickCompleteBtn:(NSArray *)datas{
-    NSLog(@"%@",datas);
-    PHFetchResult *results = [PHAsset fetchAssetsWithLocalIdentifiers:@[@"03355713-3591-440E-B511-8AA2F930E087/L0/001"] options:nil];
-    [results enumerateObjectsUsingBlock:^(PHAsset  *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSLog(@"%tu",idx);
-        [[PHImageManager defaultManager] requestImageForAsset:obj targetSize:CGSizeMake(50, 50) contentMode:PHImageContentModeAspectFill options:nil resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
-            if (downloadFinined) {
-                _img1.image = result;
-            }
-        }];
-    }];
-//    [datas enumerateObjectsUsingBlock:^(IPImageModel * obj, NSUInteger idx, BOOL * _Nonnull stop) {
-//        if (idx == 0) {
-//            [IPickerViewController getImageModelWithURL:obj.assetUrl CreatBlock:^(IPImageModel *obg) {
-//                _img1.image = obg.thumbnail;
-//            }];
-//        }else if (idx == 1){
-//            [IPickerViewController getImageModelWithURL:obj.assetUrl CreatBlock:^(IPImageModel *obg) {
-//                _img2.image = obg.thumbnail;
-//            }];
-//        }else if (idx == 2){
-//            [IPickerViewController getImageModelWithURL:obj.assetUrl CreatBlock:^(IPImageModel *obg) {
-//                _img3.image = obg.fullRorationImage;
-//            }];
-//        }else if (idx == 3){
-//            [IPickerViewController getImageModelWithURL:obj.assetUrl CreatBlock:^(IPImageModel *obg) {
-//                _img4.image = obg.fullRorationImage;
-//            }];
-//        }
-//    }];
+   [datas enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+       NSLog(@"%@--%@",obj.localIdentiy,obj.assetUrl.absoluteString);
+       if (idx == 0) {
+                       [IPickerViewController getImageModelWithURL:obj.assetUrl RequestBlock:^(UIImage *image, NSDictionary *info) {
+                           _img1.image = image;
+                       }];
+                   }else if (idx == 1){
+                       [IPickerViewController getImageModelWithURL:obj.assetUrl RequestBlock:^(UIImage *image, NSDictionary *info) {
+                           _img2.image = image;
+                       }];
+                   }else if (idx == 2){
+                       [IPickerViewController getImageModelWithURL:obj.assetUrl RequestBlock:^(UIImage *image, NSDictionary *info) {
+                           _img3.image = image;
+                       }];
+                   }else if (idx == 3){
+                       [IPickerViewController getImageModelWithURL:obj.assetUrl RequestBlock:^(UIImage *image, NSDictionary *info) {
+                           _img4.image = image;
+                       }];
+                   }
+   }];
+    
 }
 
 

@@ -383,6 +383,7 @@ static IPAssetManager *manager;
         IPImageModel *imgModel = [[IPImageModel alloc]init];
         imgModel.mediaType = type;
         imgModel.localIdentiy = asset.localIdentifier;
+        imgModel.assetUrl = [NSURL URLWithString:asset.localIdentifier];
         imgModel.asset = asset;
         NSString *timeLength = type == IPAssetModelMediaTypeVideo ? [NSString stringWithFormat:@"%0.0f",asset.duration] : @"";
         timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
