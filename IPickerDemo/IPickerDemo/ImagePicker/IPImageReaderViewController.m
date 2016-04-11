@@ -183,8 +183,6 @@ static NSString * const reuseIdentifier = @"Cell";
 
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
-//    IPImageModel *model = self.dataArr[_targetIndex];
-//    [model asynLoadFullScreenImage];
     IPImageModel *model = self.dataArr[_targetIndex];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
     [thePage displayImageWithFullScreenImage];

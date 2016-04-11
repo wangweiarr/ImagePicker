@@ -48,6 +48,7 @@ typedef void(^RequestImageBlock)(UIImage *image,NSDictionary *info);
 
 /**代理*/
 @property (nonatomic, weak)id<IPickerViewControllerDelegate> delegate;
+
 /**
  *  创建对象
  *
@@ -56,11 +57,13 @@ typedef void(^RequestImageBlock)(UIImage *image,NSDictionary *info);
  *  @return 实例
  */
 + (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style;
+
 /**
  *  通过url获取图片
  *
- *  @param url   图片资源的唯一标识
+ *  @param url   图片资源的唯一标识  
  *  @param block 完成block
  */
 + (void)getImageModelWithURL:(NSURL *)url RequestBlock:(RequestImageBlock)block;
+
 @end

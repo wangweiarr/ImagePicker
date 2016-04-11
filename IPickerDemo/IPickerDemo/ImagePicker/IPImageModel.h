@@ -30,7 +30,7 @@ typedef enum : NSUInteger {
 /**唯一标识符*/
 @property (nonatomic, copy)NSString *localIdentiy;
 
-/**图像的url*/
+/**图像的url...ios8之后,是唯一标示,已经被包装为URL*/
 @property (nonatomic, strong)NSURL *assetUrl;
 
 /**asset*/
