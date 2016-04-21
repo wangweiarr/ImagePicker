@@ -11,10 +11,10 @@
 
 typedef void(^FunctionBlock)();
 
-@class IPImageModel;
+@class IPAssetModel;
 @protocol IPImageReaderViewControllerDelegate<NSObject>
 
-- (void)clickSelectBtnForReaderView:(IPImageModel *)assetModel;
+- (void)clickSelectBtnForReaderView:(IPAssetModel *)assetModel;
 
 @end
 @interface IPImageReaderViewController : UICollectionViewController
@@ -34,6 +34,6 @@ typedef void(^FunctionBlock)();
 /**图库管理*/
 @property (nonatomic, weak)IPAssetManager *manger;
 
-+ (instancetype)imageReaderViewControllerWithData:(NSArray<IPImageModel *> *)data TargetIndex:(NSUInteger)index;
++ (instancetype)imageReaderViewControllerWithData:(NSArray<IPAssetModel *> *)data TargetIndex:(NSUInteger)index;
 
 @end

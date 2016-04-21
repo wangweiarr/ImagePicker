@@ -7,7 +7,7 @@
 //
 
 #import "IPImageCell.h"
-#import "IPImageModel.h"
+#import "IPAssetModel.h"
 #import "IPAssetManager.h"
 //#import "AHUIImageNameHandle.h"
 
@@ -17,6 +17,9 @@
 /**右上角按钮*/
 @property (nonatomic, weak) UIButton *rightCornerBtn;
 
+
+/**背景*/
+@property (nonatomic, weak)UIImageView *bottomBackView;
 /**时间label*/
 @property (nonatomic, weak)UILabel *timeLabel;
 /**video*/
@@ -55,20 +58,29 @@
     [self.contentView addSubview:rightCornerBtn];
     self.rightCornerBtn = rightCornerBtn;
     
+    
+    UIImageView *bottomBackView = [[UIImageView alloc]init];
+    bottomBackView.hidden = YES;
+    [bottomBackView setImage:[UIImage imageNamed:@"photobrowse_bottom"]];
+    self.bottomBackView = bottomBackView;
+    [self.contentView addSubview:bottomBackView];
+    
     //视频--时间长
     UILabel *timeLabel = [[UILabel alloc]init];
-    timeLabel.contentMode = UIViewContentModeLeft;
+    timeLabel.textColor = [UIColor whiteColor];
+    timeLabel.textAlignment = NSTextAlignmentRight;
     timeLabel.font = [UIFont systemFontOfSize:12];
-    timeLabel.hidden = YES;
+    
     self.timeLabel = timeLabel;
-    [self.contentView addSubview:timeLabel];
+    [self.bottomBackView addSubview:timeLabel];
     
     //视频--视频标识
     UIImageView *videoImgView = [[UIImageView alloc]init];
-    videoImgView.image = [UIImage imageNamed:@"forms_icon_select2"];
-    videoImgView.hidden = YES;
+    videoImgView.contentMode = UIViewContentModeCenter;
+    videoImgView.image = [UIImage imageNamed:@"icon_video"];
+    
     self.videoImgView = videoImgView;
-    [self.contentView addSubview:videoImgView];
+    [self.bottomBackView addSubview:videoImgView];
 
     
 }
@@ -90,19 +102,35 @@
     CGFloat w = self.bounds.size.width / 2.6f;
     self.rightCornerBtn.frame = CGRectMake(self.bounds.size.width - w, 0, w, w);
     
-    self.timeLabel.frame = CGRectMake(self.bounds.size.width/2, self.bounds.size.height - 20, self.bounds.size.width/2, 20);
+    [self.bottomBackView setFrame:CGRectMake(0, self.bounds.size.height - 20, self.bounds.size.width, 20)];
+    self.videoImgView.frame = CGRectMake(10, 0, 24, 20);
+    self.timeLabel.frame = CGRectMake(40, 0, self.bounds.size.width - 40, 20);
 }
-- (void)setModel:(IPImageModel *)model{
+- (void)setModel:(IPAssetModel *)model{
     _model = model;
-    if (_model.mediaType == IPAssetModelMediaTypeVideo) {
-        self.timeLabel.text = _model.videoDuration;
-        self.timeLabel.hidden = NO;
-    }
     __weak typeof(self) weakSelf = self;
-    self.rightCornerBtn.selected = model.isSelect;
-    [[IPAssetManager defaultAssetManager]getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
-        weakSelf.imgView.image = photo;
-    }];
+    
+    if (_model.assetType == IPAssetModelMediaTypeVideo ) {
+        [[IPAssetManager defaultAssetManager]getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
+            weakSelf.imgView.image = photo;
+        }];
+        self.bottomBackView.hidden = NO;
+
+        self.timeLabel.text = _model.videoDuration;
+        
+        self.rightCornerBtn.hidden = YES;
+    }else if ( _model.assetType ==IPAssetModelMediaTypeTakeVideo){
+        self.imgView.image = [UIImage imageNamed:@"icon_video_big"];
+        self.rightCornerBtn.hidden = YES;
+    }else {
+        self.rightCornerBtn.selected = model.isSelect;
+        [[IPAssetManager defaultAssetManager]getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
+            weakSelf.imgView.image = photo;
+        }];
+    }
+    
+    
+    
     
 }
 - (void)clickBtnInCell:(UIButton *)btn{

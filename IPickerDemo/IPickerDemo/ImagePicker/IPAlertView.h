@@ -10,4 +10,6 @@
 
 @interface IPAlertView : UIView
 + (instancetype)showAlertViewAt:(UIView *)view MaxCount:(NSUInteger)count;
++ (instancetype)showAlertViewAt:(UIView *)view Text:(NSString *)text;
+- (void)dismissFromHostView;
 @end

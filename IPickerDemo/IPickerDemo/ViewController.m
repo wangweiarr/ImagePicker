@@ -67,7 +67,7 @@ static UIViewController *vc;
     // Dispose of any resources that can be recreated.
 }
 - (void)didClickCompleteBtn:(NSArray *)datas{
-   [datas enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+   [datas enumerateObjectsUsingBlock:^(IPAssetModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
        NSLog(@"%@--%@",obj.localIdentiy,obj.assetUrl.absoluteString);
        if (idx == 0) {
                        [IPickerViewController getImageModelWithURL:obj.assetUrl RequestBlock:^(UIImage *image, NSDictionary *info) {
@@ -89,6 +89,11 @@ static UIViewController *vc;
    }];
     
 }
-
+- (void)didFinishCaptureVideoUrl:(NSURL *)videourl videoDuration:(float)duration thumbailImage:(NSURL *)thumbailUrl{
+    UIImage *thumbnailImage = [UIImage imageWithData:[NSData dataWithContentsOfURL:thumbailUrl
+                                                      ]];
+    
+    [_img2 setImage:thumbnailImage];
+}
 
 @end

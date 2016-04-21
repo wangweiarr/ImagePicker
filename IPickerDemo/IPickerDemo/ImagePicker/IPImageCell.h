@@ -8,10 +8,10 @@
 
 #import <UIKit/UIKit.h>
 
-@class IPImageModel;
+@class IPAssetModel;
 @protocol IPImageCellDelegate<NSObject>
 
-- (BOOL)clickRightCornerBtnForView:(IPImageModel *)assetModel;
+- (BOOL)clickRightCornerBtnForView:(IPAssetModel *)assetModel;
 
 @end
 @interface IPImageCell : UICollectionViewCell
@@ -20,7 +20,7 @@
 /**代理*/
 @property (nonatomic, weak)id <IPImageCellDelegate> delegate;
 /**数据模型*/
-@property (nonatomic, strong)IPImageModel *model;
+@property (nonatomic, strong)IPAssetModel *model;
 
 - (void)prepareForReuse;
 @end

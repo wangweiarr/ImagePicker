@@ -8,7 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-@class IPAssetManager,IPImageModel,IPAlbumModel,ALAssetsLibrary;
+#import "IPAssetModel.h"
+
+#define iOS7Later ([UIDevice currentDevice].systemVersion.floatValue >= 7.0f)
+#define iOS8Later ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f)
+#define iOS9Later ([UIDevice currentDevice].systemVersion.floatValue >= 9.0f)
+@class IPAssetManager,IPAlbumModel,ALAssetsLibrary;
 
 @protocol IPAssetManagerDelegate <NSObject>
 
@@ -17,7 +22,6 @@
 
 - (void)loadImageUserDeny:(IPAssetManager *)manager;
 - (void)loadImageOccurError:(IPAssetManager *)manager;
-
 @end
 
 
@@ -41,12 +45,17 @@
 /**图库*/
 @property (nonatomic, strong)ALAssetsLibrary *defaultLibrary;
 
+/**访问类型*/
+@property (nonatomic, assign)BOOL isImage;
+
 - (void)reloadImagesFromLibrary;
 - (void)reloadVideosFromLibrary;
 
 - (void)getImagesForAlbumModel:(IPAlbumModel *)albumModel;
-- (void)getAspectPhotoWithAsset:(IPImageModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-- (void)getFullScreenImageWithAsset:(IPImageModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-- (void)getThumibImageWithAsset:(IPImageModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-- (void)clearDataCache;
+- (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+
+- (void)compressVideoWithAssetModel:(IPAssetModel *)assetModel CompleteBlock:(functionBlock)block;
+
 @end

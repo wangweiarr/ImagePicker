@@ -7,7 +7,7 @@
 //
 
 #import "IPZoomScrollView.h"
-#import "IPImageModel.h"
+#import "IPAssetModel.h"
 #import "IPTapDetectImageView.h"
 #import "IPTapDetectView.h"
 #import "IPAssetManager.h"
@@ -68,7 +68,7 @@
     
 }
 
-- (void)setImageModel:(IPImageModel *)imageModel{
+- (void)setImageModel:(IPAssetModel *)imageModel{
     
     if (_imageModel != imageModel && imageModel != nil) {
         _imageModel = imageModel;

@@ -1,14 +1,14 @@
 //
-//  IPImageModel.m
+//  IPAssetModel.m
 //  IPickerDemo
 //
 //  Created by Wangjianlong on 16/2/27.
 //  Copyright © 2016年 JL. All rights reserved.
 //
 
-#import "IPImageModel.h"
+#import "IPAssetModel.h"
 
 
-@implementation IPImageModel
+@implementation IPAssetModel
 
 @end

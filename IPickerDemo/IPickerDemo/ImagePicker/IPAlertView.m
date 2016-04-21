@@ -34,10 +34,23 @@
 - (void)showAnimated:(BOOL)animated {
     
     // If the grace time is set postpone the HUD display
+    if (animated) {
+        NSTimer *timer = [NSTimer timerWithTimeInterval:1 target:self selector:@selector(handleGraceTimer:) userInfo:nil repeats:NO];
+        [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
+        self.graceTimer = timer;
+    }
     
-    NSTimer *timer = [NSTimer timerWithTimeInterval:1 target:self selector:@selector(handleGraceTimer:) userInfo:nil repeats:NO];
-    [[NSRunLoop currentRunLoop] addTimer:timer forMode:NSRunLoopCommonModes];
-    self.graceTimer = timer;
+}
++ (instancetype)showAlertViewAt:(UIView *)view Text:(NSString *)text{
+    IPAlertView *alert = [[IPAlertView alloc]initWithView:view];
+    [alert.alertLabel setText:text];
+    alert.backgroundColor = [UIColor clearColor];
+    [view addSubview:alert];
+    [alert showAnimated:NO];
+    return alert;
+}
+- (void)dismissFromHostView{
+    [self removeFromSuperview];
 }
 - (void)handleGraceTimer:(NSTimer *)timer{
     [self removeFromSuperview];

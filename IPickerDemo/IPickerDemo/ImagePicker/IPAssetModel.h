@@ -1,5 +1,5 @@
 //
-//  IPImageModel.h
+//  IPAssetModel.h
 //  IPickerDemo
 //
 //  Created by Wangjianlong on 16/2/27.
@@ -12,10 +12,13 @@ typedef enum : NSUInteger {
     IPAssetModelMediaTypePhoto = 0,
     IPAssetModelMediaTypeLivePhoto,
     IPAssetModelMediaTypeVideo,
-    IPAssetModelMediaTypeAudio
+    IPAssetModelMediaTypeAudio,
+    IPAssetModelMediaTypeTakeVideo
 } IPAssetModelMediaType;
+@class AVPlayerItem;
+typedef void(^functionBlock)(AVPlayerItem *);
 
-@interface IPImageModel : NSObject
+@interface IPAssetModel : NSObject
 
 
 /**当前是否被选中*/
@@ -36,10 +39,17 @@ typedef enum : NSUInteger {
 /**asset*/
 @property (nonatomic, strong)id asset;
 
-/**长度*/
+/**时间标志的时间长度*/
 @property (nonatomic, copy)NSString *videoDuration;
 
 /**类型*/
-@property (nonatomic, assign)IPAssetModelMediaType mediaType;
+@property (nonatomic, assign)IPAssetModelMediaType assetType;
+
+
+/**视频时长*/
+@property (nonatomic, assign)NSTimeInterval duration;
+
+/**视频缩略图*/
+@property (nonatomic, copy)UIImage *VideoThumbail;
 
 @end

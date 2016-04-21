@@ -12,7 +12,7 @@
 #define IOS7_STATUS_BAR_HEGHT (IS_Above_IOS7 ? 20.0f : 0.0f)
 #import "IPImageReaderViewController.h"
 #import "IPZoomScrollView.h"
-#import "IPImageModel.h"
+#import "IPAssetModel.h"
 #import "IPAlertView.h"
 //#import "AHUIImageNameHandle.h"
 #import<AssetsLibrary/AssetsLibrary.h>
@@ -82,7 +82,7 @@
 @implementation IPImageReaderViewController
 
 static NSString * const reuseIdentifier = @"Cell";
-+ (instancetype)imageReaderViewControllerWithData:(NSArray<IPImageModel *> *)data TargetIndex:(NSUInteger)index{
++ (instancetype)imageReaderViewControllerWithData:(NSArray<IPAssetModel *> *)data TargetIndex:(NSUInteger)index{
     if (data == nil || data.count == 0 ) {
         return nil;
     }
@@ -161,7 +161,7 @@ static NSString * const reuseIdentifier = @"Cell";
     if (self.isFirst == NO) {
         
         if (self.targetIndex == 0) {//当滚动到0的位置时,默认是不调用scrolldidscroll方法的
-            IPImageModel *model = self.dataArr[0];
+            IPAssetModel *model = self.dataArr[0];
             self.rightButton.selected = model.isSelect;
         }
         
@@ -174,7 +174,7 @@ static NSString * const reuseIdentifier = @"Cell";
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentIndex inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
         self.isRoration = NO;
-        IPImageModel *model = self.dataArr[_currentIndex];
+        IPAssetModel *model = self.dataArr[_currentIndex];
         IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
         [thePage displayImageWithFullScreenImage];
     }
@@ -183,7 +183,7 @@ static NSString * const reuseIdentifier = @"Cell";
 
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
-    IPImageModel *model = self.dataArr[_targetIndex];
+    IPAssetModel *model = self.dataArr[_targetIndex];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
     [thePage displayImageWithFullScreenImage];
 }
@@ -217,7 +217,7 @@ static NSString * const reuseIdentifier = @"Cell";
         self.currentCount --;
     }
 //    NSLog(@"%tu",_currentIndex);
-    IPImageModel *model = self.dataArr[_currentIndex];
+    IPAssetModel *model = self.dataArr[_currentIndex];
     model.isSelect = btn.selected;
     if (self.delegate && [self.delegate respondsToSelector:@selector(clickSelectBtnForReaderView:)]) {
         [self.delegate clickSelectBtnForReaderView:model];
@@ -245,7 +245,7 @@ static NSString * const reuseIdentifier = @"Cell";
     _currentIndex = _pageIndexBeforeRotation;
     self.isRoration = YES;
     
-    IPImageModel *model = self.dataArr[_currentIndex];
+    IPAssetModel *model = self.dataArr[_currentIndex];
     self.rightButton.selected = model.isSelect;
     
     [self.collectionView reloadData];
@@ -268,7 +268,7 @@ static NSString * const reuseIdentifier = @"Cell";
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
-    IPImageModel *model = [self.dataArr objectAtIndex:indexPath.item];
+    IPAssetModel *model = [self.dataArr objectAtIndex:indexPath.item];
     cell.zoomScroll.imageModel = model;
     return cell;
 }
@@ -298,7 +298,7 @@ static NSString * const reuseIdentifier = @"Cell";
     NSUInteger previousCurrentPage = _currentIndex;
     _currentIndex = index;
     if (_currentIndex != previousCurrentPage) {
-        IPImageModel *model = self.dataArr[_currentIndex];
+        IPAssetModel *model = self.dataArr[_currentIndex];
         self.rightButton.selected = model.isSelect;
     }
    
@@ -320,14 +320,14 @@ static NSString * const reuseIdentifier = @"Cell";
     
 }
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
-    IPImageModel *model = self.dataArr[_currentIndex];
+    IPAssetModel *model = self.dataArr[_currentIndex];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
     [thePage displayImageWithFullScreenImage];
     
     NSLog(@"scrollViewDidEndDecelerating");
 }
 
-- (IPZoomScrollView *)pageDisplayingPhoto:(IPImageModel *)model {
+- (IPZoomScrollView *)pageDisplayingPhoto:(IPAssetModel *)model {
     IPZoomScrollView *thePage = nil;
     for (IPImageReaderCell *cell in self.collectionView.visibleCells) {
         if (cell.zoomScroll.imageModel == model) {

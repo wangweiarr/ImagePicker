@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "IPImageModel.h"
+#import "IPAssetModel.h"
 
 
 /**弹出样式*/
@@ -26,9 +26,27 @@ typedef NS_ENUM(NSUInteger,  IPickerViewControllerDisplayStyle) {
 };
 typedef void(^RequestImageBlock)(UIImage *image,NSDictionary *info);
 
+@class IPickerViewController;
+
 @protocol IPickerViewControllerDelegate <NSObject>
 
+/**
+ *  选择图片完成后的回调方法
+ *
+ *  @param datas 图片模型数组
+ */
 - (void)didClickCompleteBtn:(NSArray *)datas;
+
+/**
+ *  拍摄视频完成后,的回调方法
+ *
+ *  @param videoInfo     视频的相关信息
+ *  @option videourl:NSURL  videoduration:NSNumber videothumbail:UIImage
+ *
+ *
+ *  @param progressBlock 导出的进度
+ */
+- (void)imgPicker:(IPickerViewController *)ipVc didFinishCaptureVideoItem:(AVPlayerItem *)playerItem Videourl:(NSURL *)videoUrl videoDuration:(float)duration thumbailImage:(UIImage *)thumbail;
 
 @end
 

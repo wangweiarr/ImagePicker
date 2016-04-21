@@ -14,18 +14,17 @@
 #import "IPAlbumModel.h"
 #import "IPAlbumView.h"
 #import "IPImageCell.h"
-#import "IPImageModel.h"
 
-#define iOS7Later ([UIDevice currentDevice].systemVersion.floatValue >= 7.0f)
-#define iOS8Later ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f)
-#define iOS9Later ([UIDevice currentDevice].systemVersion.floatValue >= 9.0f)
-@interface IPAssetManager ()
+@interface IPAssetManager ()<PHPhotoLibraryChangeObserver>
 
 /**数据模型暂存数组*/
 @property (nonatomic, strong)NSMutableArray *tempArray;
 
 /**全部的数据*/
 @property (nonatomic, strong)NSMutableArray *allImageModel;
+
+/**缓存路径*/
+@property (nonatomic, copy)NSString *captureDirectory;
 @end
 
 @implementation IPAssetManager
@@ -40,52 +39,79 @@ static IPAssetManager *manager;
     return manager;
 }
 + (void)freeAssetManger{
-    [manager.allImageModel removeAllObjects];
-    [manager.albumArr removeAllObjects];
-    [manager.currentPhotosArr removeAllObjects];
-    manager = nil;
+    if (manager) {
+        [manager clearData];
+        manager = nil;
+    }
+    
+}
+- (void)clearData{
+    [self.allImageModel removeAllObjects];
+    [self.albumArr removeAllObjects];
+    [self.currentPhotosArr removeAllObjects];
 }
 - (void)dealloc{
+     
     NSLog(@"IPAssetManager--dealloc");
 }
-- (void)clearDataCache{
-    self.currentAlbumModel = nil;
-    self.currentPhotosArr = nil;
-    [self.tempArray removeAllObjects];
-    [self.allImageModel removeAllObjects];
-}
+
+
 #pragma mark 获取相册的所有图片
 - (void)reloadImagesFromLibrary
 {
+    [self clearData];
     if (iOS8Later) {
         [self getAllAlbumsIOS8];
     }else{
         [self getAllAlbumsIOS7];
-
+        
     }
     
 }
 - (void)performDelegateWithSuccess:(BOOL)success{
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
-        if (status == ALAuthorizationStatusDenied) {
-            if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageUserDeny:)]) {
-                [self.delegate loadImageUserDeny:self];
+        if (iOS8Later) {
+            PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
+            if (status == PHAuthorizationStatusDenied) {
+                if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageUserDeny:)]) {
+                    [self.delegate loadImageUserDeny:self];
+                }
+            }
+            else {
+                if (success == NO) {
+                    if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageOccurError:)]) {
+                        [self.delegate loadImageOccurError:self];
+                    }
+                }else {
+                    if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
+                        [self.delegate loadImageDataFinish:self];
+                    }
+                }
+                
+                
             }
         }else {
-            if (success == NO) {
-                if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageOccurError:)]) {
-                    [self.delegate loadImageOccurError:self];
+            ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
+            if (status == ALAuthorizationStatusDenied) {
+                if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageUserDeny:)]) {
+                    [self.delegate loadImageUserDeny:self];
                 }
             }else {
-                if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
-                    [self.delegate loadImageDataFinish:self];
+                if (success == NO) {
+                    if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageOccurError:)]) {
+                        [self.delegate loadImageOccurError:self];
+                    }
+                }else {
+                    if (self.delegate && [self.delegate respondsToSelector:@selector(loadImageDataFinish:)]) {
+                        [self.delegate loadImageDataFinish:self];
+                    }
                 }
+                
+                
             }
-            
-            
         }
+        
         
         
     });
@@ -97,13 +123,13 @@ static IPAssetManager *manager;
         }
         [self.currentPhotosArr removeAllObjects];
         [self.tempArray removeAllObjects];
-        [self getAssetsFromFetchResult:albumModel.groupAsset];
+        [self getImageAssetsFromFetchResult:albumModel.groupAsset];
     }else{
         [self getImagesWithGroupModel:albumModel];
     }
     
 }
-#pragma mark - ios6_ios7 - 
+#pragma mark - ios6_ios7 -
 - (void)getAllAlbumsIOS7{
     //关闭监听共享照片流产生的频繁通知信息
     [ALAssetsLibrary disableSharedPhotoStreamsSupport];
@@ -121,8 +147,8 @@ static IPAssetManager *manager;
                     
                     if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypePhoto]) {
                         
-                        IPImageModel *imgModel = [[IPImageModel alloc]init];
-                        imgModel.mediaType = IPAssetModelMediaTypePhoto;
+                        IPAssetModel *imgModel = [[IPAssetModel alloc]init];
+                        imgModel.assetType = IPAssetModelMediaTypePhoto;
                         imgModel.asset = result;
                         
                         imgModel.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
@@ -178,7 +204,7 @@ static IPAssetManager *manager;
                             weakSelf.currentAlbumModel = model;
                         }
                     }
-                        
+                    
                     
                 }
                 
@@ -201,11 +227,11 @@ static IPAssetManager *manager;
                 if (result!=NULL) {
                     
                     if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypePhoto]) {
-                        IPImageModel *model = [[IPImageModel alloc]init];
-                        model.mediaType = IPAssetModelMediaTypePhoto;
+                        IPAssetModel *model = [[IPAssetModel alloc]init];
+                        model.assetType = IPAssetModelMediaTypePhoto;
                         model.asset = result;
                         model.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
-                        [weakSelf.allImageModel enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        [weakSelf.allImageModel enumerateObjectsUsingBlock:^(IPAssetModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                             if ([obj.assetUrl isEqual:model.assetUrl]) {
                                 //此处逻辑要注意..当之前的那张图片已经存在过了,就加到当前数组中
                                 [weakSelf.tempArray addObject:obj];
@@ -276,48 +302,53 @@ static IPAssetManager *manager;
  */
 - (void)getAllAlbumsIOS8{
     
+    if ([PHPhotoLibrary authorizationStatus] == PHAuthorizationStatusDenied ) {
+        [self performDelegateWithSuccess:NO];
+        return;
+    }
+    PHAssetCollectionSubtype smartAlbumSubtype = PHAssetCollectionSubtypeSmartAlbumUserLibrary | PHAssetCollectionSubtypeSmartAlbumRecentlyAdded ;
+    // For iOS 9, We need to show ScreenShots Album && SelfPortraits Album
+    if (iOS9Later) {
+        smartAlbumSubtype = PHAssetCollectionSubtypeSmartAlbumUserLibrary | PHAssetCollectionSubtypeSmartAlbumRecentlyAdded | PHAssetCollectionSubtypeSmartAlbumScreenshots | PHAssetCollectionSubtypeSmartAlbumSelfPortraits | PHAssetCollectionSubtypeSmartAlbumFavorites|PHAssetCollectionSubtypeAlbumMyPhotoStream ;
+    }
     
-        PHAssetCollectionSubtype smartAlbumSubtype = PHAssetCollectionSubtypeSmartAlbumUserLibrary | PHAssetCollectionSubtypeSmartAlbumRecentlyAdded ;
-        // For iOS 9, We need to show ScreenShots Album && SelfPortraits Album
-        if (iOS9Later) {
-            smartAlbumSubtype = PHAssetCollectionSubtypeSmartAlbumUserLibrary | PHAssetCollectionSubtypeSmartAlbumRecentlyAdded | PHAssetCollectionSubtypeSmartAlbumScreenshots | PHAssetCollectionSubtypeSmartAlbumSelfPortraits | PHAssetCollectionSubtypeSmartAlbumFavorites|PHAssetCollectionSubtypeAlbumMyPhotoStream ;
-        }
+    //获取智能相册
+    PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
+    imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+    imageOption.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
     
-        //获取智能相册
-        PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
-        imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
-        imageOption.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
-    
-        PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum  subtype:smartAlbumSubtype options:nil];
-        for (PHAssetCollection *collection in smartAlbums) {
-            PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
-            if (fetchResult.count < 1) continue;
-            if ([collection.localizedTitle containsString:@"Deleted"]) continue;
+    PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum  subtype:smartAlbumSubtype options:nil];
+    for (PHAssetCollection *collection in smartAlbums) {
+        NSLog(@"collection %@",collection.localizedTitle);
+        PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
+        if (fetchResult.count < 1) continue;
+        if ([collection.localizedTitle containsString:@"Deleted"]) continue;
+        
+        IPAlbumModel * model = [self modelWithResult:fetchResult name:collection.localizedTitle];
+        [self.albumArr addObject:model];
+        if (self.currentAlbumModel == nil || self.currentAlbumModel.imageCount < model.imageCount) {
             
-            IPAlbumModel * model = [self modelWithResult:fetchResult name:collection.localizedTitle];
-            [self.albumArr addObject:model];
-            if (self.currentAlbumModel == nil || self.currentAlbumModel.imageCount < model.imageCount) {
-                
-                self.currentAlbumModel = model;
-            }
+            self.currentAlbumModel = model;
         }
+    }
     
-        //获取普通相册
-        PHFetchResult *albums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumRegular | PHAssetCollectionSubtypeAlbumSyncedAlbum options:nil];
-        for (PHAssetCollection *collection in albums) {
-            PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
-
-            if (fetchResult.count < 1) continue;
-            IPAlbumModel * model = [self modelWithResult:fetchResult name:collection.localizedTitle];
-            [self.albumArr addObject:model];
-            if (self.currentAlbumModel == nil || self.currentAlbumModel.imageCount < model.imageCount) {
-                
-                self.currentAlbumModel = model;
-            }
+    //获取普通相册
+    PHFetchResult *albums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumRegular | PHAssetCollectionSubtypeAlbumSyncedAlbum options:nil];
+    for (PHAssetCollection *collection in albums) {
+        NSLog(@"collection %@",collection.localizedTitle);
+        PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
+        
+        if (fetchResult.count < 1) continue;
+        IPAlbumModel * model = [self modelWithResult:fetchResult name:collection.localizedTitle];
+        [self.albumArr addObject:model];
+        if (self.currentAlbumModel == nil || self.currentAlbumModel.imageCount < model.imageCount) {
             
+            self.currentAlbumModel = model;
         }
-       [self getAssetsFromFetchResult:self.currentAlbumModel.groupAsset];
-       self.currentAlbumModel.isSelected = YES;
+        
+    }
+    [self getImageAssetsFromFetchResult:self.currentAlbumModel.groupAsset];
+    self.currentAlbumModel.isSelected = YES;
     
     
 }
@@ -370,26 +401,23 @@ static IPAssetManager *manager;
  *
  *  @param result 相册集合
  */
-- (void)getAssetsFromFetchResult:(PHFetchResult *)result{
+- (void)getImageAssetsFromFetchResult:(PHFetchResult *)result{
     [result enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL * _Nonnull stop) {
         
         IPAssetModelMediaType type = IPAssetModelMediaTypePhoto;
-        if (asset.mediaType == PHAssetMediaTypeVideo)      type = IPAssetModelMediaTypeVideo;
-        else if (asset.mediaType == PHAssetMediaTypeAudio) type = IPAssetModelMediaTypeAudio;
-        else if (asset.mediaType == PHAssetMediaTypeImage) {
-            if (asset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) type = IPAssetModelMediaTypeLivePhoto;
+        if (asset.mediaType == PHAssetMediaTypeImage) {
+//            if (asset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) type = IPAssetModelMediaTypeLivePhoto;
         }
         
-        IPImageModel *imgModel = [[IPImageModel alloc]init];
-        imgModel.mediaType = type;
+        IPAssetModel *imgModel = [[IPAssetModel alloc]init];
+        imgModel.assetType = type;
         imgModel.localIdentiy = asset.localIdentifier;
         imgModel.assetUrl = [NSURL URLWithString:asset.localIdentifier];
         imgModel.asset = asset;
-        NSString *timeLength = type == IPAssetModelMediaTypeVideo ? [NSString stringWithFormat:@"%0.0f",asset.duration] : @"";
-        timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
-        imgModel.videoDuration = timeLength;
+        
+       
         if (self.allImageModel.count > 0) {
-            [self.allImageModel enumerateObjectsUsingBlock:^(IPImageModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            [self.allImageModel enumerateObjectsUsingBlock:^(IPAssetModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 
                 if ([obj.localIdentiy isEqualToString:asset.localIdentifier]) {
                     imgModel.isSame = YES;
@@ -415,7 +443,7 @@ static IPAssetManager *manager;
 - (void)getPhotoWithAsset:(IPAlbumModel *)albumModel photoWidth:(CGSize)photoSize{
     PHAsset *phAsset = [albumModel.groupAsset lastObject];
     // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
-   
+    
     CGFloat multiple = [UIScreen mainScreen].scale;
     CGFloat pixelWidth = photoSize.width * multiple;
     CGFloat pixelHeight = photoSize.height * multiple;
@@ -431,7 +459,7 @@ static IPAssetManager *manager;
     }];
 }
 
-- (void)getAspectPhotoWithAsset:(IPImageModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+- (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     if (iOS8Later) {
         [self ios8_AsyncLoadAspectThumbilImageWithSize:photoSize asset:imageModel completion:completion];
     }else {//ios8之前
@@ -449,49 +477,52 @@ static IPAssetManager *manager;
         }
     }
 }
-- (void)getFullScreenImageWithAsset:(IPImageModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     
     if (iOS8Later) {
         [self ios8_AsyncLoadFullScreenImageWithSize:photoSize asset:imageModel completion:completion];
     }else {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
-                @try {
-                    ALAsset *asset = (ALAsset *)imageModel.asset;
-                    ALAssetRepresentation *rep = [asset defaultRepresentation];
-                    CGImageRef iref = [rep fullScreenImage];
-                    UIImage *fullScreenImage;
-                    if (iref) {
-                        fullScreenImage = [UIImage imageWithCGImage:iref];
-                        
-                    }
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if (completion) {
-                            completion(fullScreenImage,nil);
-                        }
-                        
-                    });
-                } @catch (NSException *e) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        completion(nil,nil);
-                    });
+            @try {
+                ALAsset *asset = (ALAsset *)imageModel.asset;
+                ALAssetRepresentation *rep = [asset defaultRepresentation];
+                CGImageRef iref = [rep fullScreenImage];
+                UIImage *fullScreenImage;
+                if (iref) {
+                    fullScreenImage = [UIImage imageWithCGImage:iref];
+                    
                 }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (completion) {
+                        completion(fullScreenImage,nil);
+                    }
+                    
+                });
+            } @catch (NSException *e) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(nil,nil);
+                });
+            }
             
         });
     }
     
-
+    
 }
-- (void)getThumibImageWithAsset:(IPImageModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     if(iOS8Later){
         [self ios8_asynLoadThumibImageWithSize:photoSize asset:imageModel completion:completion];
     }else {
         @try {
-                ALAsset *asset = (ALAsset *)imageModel.asset;
-                UIImage *aspectThumbnail = [UIImage imageWithCGImage:asset.thumbnail];
-                if (completion) {
-                    completion(aspectThumbnail,nil);
-                }
+            ALAsset *asset = (ALAsset *)imageModel.asset;
+            UIImage *aspectThumbnail = [UIImage imageWithCGImage:asset.thumbnail];
+            if (imageModel.assetType == IPAssetModelMediaTypeVideo) {
+                imageModel.VideoThumbail = aspectThumbnail;
+            }
+            if (completion) {
+                completion(aspectThumbnail,nil);
+            }
         }
         @catch (NSException *e) {
             if (completion) {
@@ -500,7 +531,7 @@ static IPAssetManager *manager;
         }
         
     }
-    
+
     
 }
 
@@ -512,39 +543,42 @@ static IPAssetManager *manager;
  *  @param imagModel 图片模型
  */
 
-- (void)ios8_asynLoadThumibImageWithSize:(CGSize)imageSize asset:(IPImageModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+- (void)ios8_asynLoadThumibImageWithSize:(CGSize)imageSize asset:(IPAssetModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
     options.resizeMode = PHImageRequestOptionsResizeModeExact;
     options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
     PHAsset *phAsset = (PHAsset *)imagModel.asset;
     
-    
+    __block IPAssetModel *tempModel = imagModel;
     //    PHAsset *phAsset = imagModel.imageAsset;
     
     // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
     
     CGFloat multiple = [UIScreen mainScreen].scale;
-    CGFloat pixelWidth = imageSize.width * multiple;
-    CGFloat pixelHeight = imageSize.height * multiple;
+    CGFloat pixelWidth = imageSize.width * multiple;//PHImageManagerMaximumSize
+    CGFloat pixelHeight = imageSize.height * multiple;//CGSizeMake(pixelWidth, pixelHeight)
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+        NSLog(@"高清缩略图--%@",info);
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
-        
-            if (downloadFinined) {
-                completion(result,nil);
-                
-            }else {
-                completion(nil,nil);
-            }
+        if (tempModel.assetType == IPAssetModelMediaTypeVideo) {
+            tempModel.VideoThumbail = result;
+        }
+        if (downloadFinined) {
+            completion(result,nil);
+            
+        }else {
+            completion(nil,nil);
+        }
         
         
     }];
-
+    
     
 }
 /**
  *  加载高清图
  */
-- (void)ios8_AsyncLoadFullScreenImageWithSize:(CGSize)imageSize asset:(IPImageModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+- (void)ios8_AsyncLoadFullScreenImageWithSize:(CGSize)imageSize asset:(IPAssetModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
     options.networkAccessAllowed = YES;
     options.resizeMode = PHImageRequestOptionsResizeModeExact;
@@ -552,7 +586,7 @@ static IPAssetManager *manager;
     PHAsset *phAsset = (PHAsset *)imagModel.asset;
     
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-//        NSLog(@"高清图--%@",info);
+                NSLog(@"高清图--%@",info);
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (downloadFinined) {
             completion(result,nil);
@@ -565,7 +599,7 @@ static IPAssetManager *manager;
 /**
  *  高清预览图
  */
-- (void)ios8_AsyncLoadAspectThumbilImageWithSize:(CGSize)imageSize asset:(IPImageModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+- (void)ios8_AsyncLoadAspectThumbilImageWithSize:(CGSize)imageSize asset:(IPAssetModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
     options.resizeMode = PHImageRequestOptionsResizeModeFast;
     options.deliveryMode = PHImageRequestOptionsDeliveryModeFastFormat;
@@ -576,7 +610,7 @@ static IPAssetManager *manager;
     CGFloat pixelWidth = imageSize.width * multiple;
     CGFloat pixelHeight = pixelWidth / aspectRatio;
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-//        NSLog(@"高清缩略图--%@",info);
+        //        NSLog(@"高清缩略图--%@",info);
         // 排除取消，错误，得到低清图三种情况，即已经获取到了低清图
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && [[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (downloadFinined) {
@@ -591,8 +625,15 @@ static IPAssetManager *manager;
 #pragma mark 视频
 - (void)reloadVideosFromLibrary{
     
-    IPImageModel *imgModel = [[IPImageModel alloc]init];
-    [self.currentPhotosArr addObject:imgModel];
+     [self clearData];
+    
+    if (self.currentPhotosArr.count == 0) {
+        IPAssetModel *imgModel = [[IPAssetModel alloc]init];
+        imgModel.assetType = IPAssetModelMediaTypeTakeVideo;
+        
+        [self.currentPhotosArr addObject:imgModel];
+    }
+    
     
     if (iOS8Later) {
         [self getAllVideosIOS8];
@@ -603,27 +644,28 @@ static IPAssetManager *manager;
 }
 - (void)getAllVideosIOS8{
     
-    
+    if ([PHPhotoLibrary authorizationStatus] == PHAuthorizationStatusDenied ) {
+        [self performDelegateWithSuccess:NO];
+        return;
+    }
     PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
     imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
     imageOption.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
     
-    
-    
-    //获取普通相册
+    //获取普通相册albums	PHUnauthorizedFetchResult
     PHFetchResult *albums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeSmartAlbumVideos options:nil];
     for (PHAssetCollection *collection in albums) {
         NSLog(@"collection %@",collection.localizedTitle);
-        if ([collection.localizedTitle isEqualToString:@"Videos"]) {
+        if ([collection.localizedTitle isEqualToString:@"Videos"] || [collection.localizedTitle isEqualToString:@"视频"]) {
             PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
             IPAlbumModel * model = [[IPAlbumModel alloc]init];
-            model.albumName = @"全部视频";
+            model.albumName = @"选择视频";
             
             if (self.currentAlbumModel == nil ) {
                 self.currentAlbumModel = model;
             }
             
-            [self getAssetsFromFetchResult:fetchResult];
+            [self getVideoAssetsFromFetchResult:fetchResult];
         }
     }
     
@@ -643,14 +685,21 @@ static IPAssetManager *manager;
                     
                     if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
                         
-                        IPImageModel *imgModel = [[IPImageModel alloc]init];
-                        imgModel.mediaType = IPAssetModelMediaTypeVideo;
-                        imgModel.asset = result;
+                        
+                        
+                        
+                        
+                        IPAssetModel *videoModel = [[IPAssetModel alloc]init];
+                        
+                        videoModel.assetType = IPAssetModelMediaTypeVideo;
+                        
+                        videoModel.asset = result;
                         NSTimeInterval duration = [[result valueForProperty:ALAssetPropertyDuration] integerValue];
+                        videoModel.duration = duration;
                         NSString *timeLength = [NSString stringWithFormat:@"%0.0f",duration];
                         timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
-                        imgModel.videoDuration = timeLength;
-                        [weakSelf.currentPhotosArr addObject:imgModel];
+                        videoModel.videoDuration = timeLength;
+                        [weakSelf.currentPhotosArr addObject:videoModel];
                         
                     }
                 }
@@ -664,7 +713,7 @@ static IPAssetManager *manager;
                         
                         IPAlbumModel *model = [[IPAlbumModel alloc]init];
                         model.albumName = @"全部视频";
-                        weakSelf.currentAlbumModel = model;                
+                        weakSelf.currentAlbumModel = model;
                         [weakSelf performDelegateWithSuccess:YES];
                     }
                     
@@ -682,7 +731,7 @@ static IPAssetManager *manager;
                                                  failureBlock:failureblock];
         }
     });
-
+    
 }
 - (NSString *)getNewTimeFromDurationSecond:(NSInteger)duration {
     NSString *newTime;
@@ -701,4 +750,307 @@ static IPAssetManager *manager;
     }
     return newTime;
 }
+- (void)getVideoAssetsFromFetchResult:(PHFetchResult *)result{
+    [result enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL * _Nonnull stop) {
+       
+        IPAssetModelMediaType type = IPAssetModelMediaTypeVideo;
+        
+        
+        
+        __block IPAssetModel *videoModel = [[IPAssetModel alloc]init];
+        videoModel.assetType = type;
+        videoModel.localIdentiy = asset.localIdentifier;
+        videoModel.asset = asset;
+        if (type == IPAssetModelMediaTypeVideo) {
+            [[PHImageManager defaultManager] requestPlayerItemForVideo:asset options:nil resultHandler:^(AVPlayerItem * _Nullable playerItem, NSDictionary * _Nullable info) {
+                NSString *str = info[@"PHImageFileSandboxExtensionTokenKey"];
+                NSArray *strArr = [str componentsSeparatedByString:@";"];
+                NSString *videoPath = [strArr lastObject];
+                videoModel.assetUrl = [NSURL URLWithString:videoPath];
+            }];
+            
+        }
+        
+        NSString *timeLength = type == IPAssetModelMediaTypeVideo ? [NSString stringWithFormat:@"%0.0f",asset.duration] : @"";
+        videoModel.duration = asset.duration;
+        timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
+        videoModel.videoDuration = timeLength;
+        [self.currentPhotosArr addObject:videoModel];
+        
+        
+        
+    }];
+    
+//    NSLog(@"performDelegateWithSuccess");
+    [self performDelegateWithSuccess:YES];
+   
+}
+
+- (void)compressVideoWithAssetModel:(IPAssetModel *)assetModel CompleteBlock:(functionBlock)block{
+    __weak typeof(self) weakSelf = self;
+    
+    
+    
+    if ([assetModel.asset isKindOfClass:[PHAsset class]]) {
+        [[PHImageManager defaultManager] requestPlayerItemForVideo:assetModel.asset options:nil resultHandler:^(AVPlayerItem * _Nullable playerItem, NSDictionary * _Nullable info) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                block(playerItem);
+            });
+            
+        }];
+    } else if ([assetModel.asset isKindOfClass:[ALAsset class]]) {
+        ALAsset *alAsset = (ALAsset *)assetModel.asset;
+        ALAssetRepresentation *defaultRepresentation = [alAsset defaultRepresentation];
+        NSString *uti = [defaultRepresentation UTI];
+        NSURL *videoURL = [[alAsset valueForProperty:ALAssetPropertyURLs] valueForKey:uti];
+        AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithURL:videoURL];
+        block(playerItem);
+    }
+}
+//- (void)compressVideoWithPlayerItem:(AVPlayerItem *)item CompleteBlock:(functionBlock)block
+//{
+//    
+//    NSURL *output = [NSURL fileURLWithPath:[self getTemporayPath:@"_compress.mp4"]];
+//    
+//    AVAsset *avAsset = item.asset;
+//    CMTime assetTime = [avAsset duration];
+//    Float64 duration = CMTimeGetSeconds(assetTime);
+//    NSLog(@"视频时长 %f\n",duration);
+//    
+//    AVMutableVideoComposition *avMutableVideoComposition = [self getVideoComposition:avAsset];
+//    
+//    AVAssetExportSession *avAssetExportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetMediumQuality];
+//    [avAssetExportSession setVideoComposition:avMutableVideoComposition];
+//    [avAssetExportSession setOutputURL:output];
+//    if ([avAssetExportSession.supportedFileTypes containsObject:AVFileTypeMPEG4]) {
+//        [avAssetExportSession setOutputFileType:AVFileTypeMPEG4];
+////        avAssetExportSession.outputFileType = @"com.apple.quicktime-movie";
+//        //     [avAssetExportSession setOutputFileType:AVFileTypeQuickTimeMovie];//这句话要是要的话，会出错的。。。
+//    }
+//    else{
+//        [avAssetExportSession setOutputFileType:[avAssetExportSession.supportedFileTypes firstObject]];
+//    }
+//    [avAssetExportSession setShouldOptimizeForNetworkUse:YES];
+//    __block NSDate *beginDate = [NSDate date];
+//    [avAssetExportSession exportAsynchronouslyWithCompletionHandler:^(void){
+//        
+//            if(avAssetExportSession.status == AVAssetExportSessionStatusCompleted){
+//                NSLog(@"%f",[[NSDate date] timeIntervalSinceDate:beginDate]);
+//                dispatch_async(dispatch_get_main_queue(), ^{
+//                    block(output);
+//                });
+//            } else if(avAssetExportSession.status == AVAssetExportSessionStatusFailed){
+//                NSLog(@"exporting failed %@",[avAssetExportSession error]);
+//            }
+//    }];
+//    
+//}
+//-(AVMutableVideoComposition *) getVideoComposition:(AVAsset *)asset
+//{
+//    AVAssetTrack *videoTrack = [[asset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+//    AVMutableComposition *composition = [AVMutableComposition composition];
+//    AVMutableVideoComposition *videoComposition = [AVMutableVideoComposition videoComposition];
+//    CGSize videoSize = videoTrack.naturalSize;
+//    BOOL isPortrait_ = [self isVideoPortrait:asset];
+//    if(isPortrait_) {
+//        NSLog(@"video is portrait ");
+//        videoSize = CGSizeMake(videoSize.height, videoSize.width);
+//    }
+//    composition.naturalSize     = videoSize;
+//    videoComposition.renderSize = videoSize;
+//    videoComposition.frameDuration = CMTimeMakeWithSeconds( 1 / videoTrack.nominalFrameRate, 600);
+//    
+//    AVMutableCompositionTrack *compositionVideoTrack;
+//    compositionVideoTrack = [composition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+//    [compositionVideoTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset.duration) ofTrack:videoTrack atTime:kCMTimeZero error:nil];
+//    AVMutableVideoCompositionLayerInstruction *layerInst;
+//    layerInst = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
+//    [layerInst setTransform:videoTrack.preferredTransform atTime:kCMTimeZero];
+//    AVMutableVideoCompositionInstruction *inst = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+//    inst.timeRange = CMTimeRangeMake(kCMTimeZero, asset.duration);
+//    inst.layerInstructions = [NSArray arrayWithObject:layerInst];
+//    videoComposition.instructions = [NSArray arrayWithObject:inst];
+//    return videoComposition;
+//}
+//
+//
+//-(BOOL) isVideoPortrait:(AVAsset *)asset
+//{
+//    BOOL isPortrait = FALSE;
+//    NSArray *tracks = [asset tracksWithMediaType:AVMediaTypeVideo];
+//    if([tracks    count] > 0) {
+//        AVAssetTrack *videoTrack = [tracks objectAtIndex:0];
+//        
+//        CGAffineTransform t = videoTrack.preferredTransform;
+//        // Portrait
+//        if(t.a == 0 && t.b == 1.0 && t.c == -1.0 && t.d == 0)
+//        {
+//            isPortrait = YES;
+//        }
+//        // PortraitUpsideDown
+//        if(t.a == 0 && t.b == -1.0 && t.c == 1.0 && t.d == 0)  {
+//            
+//            isPortrait = YES;
+//        }
+//        // LandscapeRight
+//        if(t.a == 1.0 && t.b == 0 && t.c == 0 && t.d == 1.0)
+//        {
+//            isPortrait = NO;
+//        }
+//        // LandscapeLeft
+//        if(t.a == -1.0 && t.b == 0 && t.c == 0 && t.d == -1.0)
+//        {
+//            isPortrait = NO;
+//        }
+//    }
+//    return isPortrait;
+//}
+//
+//
+//- (NSString *) getTemporayPath:(NSString *)extension
+//{
+//    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+//    
+//    if(!self.captureDirectory)
+//    {
+//        formatter.dateFormat = @"yyyyMMddHHmm";
+//        NSString *dir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+//        dir = [[dir stringByAppendingPathComponent:@"CompressVideos"]
+//               stringByAppendingPathComponent:[formatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:0]]];
+//        
+//        NSFileManager *fileManager = [NSFileManager defaultManager];
+//        BOOL isDir = FALSE;
+//        BOOL isDirExist = [fileManager fileExistsAtPath:dir isDirectory:&isDir];
+//        
+//        if(!(isDirExist && isDir))
+//        {
+//            BOOL bCreateDir = [fileManager createDirectoryAtPath:dir withIntermediateDirectories:YES attributes:nil error:nil];
+//            if(!bCreateDir){
+//                PLog(@"创建文件夹失败");
+//                
+//            }
+//            
+//        }
+//        
+//        self.captureDirectory = dir;
+//    }
+//    formatter.dateFormat = @"yyyyMMddHHmmsss";
+//    NSString *outputPath = [self.captureDirectory stringByAppendingPathComponent:[formatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:0]]];
+//    
+//    return [outputPath stringByAppendingString:extension];
+//}
+
+//#define KCachesPath [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0]
+//// 将原始视频的URL转化为NSData数据,写入沙盒
+//- (void)videoWithUrl:(NSURL *)url withFileName:(NSString *)fileName
+//{
+//    
+//    // 解析一下,为什么视频不像图片一样一次性开辟本身大小的内存写入?
+//    // 想想,如果1个视频有1G多,难道直接开辟1G多的空间大小来写?
+//    ALAssetsLibrary *assetLibrary = [[ALAssetsLibrary alloc] init];
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//        if (url) {
+//            [assetLibrary assetForURL:url resultBlock:^(ALAsset *asset) {
+//                ALAssetRepresentation *rep = [asset defaultRepresentation];
+//                NSString * videoPath = [KCachesPath stringByAppendingPathComponent:fileName];
+//                NSLog(@"%@",videoPath);
+//                char const *cvideoPath = [videoPath UTF8String];
+//                
+//                FILE *file = fopen(cvideoPath, "a+");
+//                if (file) {
+//                    const int bufferSize = 1024 * 1024;
+//                    // 初始化一个1M的buffer
+//                    Byte *buffer = (Byte*)malloc(bufferSize);
+//                    NSUInteger read = 0, offset = 0, written = 0;
+//                    NSError* err = nil;
+//                    if (rep.size != 0)
+//                    {
+//                        do {
+//                            read = [rep getBytes:buffer fromOffset:offset length:bufferSize error:&err];
+//                            written = fwrite(buffer, sizeof(char), read, file);
+//                            offset += read;
+//                        } while (read != 0 && !err);//没到结尾，没出错，ok继续
+//                    }
+//                    // 释放缓冲区，关闭文件
+//                    free(buffer);
+//                    buffer = NULL;
+//                    fclose(file);
+//                    file = NULL;
+//                }
+//            } failureBlock:nil];
+//        }
+//    });
+//}
+//- (void)compressVideoWithPlayerItem:(AVPlayerItem *)item CompleteBlock:(functionBlock)block
+//{
+//    
+//    NSURL *output = [NSURL fileURLWithPath:[self getTemporayPath:@"_compress.mp4"]];
+//    
+//    AVAsset *avAsset = item.asset;
+//    CMTime assetTime = [avAsset duration];
+//    Float64 duration = CMTimeGetSeconds(assetTime);
+//    NSLog(@"视频时长 %f\n",duration);
+//    
+//    AVMutableComposition *avMutableComposition = [AVMutableComposition composition];
+//    
+//    AVAssetTrack *avAssetTrack = [[avAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
+//    
+//    AVMutableVideoCompositionLayerInstruction *layerInstruciton = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:avAssetTrack];
+//    CGAffineTransform layerTransform = avAssetTrack.preferredTransform;
+//    BOOL portrait = [self isVideoPortrait:avAsset];
+//    if (portrait) {//竖屏
+//        //        [0, 1, -1, 0, 1080, 0]
+//        
+//        //        NSLog(@"%@",NSStringFromCGAffineTransform(layerTransform));
+//        layerTransform = CGAffineTransformMakeTranslation(avAssetTrack.naturalSize.width, 0);
+//        ////        NSLog(@"%@",NSStringFromCGAffineTransform(layerTransform));
+//        layerTransform = CGAffineTransformScale(layerTransform,-1.0, 1.0);//
+//        //        NSLog(@"%@",NSStringFromCGAffineTransform(layerTransform));
+//    }else {//横屏
+//        
+//    }
+//    [layerInstruciton setTransform:layerTransform atTime:kCMTimeZero];
+//    
+//    //    AVMutableVideoCompositionLayerInstruction *layerInstruciton = [self layerInstructionAfterFixingOrientationForAsset:avAsset forTrack:avAssetTrack atTime:assetTime];
+//    AVMutableVideoComposition *avMutableVideoComposition = [[AVMutableVideoComposition alloc]init];
+//    // 这个视频大小可以由你自己设置。比如源视频640*480.而你这320*480.最后出来的是320*480这么大的，640多出来的部分就没有了。并非是把图片压缩成那么大了。
+//    avMutableVideoComposition.renderSize = avAssetTrack.naturalSize;
+//    avMutableVideoComposition.frameDuration = CMTimeMake(1, 24);
+//    NSLog(@"natural:width=%f;height:%f",avAssetTrack.naturalSize.width,avAssetTrack.naturalSize.height);
+//    
+//    AVMutableVideoCompositionInstruction *avMutableVideoCompositionInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+//    
+//    [avMutableVideoCompositionInstruction setTimeRange:CMTimeRangeMake(kCMTimeZero, assetTime)];
+//    
+//    avMutableVideoCompositionInstruction.layerInstructions = @[layerInstruciton];
+//    
+//    
+//    avMutableVideoComposition.instructions = @[avMutableVideoCompositionInstruction];
+//    
+//    AVAssetExportSession *avAssetExportSession = [[AVAssetExportSession alloc] initWithAsset:avAsset presetName:AVAssetExportPresetMediumQuality];
+//    [avAssetExportSession setVideoComposition:avMutableVideoComposition];
+//    [avAssetExportSession setOutputURL:output];
+//    if ([avAssetExportSession.supportedFileTypes containsObject:AVFileTypeMPEG4]) {
+//        [avAssetExportSession setOutputFileType:AVFileTypeMPEG4];
+//        //        avAssetExportSession.outputFileType = @"com.apple.quicktime-movie";
+//        //     [avAssetExportSession setOutputFileType:AVFileTypeQuickTimeMovie];//这句话要是要的话，会出错的。。。
+//    }
+//    else{
+//        [avAssetExportSession setOutputFileType:[avAssetExportSession.supportedFileTypes firstObject]];
+//    }
+//    [avAssetExportSession setShouldOptimizeForNetworkUse:YES];
+//    
+//    [avAssetExportSession exportAsynchronouslyWithCompletionHandler:^(void){
+//        
+//        if(avAssetExportSession.status == AVAssetExportSessionStatusCompleted){
+//            dispatch_async(dispatch_get_main_queue(), ^{
+//                block(output);
+//            });
+//        } else if(avAssetExportSession.status == AVAssetExportSessionStatusFailed){
+//            NSLog(@"exporting failed %@",[avAssetExportSession error]);
+//        }
+//    }];
+//    
+//}
+
 @end

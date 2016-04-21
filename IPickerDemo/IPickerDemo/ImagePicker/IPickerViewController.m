@@ -15,6 +15,8 @@
 #import "IPAssetManager.h"
 #import "IPImageReaderViewController.h"
 #import "IPAlertView.h"
+#import "IPTakeVideoViewController.h"
+
 //#import "AHUIImageNameHandle.h"
 //#import "AHStringUtil.h"
 
@@ -23,7 +25,7 @@
 #define headerHeight 44.0f
 NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION";
 
-@interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate>
+@interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate,IPTakeVideoViewControllerDelegate>
 /**图库*/
 @property (nonatomic, strong)IPAssetManager *defaultAssetManager;
 
@@ -108,9 +110,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     if (self.style == IPickerViewControllerDisplayStyleVideo) {
         self.arrowImge.hidden = YES;
         self.centerBtn.userInteractionEnabled = NO;
-        [self.centerBtn setTitle:@"全部视频" forState:UIControlStateNormal];
+        [self.centerBtn setTitle:@"选择视频" forState:UIControlStateNormal];
         [self.defaultAssetManager reloadVideosFromLibrary];
-        
+        self.rightBtn.hidden = YES;
     }else {
         [self.defaultAssetManager reloadImagesFromLibrary];
     }
@@ -120,7 +122,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [super didReceiveMemoryWarning];
     NSLog(@"didReceiveMemoryWarning--IPickerViewController");
     
-    [self.defaultAssetManager clearDataCache];
+//    [self.defaultAssetManager clearDataCache];
 }
 - (void)dealloc{
     NSLog(@"IPickerViewController--dealloc");
@@ -267,7 +269,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 }
 - (IPImageCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     IPImageCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:IPicker_CollectionID forIndexPath:indexPath];
-    IPImageModel *model = self.curImageModelArr[indexPath.item];
+    IPAssetModel *model = self.curImageModelArr[indexPath.item];
     cell.model = model;
     cell.delegate = self;
     return cell;
@@ -287,20 +289,67 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return 5;
 }
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-    IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.curImageModelArr TargetIndex:indexPath.item];
-    reader.maxCount = self.maxCount;
-    reader.currentCount = self.selectPhotoCount;
-    reader.delegate = self;
-    reader.dismissBlock = ^(){
-        [self.mainView reloadData];
-    };
-    if (reader) {
-        [self presentViewController:reader animated:YES completion:nil];
-    }else {
-        NSLog(@"内存吃紧啊");
+    if (indexPath.item < self.curImageModelArr.count) {
+        IPAssetModel *model = self.curImageModelArr[indexPath.item];
+        __weak typeof(self) weakSelf = self;
+        
+        
+        
+        if (model.assetType == IPAssetModelMediaTypeTakeVideo) {
+            
+            IPTakeVideoViewController *takeVideo = [[IPTakeVideoViewController alloc]init];
+            takeVideo.delegate = weakSelf;
+            [self presentViewController:takeVideo animated:YES completion:nil];
+            
+        }else if(model.assetType == IPAssetModelMediaTypeVideo){
+            __block IPAlertView *alert = [IPAlertView showAlertViewAt:self.view Text:@"视频加载中..."];
+            [self.defaultAssetManager compressVideoWithAssetModel:model CompleteBlock:^(AVPlayerItem *item) {
+                [alert dismissFromHostView];
+                if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(imgPicker:didFinishCaptureVideoItem:Videourl:videoDuration:thumbailImage:)]) {
+                    
+                    [weakSelf.delegate imgPicker:weakSelf didFinishCaptureVideoItem:item Videourl:nil videoDuration:(float)model.duration thumbailImage:model.VideoThumbail];
+                    
+                }
+                NSLog(@"%@",[NSThread currentThread]);
+                //                [weakSelf exitIPickerWithAnimation:YES];
+                
+                
+            }];
+            
+        }else {
+            IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.curImageModelArr TargetIndex:indexPath.item];
+            reader.maxCount = self.maxCount;
+            reader.currentCount = self.selectPhotoCount;
+            reader.delegate = self;
+            reader.dismissBlock = ^(){
+                [self.mainView reloadData];
+            };
+            if (reader) {
+                //定义个转场动画
+                CATransition *animation = [CATransition animation];
+                //转场动画持续时间
+                animation.duration = 0.2f;
+                //计时函数，从头到尾的流畅度？？？
+                animation.timingFunction=UIViewAnimationCurveEaseInOut;
+                //转场动画类型
+                animation.type = kCATransitionPush;
+                //转场动画将去的方向
+                animation.subtype = kCATransitionFromRight;
+                animation.delegate = self;
+                //添加动画 （转场动画是添加在层上的动画）
+                [self.view.window.layer addAnimation:animation forKey:nil];
+                [self presentViewController:reader animated:YES completion:nil];
+            }else {
+                NSLog(@"内存吃紧啊");
+            }
+            
+        }
+        
     }
     
+    
 }
+
 
 #pragma  mark - 导航条左右按钮的处理逻辑 -
 /**
@@ -342,7 +391,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 /**
  *  点击cell右上角的选中按钮
  */
-- (BOOL)clickRightCornerBtnForView:(IPImageModel *)model{
+- (BOOL)clickRightCornerBtnForView:(IPAssetModel *)model{
     if (model.isSelect) {
         if (self.selectPhotoCount >= self.maxCount) {
             [IPAlertView showAlertViewAt:self.view MaxCount:self.maxCount];
@@ -359,14 +408,14 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
  *
  *  @param assetModel 对应的imageModel对象
  */
-- (void)clickSelectBtnForReaderView:(IPImageModel *)assetModel{
+- (void)clickSelectBtnForReaderView:(IPAssetModel *)assetModel{
     if (assetModel.isSelect) {
         [self addImageModel:assetModel WithIsAdd:YES];
     }else {
         [self addImageModel:assetModel WithIsAdd:NO];
     }
 }
-- (void)addImageModel:(IPImageModel *)model WithIsAdd:(BOOL)isAdd{
+- (void)addImageModel:(IPAssetModel *)model WithIsAdd:(BOOL)isAdd{
     if (isAdd) {
         self.selectPhotoCount++;
         if (![self.priCurrentSelArr containsObject:model]) {
@@ -646,6 +695,35 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
             }
         }];
     }
+    
+}
+#pragma mark - about video -
+- (void)presentTakeVideoViewController:(IPAssetManager *)manager{
+    IPTakeVideoViewController *takeVideo = [[IPTakeVideoViewController alloc]init];
+    takeVideo.delegate = self;
+    [self presentViewController:takeVideo animated:YES completion:nil];
+}
+- (void)VisionDidCaptureFinish:(AHVision *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration{
+    UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:thumbnail]];
+    
+    __weak typeof(self) weakSelf = self;
+    [vision exportVideo:^(BOOL success,NSURL *url){
+        
+        if (success) {
+            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(imgPicker:didFinishCaptureVideoItem:Videourl:videoDuration:thumbailImage:)]) {
+                [weakSelf.delegate imgPicker:weakSelf didFinishCaptureVideoItem:nil Videourl:url videoDuration:duration thumbailImage:image];
+            }
+        }
+        else{
+            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(imgPicker:didFinishCaptureVideoItem:Videourl:videoDuration:thumbailImage:)]) {
+                [weakSelf.delegate imgPicker:weakSelf didFinishCaptureVideoItem:nil Videourl:nil videoDuration:duration thumbailImage:image];
+            }
+        }
+        //        [weakSelf exitIPickerWithAnimation:YES];
+        
+    }withProgress:^(float progress){
+        
+    }];
     
 }
 @end

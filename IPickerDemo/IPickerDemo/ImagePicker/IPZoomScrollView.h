@@ -8,11 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
-@class IPImageModel;
+@class IPAssetModel;
 
 @interface IPZoomScrollView : UIScrollView
 
-@property (nonatomic) IPImageModel * imageModel;
+@property (nonatomic) IPAssetModel * imageModel;
 
 - (void)prepareForReuse;
 
