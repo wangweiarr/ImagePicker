@@ -40,12 +40,14 @@ static UIViewController *vc;
     NSLog(@"%@",vc);
     vc = [[UIViewController alloc]init];
     NSLog(@"%@",vc);
+//    D7DD1D1D-DC89-4A5A-B30F-E735F3589C19/L0/001
+    
     
 }
 - (IBAction)popIPicker:(UIButton *)sender{
     IPickerViewController *ip = [IPickerViewController instanceWithDisplayStyle:IPickerViewControllerDisplayStyleImage];
     ip.delegate = self;
-    ip.maxCount = 50;
+    ip.maxCount = 9;
     ip.popStyle = IPickerViewControllerPopStylePush;
     [self.navigationController pushViewController:ip animated:YES];
 //    [self presentViewController:ip animated:YES completion:nil];
@@ -70,21 +72,12 @@ static UIViewController *vc;
    [datas enumerateObjectsUsingBlock:^(IPAssetModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
        NSLog(@"%@--%@",obj.localIdentiy,obj.assetUrl.absoluteString);
        if (idx == 0) {
-                       [IPickerViewController getImageModelWithURL:obj.assetUrl RequestBlock:^(UIImage *image, NSDictionary *info) {
-                           _img1.image = image;
-                       }];
                    }else if (idx == 1){
-                       [IPickerViewController getImageModelWithURL:obj.assetUrl RequestBlock:^(UIImage *image, NSDictionary *info) {
-                           _img2.image = image;
-                       }];
+                       
                    }else if (idx == 2){
-                       [IPickerViewController getImageModelWithURL:obj.assetUrl RequestBlock:^(UIImage *image, NSDictionary *info) {
-                           _img3.image = image;
-                       }];
+                       
                    }else if (idx == 3){
-                       [IPickerViewController getImageModelWithURL:obj.assetUrl RequestBlock:^(UIImage *image, NSDictionary *info) {
-                           _img4.image = image;
-                       }];
+                       
                    }
    }];
     

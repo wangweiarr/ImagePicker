@@ -18,13 +18,19 @@
 		344F37E71C83D4C0006063B6 /* IPAlbumView.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37DE1C83D4C0006063B6 /* IPAlbumView.m */; };
 		344F37E81C83D4C0006063B6 /* IPickerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37E01C83D4C0006063B6 /* IPickerViewController.m */; };
 		344F37E91C83D4C0006063B6 /* IPImageCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37E21C83D4C0006063B6 /* IPImageCell.m */; };
-		344F37EA1C83D4C0006063B6 /* IPImageModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37E41C83D4C0006063B6 /* IPImageModel.m */; };
 		344F37ED1C83D508006063B6 /* IPTapDetectView.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37EC1C83D508006063B6 /* IPTapDetectView.m */; };
 		344F37F01C83D530006063B6 /* IPTapDetectImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37EF1C83D530006063B6 /* IPTapDetectImageView.m */; };
 		344F37F31C83D62C006063B6 /* IPZoomScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37F21C83D62C006063B6 /* IPZoomScrollView.m */; };
 		344F37F61C83DD47006063B6 /* IPAssetManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37F51C83DD47006063B6 /* IPAssetManager.m */; };
 		344F3BD91C842444006063B6 /* IPImageReaderViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F3BD81C842444006063B6 /* IPImageReaderViewController.m */; };
+		3453E6251CC8D99F004DAFDA /* IPAssetModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 3453E6241CC8D99F004DAFDA /* IPAssetModel.m */; };
 		3461FC9E1C86B99100FF3015 /* IPAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3461FC9D1C86B99100FF3015 /* IPAlertView.m */; };
+		34D795FF1CBBAD5F00CA2659 /* IPTakeVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D795FE1CBBAD5F00CA2659 /* IPTakeVideoViewController.m */; };
+		34D796051CBBB15000CA2659 /* AHVision.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D796021CBBB15000CA2659 /* AHVision.m */; };
+		34D796061CBBB15000CA2659 /* AHVisionUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D796041CBBB15000CA2659 /* AHVisionUtilities.m */; };
+		34D796091CBBB1CB00CA2659 /* AHCaptureProgressBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D796081CBBB1CB00CA2659 /* AHCaptureProgressBar.m */; };
+		34D7960C1CBBB1FC00CA2659 /* AHTooltipView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D7960B1CBBB1FC00CA2659 /* AHTooltipView.m */; };
+		34E40DA31CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,8 +54,6 @@
 		344F37E01C83D4C0006063B6 /* IPickerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPickerViewController.m; sourceTree = "<group>"; };
 		344F37E11C83D4C0006063B6 /* IPImageCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPImageCell.h; sourceTree = "<group>"; };
 		344F37E21C83D4C0006063B6 /* IPImageCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPImageCell.m; sourceTree = "<group>"; };
-		344F37E31C83D4C0006063B6 /* IPImageModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPImageModel.h; sourceTree = "<group>"; };
-		344F37E41C83D4C0006063B6 /* IPImageModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPImageModel.m; sourceTree = "<group>"; };
 		344F37EB1C83D508006063B6 /* IPTapDetectView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPTapDetectView.h; sourceTree = "<group>"; };
 		344F37EC1C83D508006063B6 /* IPTapDetectView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPTapDetectView.m; sourceTree = "<group>"; };
 		344F37EE1C83D530006063B6 /* IPTapDetectImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPTapDetectImageView.h; sourceTree = "<group>"; };
@@ -60,8 +64,22 @@
 		344F37F51C83DD47006063B6 /* IPAssetManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPAssetManager.m; sourceTree = "<group>"; };
 		344F3BD71C842444006063B6 /* IPImageReaderViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPImageReaderViewController.h; sourceTree = "<group>"; };
 		344F3BD81C842444006063B6 /* IPImageReaderViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPImageReaderViewController.m; sourceTree = "<group>"; };
+		3453E6231CC8D99F004DAFDA /* IPAssetModel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPAssetModel.h; sourceTree = "<group>"; };
+		3453E6241CC8D99F004DAFDA /* IPAssetModel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPAssetModel.m; sourceTree = "<group>"; };
 		3461FC9C1C86B99100FF3015 /* IPAlertView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPAlertView.h; sourceTree = "<group>"; };
 		3461FC9D1C86B99100FF3015 /* IPAlertView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPAlertView.m; sourceTree = "<group>"; };
+		34D795FD1CBBAD5F00CA2659 /* IPTakeVideoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPTakeVideoViewController.h; sourceTree = "<group>"; };
+		34D795FE1CBBAD5F00CA2659 /* IPTakeVideoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPTakeVideoViewController.m; sourceTree = "<group>"; };
+		34D796011CBBB15000CA2659 /* AHVision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AHVision.h; sourceTree = "<group>"; };
+		34D796021CBBB15000CA2659 /* AHVision.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AHVision.m; sourceTree = "<group>"; };
+		34D796031CBBB15000CA2659 /* AHVisionUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AHVisionUtilities.h; sourceTree = "<group>"; };
+		34D796041CBBB15000CA2659 /* AHVisionUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AHVisionUtilities.m; sourceTree = "<group>"; };
+		34D796071CBBB1CB00CA2659 /* AHCaptureProgressBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AHCaptureProgressBar.h; sourceTree = "<group>"; };
+		34D796081CBBB1CB00CA2659 /* AHCaptureProgressBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AHCaptureProgressBar.m; sourceTree = "<group>"; };
+		34D7960A1CBBB1FC00CA2659 /* AHTooltipView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AHTooltipView.h; sourceTree = "<group>"; };
+		34D7960B1CBBB1FC00CA2659 /* AHTooltipView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AHTooltipView.m; sourceTree = "<group>"; };
+		34E40DA11CCB5EBF00DCC366 /* IP3DTouchPreviewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IP3DTouchPreviewVC.h; sourceTree = "<group>"; };
+		34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IP3DTouchPreviewVC.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -94,6 +112,7 @@
 		344F37A61C814BC6006063B6 /* IPickerDemo */ = {
 			isa = PBXGroup;
 			children = (
+				34D796001CBBB15000CA2659 /* AHVision */,
 				344F37AA1C814BC6006063B6 /* AppDelegate.h */,
 				344F37AB1C814BC6006063B6 /* AppDelegate.m */,
 				344F37C21C814BF0006063B6 /* ViewController.h */,
@@ -119,6 +138,8 @@
 		344F37D81C83D4C0006063B6 /* ImagePicker */ = {
 			isa = PBXGroup;
 			children = (
+				3453E6231CC8D99F004DAFDA /* IPAssetModel.h */,
+				3453E6241CC8D99F004DAFDA /* IPAssetModel.m */,
 				344F37D91C83D4C0006063B6 /* IPAlbumCell.h */,
 				344F37DA1C83D4C0006063B6 /* IPAlbumCell.m */,
 				344F37DB1C83D4C0006063B6 /* IPAlbumModel.h */,
@@ -127,14 +148,14 @@
 				344F37DE1C83D4C0006063B6 /* IPAlbumView.m */,
 				344F37DF1C83D4C0006063B6 /* IPickerViewController.h */,
 				344F37E01C83D4C0006063B6 /* IPickerViewController.m */,
+				34E40DA11CCB5EBF00DCC366 /* IP3DTouchPreviewVC.h */,
+				34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */,
 				344F3BD71C842444006063B6 /* IPImageReaderViewController.h */,
 				344F3BD81C842444006063B6 /* IPImageReaderViewController.m */,
 				3461FC9C1C86B99100FF3015 /* IPAlertView.h */,
 				3461FC9D1C86B99100FF3015 /* IPAlertView.m */,
 				344F37E11C83D4C0006063B6 /* IPImageCell.h */,
 				344F37E21C83D4C0006063B6 /* IPImageCell.m */,
-				344F37E31C83D4C0006063B6 /* IPImageModel.h */,
-				344F37E41C83D4C0006063B6 /* IPImageModel.m */,
 				344F37EB1C83D508006063B6 /* IPTapDetectView.h */,
 				344F37EC1C83D508006063B6 /* IPTapDetectView.m */,
 				344F37EE1C83D530006063B6 /* IPTapDetectImageView.h */,
@@ -143,8 +164,25 @@
 				344F37F21C83D62C006063B6 /* IPZoomScrollView.m */,
 				344F37F41C83DD47006063B6 /* IPAssetManager.h */,
 				344F37F51C83DD47006063B6 /* IPAssetManager.m */,
+				34D795FD1CBBAD5F00CA2659 /* IPTakeVideoViewController.h */,
+				34D795FE1CBBAD5F00CA2659 /* IPTakeVideoViewController.m */,
 			);
 			path = ImagePicker;
+			sourceTree = "<group>";
+		};
+		34D796001CBBB15000CA2659 /* AHVision */ = {
+			isa = PBXGroup;
+			children = (
+				34D7960A1CBBB1FC00CA2659 /* AHTooltipView.h */,
+				34D7960B1CBBB1FC00CA2659 /* AHTooltipView.m */,
+				34D796071CBBB1CB00CA2659 /* AHCaptureProgressBar.h */,
+				34D796081CBBB1CB00CA2659 /* AHCaptureProgressBar.m */,
+				34D796011CBBB15000CA2659 /* AHVision.h */,
+				34D796021CBBB15000CA2659 /* AHVision.m */,
+				34D796031CBBB15000CA2659 /* AHVisionUtilities.h */,
+				34D796041CBBB15000CA2659 /* AHVisionUtilities.m */,
+			);
+			path = AHVision;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -178,6 +216,7 @@
 				TargetAttributes = {
 					344F37A31C814BC6006063B6 = {
 						CreatedOnToolsVersion = 7.2.1;
+						DevelopmentTeam = NVAFMDWZJC;
 					};
 				};
 			};
@@ -217,17 +256,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34E40DA31CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m in Sources */,
+				34D796091CBBB1CB00CA2659 /* AHCaptureProgressBar.m in Sources */,
 				344F3BD91C842444006063B6 /* IPImageReaderViewController.m in Sources */,
 				344F37ED1C83D508006063B6 /* IPTapDetectView.m in Sources */,
 				344F37AC1C814BC6006063B6 /* AppDelegate.m in Sources */,
 				344F37C51C814BF0006063B6 /* ViewController.m in Sources */,
-				344F37EA1C83D4C0006063B6 /* IPImageModel.m in Sources */,
+				34D7960C1CBBB1FC00CA2659 /* AHTooltipView.m in Sources */,
 				344F37E61C83D4C0006063B6 /* IPAlbumModel.m in Sources */,
 				344F37E51C83D4C0006063B6 /* IPAlbumCell.m in Sources */,
 				344F37E91C83D4C0006063B6 /* IPImageCell.m in Sources */,
 				344F37A91C814BC6006063B6 /* main.m in Sources */,
 				344F37F61C83DD47006063B6 /* IPAssetManager.m in Sources */,
+				34D796051CBBB15000CA2659 /* AHVision.m in Sources */,
+				34D796061CBBB15000CA2659 /* AHVisionUtilities.m in Sources */,
+				34D795FF1CBBAD5F00CA2659 /* IPTakeVideoViewController.m in Sources */,
 				344F37E81C83D4C0006063B6 /* IPickerViewController.m in Sources */,
+				3453E6251CC8D99F004DAFDA /* IPAssetModel.m in Sources */,
 				344F37F31C83D62C006063B6 /* IPZoomScrollView.m in Sources */,
 				344F37F01C83D530006063B6 /* IPTapDetectImageView.m in Sources */,
 				344F37E71C83D4C0006063B6 /* IPAlbumView.m in Sources */,
@@ -333,10 +378,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.JL.IPickerDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jl.cn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -345,10 +391,11 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.JL.IPickerDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jl.cn;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

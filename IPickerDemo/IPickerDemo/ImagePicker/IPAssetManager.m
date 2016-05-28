@@ -15,7 +15,7 @@
 #import "IPAlbumView.h"
 #import "IPImageCell.h"
 
-@interface IPAssetManager ()<PHPhotoLibraryChangeObserver>
+@interface IPAssetManager ()
 
 /**数据模型暂存数组*/
 @property (nonatomic, strong)NSMutableArray *tempArray;
@@ -25,6 +25,10 @@
 
 /**缓存路径*/
 @property (nonatomic, copy)NSString *captureDirectory;
+
+/**用于倒序数据--数组*/
+@property (nonatomic, strong)NSMutableArray *reverserArray;
+
 @end
 
 @implementation IPAssetManager
@@ -153,7 +157,7 @@ static IPAssetManager *manager;
                         
                         imgModel.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
                         
-                        [weakSelf.currentPhotosArr addObject:imgModel];
+                        [weakSelf.reverserArray addObject:imgModel];
                         
                     }
                 }else {
@@ -169,6 +173,10 @@ static IPAssetManager *manager;
                     weakSelf.currentAlbumModel.isSelected = YES;
                     [weakSelf.defaultLibrary groupForURL:weakSelf.currentAlbumModel.groupURL resultBlock:^(ALAssetsGroup *group) {
                         [group enumerateAssetsUsingBlock:groupEnumerAtion];
+                        
+                        weakSelf.currentPhotosArr = [NSMutableArray arrayWithArray:[[weakSelf.reverserArray reverseObjectEnumerator] allObjects]];
+                        [weakSelf.reverserArray removeAllObjects];
+                        
                         [weakSelf performDelegateWithSuccess:YES];
                     } failureBlock:^(NSError *error) {
                         [weakSelf performDelegateWithSuccess:NO];
@@ -244,7 +252,11 @@ static IPAssetManager *manager;
                         
                     }
                 }else {
-                    [weakSelf.currentPhotosArr addObjectsFromArray:weakSelf.tempArray];
+                    [weakSelf.reverserArray addObjectsFromArray:weakSelf.tempArray];
+                    
+                    weakSelf.currentPhotosArr = [NSMutableArray arrayWithArray:[[weakSelf.reverserArray reverseObjectEnumerator] allObjects]];
+                    [weakSelf.reverserArray removeAllObjects];
+                    
                     [self performDelegateWithSuccess:YES];
                     [weakSelf.tempArray removeAllObjects];
                 }
@@ -295,6 +307,12 @@ static IPAssetManager *manager;
         _allImageModel = [NSMutableArray array];
     }
     return _allImageModel;
+}
+- (NSMutableArray *)reverserArray{
+    if (_reverserArray == nil) {
+        _reverserArray = [NSMutableArray array];
+    }
+    return _reverserArray;
 }
 #pragma mark - iOS8 -
 /**
@@ -558,7 +576,7 @@ static IPAssetManager *manager;
     CGFloat pixelWidth = imageSize.width * multiple;//PHImageManagerMaximumSize
     CGFloat pixelHeight = imageSize.height * multiple;//CGSizeMake(pixelWidth, pixelHeight)
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-        NSLog(@"高清缩略图--%@",info);
+//        NSLog(@"高清缩略图--%@",info);
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (tempModel.assetType == IPAssetModelMediaTypeVideo) {
             tempModel.VideoThumbail = result;
@@ -586,7 +604,7 @@ static IPAssetManager *manager;
     PHAsset *phAsset = (PHAsset *)imagModel.asset;
     
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-                NSLog(@"高清图--%@",info);
+//                NSLog(@"高清图--%@",info);
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (downloadFinined) {
             completion(result,nil);
@@ -752,33 +770,7 @@ static IPAssetManager *manager;
 }
 - (void)getVideoAssetsFromFetchResult:(PHFetchResult *)result{
     [result enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL * _Nonnull stop) {
-       
-        IPAssetModelMediaType type = IPAssetModelMediaTypeVideo;
-        
-        
-        
-        __block IPAssetModel *videoModel = [[IPAssetModel alloc]init];
-        videoModel.assetType = type;
-        videoModel.localIdentiy = asset.localIdentifier;
-        videoModel.asset = asset;
-        if (type == IPAssetModelMediaTypeVideo) {
-            [[PHImageManager defaultManager] requestPlayerItemForVideo:asset options:nil resultHandler:^(AVPlayerItem * _Nullable playerItem, NSDictionary * _Nullable info) {
-                NSString *str = info[@"PHImageFileSandboxExtensionTokenKey"];
-                NSArray *strArr = [str componentsSeparatedByString:@";"];
-                NSString *videoPath = [strArr lastObject];
-                videoModel.assetUrl = [NSURL URLWithString:videoPath];
-            }];
             
-        }
-        
-        NSString *timeLength = type == IPAssetModelMediaTypeVideo ? [NSString stringWithFormat:@"%0.0f",asset.duration] : @"";
-        videoModel.duration = asset.duration;
-        timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
-        videoModel.videoDuration = timeLength;
-        [self.currentPhotosArr addObject:videoModel];
-        
-        
-        
     }];
     
 //    NSLog(@"performDelegateWithSuccess");
@@ -787,9 +779,6 @@ static IPAssetManager *manager;
 }
 
 - (void)compressVideoWithAssetModel:(IPAssetModel *)assetModel CompleteBlock:(functionBlock)block{
-    __weak typeof(self) weakSelf = self;
-    
-    
     
     if ([assetModel.asset isKindOfClass:[PHAsset class]]) {
         [[PHImageManager defaultManager] requestPlayerItemForVideo:assetModel.asset options:nil resultHandler:^(AVPlayerItem * _Nullable playerItem, NSDictionary * _Nullable info) {
@@ -806,6 +795,35 @@ static IPAssetManager *manager;
         AVPlayerItem *playerItem = [[AVPlayerItem alloc] initWithURL:videoURL];
         block(playerItem);
     }
+}
+
+- (void)getAspectThumbailWithModel:(IPAssetModel *)model completion:(void (^)(UIImage *, NSDictionary *))completion{
+    __block UIImage *img = nil;
+    if (iOS8Later) {
+        PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+        options.resizeMode = PHImageRequestOptionsResizeModeExact;
+        options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+        PHAsset *phAsset = (PHAsset *)model.asset;
+        
+        CGFloat pixelWidth = [UIScreen mainScreen].bounds.size.width;
+        CGFloat pixelHeight = pixelWidth * (9.0/16.0);
+        
+        [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeDefault options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+            img = result;
+            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+            if (downloadFinined) {
+                completion(result,nil);
+                
+            }else {
+                completion(nil,nil);
+            }
+        }];
+    }else {
+        ALAsset *asset = (ALAsset *)model.asset;
+        img = [UIImage imageWithCGImage:asset.aspectRatioThumbnail];
+        completion(img,nil);
+    }
+    
 }
 //- (void)compressVideoWithPlayerItem:(AVPlayerItem *)item CompleteBlock:(functionBlock)block
 //{

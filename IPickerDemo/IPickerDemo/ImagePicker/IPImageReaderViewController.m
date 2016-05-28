@@ -201,7 +201,12 @@ static NSString * const reuseIdentifier = @"Cell";
     if (self.dismissBlock) {
         self.dismissBlock();
     }
-    [self dismissViewControllerAnimated:YES completion:nil];
+    if (self.presentingViewController) {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }else {
+        [self.navigationController popViewControllerAnimated:YES];
+    }
+    
 }
 - (void)selectBtn:(UIButton *)btn{
     btn.selected = !btn.selected;

@@ -57,5 +57,5 @@
 - (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 
 - (void)compressVideoWithAssetModel:(IPAssetModel *)assetModel CompleteBlock:(functionBlock)block;
-
+- (void)getAspectThumbailWithModel:(IPAssetModel *)model completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 @end

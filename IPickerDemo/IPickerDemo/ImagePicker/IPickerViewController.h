@@ -24,18 +24,18 @@ typedef NS_ENUM(NSUInteger,  IPickerViewControllerDisplayStyle) {
     /**展示视频*/
     IPickerViewControllerDisplayStyleVideo
 };
-typedef void(^RequestImageBlock)(UIImage *image,NSDictionary *info);
+
+
+typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
 
 @class IPickerViewController;
-
 @protocol IPickerViewControllerDelegate <NSObject>
-
 /**
  *  选择图片完成后的回调方法
  *
- *  @param datas 图片模型数组
+ *  @param datas 图片URL数组
  */
-- (void)didClickCompleteBtn:(NSArray *)datas;
+- (void)didClickCompleteBtn:(NSArray<NSURL *> *)datas;
 
 /**
  *  拍摄视频完成后,的回调方法
@@ -57,6 +57,7 @@ typedef void(^RequestImageBlock)(UIImage *image,NSDictionary *info);
  */
 @property (nonatomic, assign)IPickerViewControllerPopStyle popStyle;
 
+
 /**
  *  最大可选择的图片数量
  *  Note:请传入 "> 0" 的数
@@ -66,6 +67,12 @@ typedef void(^RequestImageBlock)(UIImage *image,NSDictionary *info);
 
 /**代理*/
 @property (nonatomic, weak)id<IPickerViewControllerDelegate> delegate;
+
+/*!
+ @property
+ @abstract 跳入此页面的层级
+ */
+@property (nonatomic, assign) NSInteger navViewControllers;
 
 /**
  *  创建对象
@@ -77,11 +84,32 @@ typedef void(^RequestImageBlock)(UIImage *image,NSDictionary *info);
 + (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style;
 
 /**
- *  通过url获取图片
+ *  通过url获取全屏高清图片
  *
- *  @param url   图片资源的唯一标识  
- *  @param block 完成block
+ *  @param url   图片资源的唯一标识
  */
-+ (void)getImageModelWithURL:(NSURL *)url RequestBlock:(RequestImageBlock)block;
++ (void)getImageWithImageURL:(NSURL *)imageUrl RequestBlock:(RequestImageBlock)block;
+/**
+ *  通过url获取等比缩略图
+ *
+ *  @param imageUrl 图片url
+ *  @param width    图片宽度
+ *  @param block    回调
+ */
++ (void)getAspectThumbailImageWithImageURL:(NSURL *)imageUrl Width:(CGFloat)width RequestBlock:(RequestImageBlock)block;
+/**
+ *  通过url获取缩略图
+ *
+ *  @param imageUrl 图片url
+ *  @param block    回调
+ */
++ (void)getThumbailImageWithImageURL:(NSURL *)imageUrl RequestBlock:(RequestImageBlock)block;
+
+/**
+ *  此方法会根据animation的属性,做清除数据的处理
+ *
+ *  @param animation YES: 销毁控制器 NO:仅仅清除控制器数据
+ */
+- (void)exitIPickerWithAnimation:(BOOL)animation;
 
 @end

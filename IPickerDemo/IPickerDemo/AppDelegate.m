@@ -17,6 +17,15 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    if ([[UIDevice currentDevice].systemVersion doubleValue] >= 9.0f) {
+        UIApplicationShortcutItem *shortItem1 = [[UIApplicationShortcutItem alloc] initWithType:@"打开相册" localizedTitle:@"打开相册"];
+        
+        NSArray *shortItems = [[NSArray alloc] initWithObjects:shortItem1, nil];
+        
+        [[UIApplication sharedApplication] setShortcutItems:shortItems];
+    }
+    
+    
     return YES;
 }
 
@@ -41,5 +50,9 @@
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
-
+- (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL))completionHandler{
+    if ([shortcutItem.localizedTitle  isEqual:@"打开相册"]) {
+        NSLog(@"打开相册");
+    }
+}
 @end
