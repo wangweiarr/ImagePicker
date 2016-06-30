@@ -13,7 +13,8 @@ typedef enum : NSUInteger {
     IPAssetModelMediaTypeLivePhoto,
     IPAssetModelMediaTypeVideo,
     IPAssetModelMediaTypeAudio,
-    IPAssetModelMediaTypeTakeVideo
+    IPAssetModelMediaTypeTakeVideo,
+    IPAssetModelMediaTypeTakePhoto
 } IPAssetModelMediaType;
 @class AVPlayerItem;
 typedef void(^functionBlock)(AVPlayerItem *);

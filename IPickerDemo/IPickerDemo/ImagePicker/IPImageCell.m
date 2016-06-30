@@ -19,16 +19,23 @@
 
 
 /**背景*/
-@property (nonatomic, weak)UIImageView *bottomBackView;
+@property (nonatomic, strong)UIImageView *bottomBackView;
 /**时间label*/
-@property (nonatomic, weak)UILabel *timeLabel;
+@property (nonatomic, strong)UILabel *timeLabel;
 /**video*/
-@property (nonatomic, weak)UIImageView *videoImgView;
+@property (nonatomic, strong)UIImageView *videoImgView;
+
+/**拍照--拍视频*/
+@property (nonatomic, strong)UIImageView *actionImageView;
 @end
 
 @implementation IPImageCell
 - (void)prepareForReuse{
     self.imgView.image = nil;
+    self.actionImageView.hidden = YES;
+    self.videoImgView.hidden = YES;
+    self.bottomBackView.hidden = YES;
+    self.timeLabel.hidden = YES;
 }
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -58,31 +65,49 @@
     [self.contentView addSubview:rightCornerBtn];
     self.rightCornerBtn = rightCornerBtn;
     
-    
-    UIImageView *bottomBackView = [[UIImageView alloc]init];
-    bottomBackView.hidden = YES;
-    [bottomBackView setImage:[UIImage imageNamed:@"photobrowse_bottom"]];
-    self.bottomBackView = bottomBackView;
-    [self.contentView addSubview:bottomBackView];
-    
-    //视频--时间长
-    UILabel *timeLabel = [[UILabel alloc]init];
-    timeLabel.textColor = [UIColor whiteColor];
-    timeLabel.textAlignment = NSTextAlignmentRight;
-    timeLabel.font = [UIFont systemFontOfSize:12];
-    
-    self.timeLabel = timeLabel;
-    [self.bottomBackView addSubview:timeLabel];
-    
-    //视频--视频标识
-    UIImageView *videoImgView = [[UIImageView alloc]init];
-    videoImgView.contentMode = UIViewContentModeCenter;
-    videoImgView.image = [UIImage imageNamed:@"icon_video"];
-    
-    self.videoImgView = videoImgView;
-    [self.bottomBackView addSubview:videoImgView];
 
     
+}
+- (UIImageView *)bottomBackView{
+    if (_bottomBackView == nil) {
+        _bottomBackView = [[UIImageView alloc]init];
+        _bottomBackView.hidden = YES;
+        [_bottomBackView setImage:[UIImage imageNamed:@"photobrowse_bottom"]];
+        [self.contentView addSubview:_bottomBackView];
+    }
+    return _bottomBackView;
+}
+- (UILabel *)timeLabel{
+    if (_timeLabel == nil) {
+       
+        _timeLabel = [[UILabel alloc]init];
+        _timeLabel.hidden = YES;
+        _timeLabel.textColor = [UIColor whiteColor];
+        _timeLabel.textAlignment = NSTextAlignmentRight;
+        _timeLabel.font = [UIFont systemFontOfSize:12];
+        [self.bottomBackView addSubview:_timeLabel];
+    }
+    return _timeLabel;
+}
+- (UIImageView *)videoImgView{
+    if (_videoImgView == nil) {
+        
+        _videoImgView = [[UIImageView alloc]init];
+        _videoImgView.hidden  = YES;
+        _videoImgView.contentMode = UIViewContentModeCenter;
+        _videoImgView.image = [UIImage imageNamed:@"icon_video"];
+        [self.bottomBackView addSubview:_videoImgView];
+    }
+    return _videoImgView;
+}
+- (UIImageView *)actionImageView{
+    if (_actionImageView == nil) {
+        _actionImageView = [[UIImageView alloc]initWithFrame:self.bounds];
+        _actionImageView.contentMode = UIViewContentModeCenter;
+        _actionImageView.hidden = YES;
+        [self.contentView addSubview:_actionImageView];
+    }
+    return _actionImageView;
 }
 - (void)layoutSubviews {
     [super layoutSubviews];
@@ -115,13 +140,23 @@
             weakSelf.imgView.image = photo;
         }];
         self.bottomBackView.hidden = NO;
-
+        self.timeLabel.hidden = NO;
+        self.videoImgView.hidden = NO;
         self.timeLabel.text = _model.videoDuration;
-        
         self.rightCornerBtn.hidden = YES;
     }else if ( _model.assetType ==IPAssetModelMediaTypeTakeVideo){
+        self.actionImageView.image = [UIImage imageNamed:@"icon_video_big"];
+        self.actionImageView.hidden = NO;
+        
         self.backgroundColor = [UIColor colorWithRed:0.7 green:0.1 blue:0.7 alpha:0.6];
-        self.imgView.image = [UIImage imageNamed:@"icon_video_big"];
+        
+        self.rightCornerBtn.hidden = YES;
+    }
+    else if ( _model.assetType ==IPAssetModelMediaTypeTakePhoto){
+        self.actionImageView.image = [UIImage imageNamed:@"photo"];
+        self.actionImageView.hidden = NO;
+        self.backgroundColor = [UIColor colorWithRed:0.7 green:0.1 blue:0.7 alpha:0.6];
+        
         self.rightCornerBtn.hidden = YES;
     }else {
         
@@ -130,10 +165,6 @@
             weakSelf.imgView.image = photo;
         }];
     }
-    
-    
-    
-    
 }
 - (void)clickBtnInCell:(UIButton *)btn{
     
