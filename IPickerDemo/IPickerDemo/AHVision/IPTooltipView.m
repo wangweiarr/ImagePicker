@@ -6,9 +6,9 @@
 //  Copyright (c) 2014年 com.autohome. All rights reserved.
 //
 
-#import "AHTooltipView.h"
+#import "IPTooltipView.h"
 
-@implementation AHTooltipView
+@implementation IPTooltipView
 
 @synthesize font,text,textColor;
 

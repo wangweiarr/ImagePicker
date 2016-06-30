@@ -23,17 +23,17 @@
 //  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-#import "AHVisionUtilities.h"
-#import "AHVision.h"
+#import "IPVisionUtilities.h"
+#import "IPVision.h"
 
-@implementation AHVisionUtilities
+@implementation IPVisionUtilities
 
 + (CGPoint)convertToPointOfInterestFromViewCoordinates:(CGPoint)viewCoordinates inFrame:(CGRect)frame
 {
     CGPoint pointOfInterest = CGPointMake(.5f, .5f);
     CGSize frameSize = frame.size;
     
-    switch ([[AHVision sharedInstance] previewOrientation]) {
+    switch ([[IPVision sharedInstance] previewOrientation]) {
         case AHCameraOrientationPortrait:
             break;
         case AHCameraOrientationPortraitUpsideDown:
@@ -52,7 +52,7 @@
 // TODO: add check for AVCaptureConnection videoMirrored
 //        viewCoordinates.x = frameSize.width - viewCoordinates.x;
     
-    AVCaptureVideoPreviewLayer *previewLayer = [[AHVision sharedInstance] previewLayer];
+    AVCaptureVideoPreviewLayer *previewLayer = [[IPVision sharedInstance] previewLayer];
     
     if ( [[previewLayer videoGravity] isEqualToString:AVLayerVideoGravityResize] ) {
         pointOfInterest = CGPointMake(viewCoordinates.y / frameSize.height, 1.f - (viewCoordinates.x / frameSize.width));

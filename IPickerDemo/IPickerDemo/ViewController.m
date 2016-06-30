@@ -44,6 +44,14 @@ static UIViewController *vc;
     
     
 }
+- (IBAction)pickerVideo:(UIButton *)sender {
+    IPickerViewController *ip = [IPickerViewController instanceWithDisplayStyle:IPickerViewControllerDisplayStyleVideo];
+    ip.delegate = self;
+    ip.maxCount = 9;
+    ip.popStyle = IPickerViewControllerPopStylePush;
+    [self.navigationController pushViewController:ip animated:YES];
+}
+
 - (IBAction)popIPicker:(UIButton *)sender{
     IPickerViewController *ip = [IPickerViewController instanceWithDisplayStyle:IPickerViewControllerDisplayStyleImage];
     ip.delegate = self;

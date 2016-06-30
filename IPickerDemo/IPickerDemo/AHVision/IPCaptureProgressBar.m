@@ -6,9 +6,9 @@
 //  Copyright (c) 2014年 com.autohome. All rights reserved.
 //
 
-#import "AHCaptureProgressBar.h"
+#import "IPCaptureProgressBar.h"
 
-@implementation AHCaptureProgressBar
+@implementation IPCaptureProgressBar
 @synthesize maxValue,limitValue,currentValue,segmentCount;
 
 UIView *_cursor;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10116" systemVersion="15D21" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="CKG-0Q-9AL">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="10116" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="CKG-0Q-9AL">
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
@@ -40,10 +40,21 @@
                                     <action selector="popIPicker:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ZIW-n4-Qhl"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ctj-ED-XK5">
+                                <rect key="frame" x="270" y="340" width="60" height="30"/>
+                                <state key="normal" title="选择视频"/>
+                                <connections>
+                                    <action selector="pickerVideo:" destination="BYZ-38-t0r" eventType="touchUpInside" id="raq-XC-RBe"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="Ctj-ED-XK5" firstAttribute="top" secondItem="n1z-Rl-E7h" secondAttribute="bottom" constant="25" id="682-TO-Bdt"/>
+                            <constraint firstItem="Ctj-ED-XK5" firstAttribute="height" secondItem="n1z-Rl-E7h" secondAttribute="height" id="PQA-kl-Uaa"/>
                             <constraint firstItem="n1z-Rl-E7h" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Ph0-fO-U1w"/>
+                            <constraint firstItem="Ctj-ED-XK5" firstAttribute="trailing" secondItem="n1z-Rl-E7h" secondAttribute="trailing" id="Q9r-su-ilB"/>
+                            <constraint firstItem="Ctj-ED-XK5" firstAttribute="width" secondItem="n1z-Rl-E7h" secondAttribute="width" id="UC8-ON-eyS"/>
                             <constraint firstItem="n1z-Rl-E7h" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="WLV-ao-u7F"/>
                         </constraints>
                     </view>
@@ -51,7 +62,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="366" y="270"/>
+            <point key="canvasLocation" x="281" y="292"/>
         </scene>
     </scenes>
 </document>

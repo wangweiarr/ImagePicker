@@ -7,13 +7,13 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "AHVision.h"
+#import "IPVision.h"
 
 #pragma mark - ClubVisionViewControllerDelegate
 @protocol IPTakeVideoViewControllerDelegate <NSObject>
 
 @optional
--(void) VisionDidCaptureFinish:(AHVision *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration;
+-(void) VisionDidCaptureFinish:(IPVision *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration;
 
 
 @end

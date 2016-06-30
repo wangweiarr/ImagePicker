@@ -26,10 +26,10 @@
 		3453E6251CC8D99F004DAFDA /* IPAssetModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 3453E6241CC8D99F004DAFDA /* IPAssetModel.m */; };
 		3461FC9E1C86B99100FF3015 /* IPAlertView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3461FC9D1C86B99100FF3015 /* IPAlertView.m */; };
 		34D795FF1CBBAD5F00CA2659 /* IPTakeVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D795FE1CBBAD5F00CA2659 /* IPTakeVideoViewController.m */; };
-		34D796051CBBB15000CA2659 /* AHVision.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D796021CBBB15000CA2659 /* AHVision.m */; };
-		34D796061CBBB15000CA2659 /* AHVisionUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D796041CBBB15000CA2659 /* AHVisionUtilities.m */; };
-		34D796091CBBB1CB00CA2659 /* AHCaptureProgressBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D796081CBBB1CB00CA2659 /* AHCaptureProgressBar.m */; };
-		34D7960C1CBBB1FC00CA2659 /* AHTooltipView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D7960B1CBBB1FC00CA2659 /* AHTooltipView.m */; };
+		34D796051CBBB15000CA2659 /* IPVision.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D796021CBBB15000CA2659 /* IPVision.m */; };
+		34D796061CBBB15000CA2659 /* IPVisionUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D796041CBBB15000CA2659 /* IPVisionUtilities.m */; };
+		34D796091CBBB1CB00CA2659 /* IPCaptureProgressBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D796081CBBB1CB00CA2659 /* IPCaptureProgressBar.m */; };
+		34D7960C1CBBB1FC00CA2659 /* IPTooltipView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34D7960B1CBBB1FC00CA2659 /* IPTooltipView.m */; };
 		34E40DA31CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */; };
 /* End PBXBuildFile section */
 
@@ -70,14 +70,14 @@
 		3461FC9D1C86B99100FF3015 /* IPAlertView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPAlertView.m; sourceTree = "<group>"; };
 		34D795FD1CBBAD5F00CA2659 /* IPTakeVideoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPTakeVideoViewController.h; sourceTree = "<group>"; };
 		34D795FE1CBBAD5F00CA2659 /* IPTakeVideoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPTakeVideoViewController.m; sourceTree = "<group>"; };
-		34D796011CBBB15000CA2659 /* AHVision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AHVision.h; sourceTree = "<group>"; };
-		34D796021CBBB15000CA2659 /* AHVision.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AHVision.m; sourceTree = "<group>"; };
-		34D796031CBBB15000CA2659 /* AHVisionUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AHVisionUtilities.h; sourceTree = "<group>"; };
-		34D796041CBBB15000CA2659 /* AHVisionUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AHVisionUtilities.m; sourceTree = "<group>"; };
-		34D796071CBBB1CB00CA2659 /* AHCaptureProgressBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AHCaptureProgressBar.h; sourceTree = "<group>"; };
-		34D796081CBBB1CB00CA2659 /* AHCaptureProgressBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AHCaptureProgressBar.m; sourceTree = "<group>"; };
-		34D7960A1CBBB1FC00CA2659 /* AHTooltipView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AHTooltipView.h; sourceTree = "<group>"; };
-		34D7960B1CBBB1FC00CA2659 /* AHTooltipView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AHTooltipView.m; sourceTree = "<group>"; };
+		34D796011CBBB15000CA2659 /* IPVision.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPVision.h; sourceTree = "<group>"; };
+		34D796021CBBB15000CA2659 /* IPVision.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPVision.m; sourceTree = "<group>"; };
+		34D796031CBBB15000CA2659 /* IPVisionUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPVisionUtilities.h; sourceTree = "<group>"; };
+		34D796041CBBB15000CA2659 /* IPVisionUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPVisionUtilities.m; sourceTree = "<group>"; };
+		34D796071CBBB1CB00CA2659 /* IPCaptureProgressBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPCaptureProgressBar.h; sourceTree = "<group>"; };
+		34D796081CBBB1CB00CA2659 /* IPCaptureProgressBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPCaptureProgressBar.m; sourceTree = "<group>"; };
+		34D7960A1CBBB1FC00CA2659 /* IPTooltipView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPTooltipView.h; sourceTree = "<group>"; };
+		34D7960B1CBBB1FC00CA2659 /* IPTooltipView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPTooltipView.m; sourceTree = "<group>"; };
 		34E40DA11CCB5EBF00DCC366 /* IP3DTouchPreviewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IP3DTouchPreviewVC.h; sourceTree = "<group>"; };
 		34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IP3DTouchPreviewVC.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -173,14 +173,14 @@
 		34D796001CBBB15000CA2659 /* AHVision */ = {
 			isa = PBXGroup;
 			children = (
-				34D7960A1CBBB1FC00CA2659 /* AHTooltipView.h */,
-				34D7960B1CBBB1FC00CA2659 /* AHTooltipView.m */,
-				34D796071CBBB1CB00CA2659 /* AHCaptureProgressBar.h */,
-				34D796081CBBB1CB00CA2659 /* AHCaptureProgressBar.m */,
-				34D796011CBBB15000CA2659 /* AHVision.h */,
-				34D796021CBBB15000CA2659 /* AHVision.m */,
-				34D796031CBBB15000CA2659 /* AHVisionUtilities.h */,
-				34D796041CBBB15000CA2659 /* AHVisionUtilities.m */,
+				34D7960A1CBBB1FC00CA2659 /* IPTooltipView.h */,
+				34D7960B1CBBB1FC00CA2659 /* IPTooltipView.m */,
+				34D796071CBBB1CB00CA2659 /* IPCaptureProgressBar.h */,
+				34D796081CBBB1CB00CA2659 /* IPCaptureProgressBar.m */,
+				34D796011CBBB15000CA2659 /* IPVision.h */,
+				34D796021CBBB15000CA2659 /* IPVision.m */,
+				34D796031CBBB15000CA2659 /* IPVisionUtilities.h */,
+				34D796041CBBB15000CA2659 /* IPVisionUtilities.m */,
 			);
 			path = AHVision;
 			sourceTree = "<group>";
@@ -257,19 +257,19 @@
 			buildActionMask = 2147483647;
 			files = (
 				34E40DA31CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m in Sources */,
-				34D796091CBBB1CB00CA2659 /* AHCaptureProgressBar.m in Sources */,
+				34D796091CBBB1CB00CA2659 /* IPCaptureProgressBar.m in Sources */,
 				344F3BD91C842444006063B6 /* IPImageReaderViewController.m in Sources */,
 				344F37ED1C83D508006063B6 /* IPTapDetectView.m in Sources */,
 				344F37AC1C814BC6006063B6 /* AppDelegate.m in Sources */,
 				344F37C51C814BF0006063B6 /* ViewController.m in Sources */,
-				34D7960C1CBBB1FC00CA2659 /* AHTooltipView.m in Sources */,
+				34D7960C1CBBB1FC00CA2659 /* IPTooltipView.m in Sources */,
 				344F37E61C83D4C0006063B6 /* IPAlbumModel.m in Sources */,
 				344F37E51C83D4C0006063B6 /* IPAlbumCell.m in Sources */,
 				344F37E91C83D4C0006063B6 /* IPImageCell.m in Sources */,
 				344F37A91C814BC6006063B6 /* main.m in Sources */,
 				344F37F61C83DD47006063B6 /* IPAssetManager.m in Sources */,
-				34D796051CBBB15000CA2659 /* AHVision.m in Sources */,
-				34D796061CBBB15000CA2659 /* AHVisionUtilities.m in Sources */,
+				34D796051CBBB15000CA2659 /* IPVision.m in Sources */,
+				34D796061CBBB15000CA2659 /* IPVisionUtilities.m in Sources */,
 				34D795FF1CBBAD5F00CA2659 /* IPTakeVideoViewController.m in Sources */,
 				344F37E81C83D4C0006063B6 /* IPickerViewController.m in Sources */,
 				3453E6251CC8D99F004DAFDA /* IPAssetModel.m in Sources */,

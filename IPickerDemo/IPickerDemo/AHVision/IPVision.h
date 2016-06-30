@@ -92,9 +92,9 @@ static CGFloat const AHVideoBitRate1280x750 = 5000000 * 8;
 
 @class EAGLContext;
 @protocol AHVisionDelegate;
-@interface AHVision : NSObject
+@interface IPVision : NSObject
 
-+ (AHVision *)sharedInstance;
++ (IPVision *)sharedInstance;
 
 @property (nonatomic,weak) id<AHVisionDelegate> delegate;
 
@@ -207,55 +207,55 @@ static CGFloat const AHVideoBitRate1280x750 = 5000000 * 8;
 
 // session
 
-- (void)visionSessionWillStart:(AHVision *)vision;
-- (void)visionSessionDidStart:(AHVision *)vision;
-- (void)visionSessionDidStop:(AHVision *)vision;
+- (void)visionSessionWillStart:(IPVision *)vision;
+- (void)visionSessionDidStart:(IPVision *)vision;
+- (void)visionSessionDidStop:(IPVision *)vision;
 
-- (void)visionSessionWasInterrupted:(AHVision *)vision;
-- (void)visionSessionInterruptionEnded:(AHVision *)vision;
+- (void)visionSessionWasInterrupted:(IPVision *)vision;
+- (void)visionSessionInterruptionEnded:(IPVision *)vision;
 
 // device / mode / format
 
-- (void)visionCameraDeviceWillChange:(AHVision *)vision;
-- (void)visionCameraDeviceDidChange:(AHVision *)vision;
+- (void)visionCameraDeviceWillChange:(IPVision *)vision;
+- (void)visionCameraDeviceDidChange:(IPVision *)vision;
 
-- (void)visionOutputFormatWillChange:(AHVision *)vision;
-- (void)visionOutputFormatDidChange:(AHVision *)vision;
+- (void)visionOutputFormatWillChange:(IPVision *)vision;
+- (void)visionOutputFormatDidChange:(IPVision *)vision;
 
-- (void)vision:(AHVision *)vision didChangeCleanAperture:(CGRect)cleanAperture;
+- (void)vision:(IPVision *)vision didChangeCleanAperture:(CGRect)cleanAperture;
 
-- (void)visionDidChangeVideoFormatAndFrameRate:(AHVision *)vision;
+- (void)visionDidChangeVideoFormatAndFrameRate:(IPVision *)vision;
 
 // focus / exposure
 
-- (void)visionWillStartFocus:(AHVision *)vision;
-- (void)visionDidStopFocus:(AHVision *)vision;
+- (void)visionWillStartFocus:(IPVision *)vision;
+- (void)visionDidStopFocus:(IPVision *)vision;
 
-- (void)visionWillChangeExposure:(AHVision *)vision;
-- (void)visionDidChangeExposure:(AHVision *)vision;
+- (void)visionWillChangeExposure:(IPVision *)vision;
+- (void)visionDidChangeExposure:(IPVision *)vision;
 
-- (void)visionDidChangeFlashMode:(AHVision *)vision; // flash or torch was changed
+- (void)visionDidChangeFlashMode:(IPVision *)vision; // flash or torch was changed
 
 // authorization / availability
 
 - (void)visionDidChangeAuthorizationStatus:(AHAuthorizationStatus)status;
-- (void)visionDidChangeFlashAvailablility:(AHVision *)vision; // flash or torch is available
+- (void)visionDidChangeFlashAvailablility:(IPVision *)vision; // flash or torch is available
 
 // preview
 
-- (void)visionSessionDidStartPreview:(AHVision *)vision;
-- (void)visionSessionDidStopPreview:(AHVision *)vision;
+- (void)visionSessionDidStartPreview:(IPVision *)vision;
+- (void)visionSessionDidStopPreview:(IPVision *)vision;
 
 // video
 
-- (NSString *)vision:(AHVision *)vision willStartVideoCaptureToFile:(NSString *)fileName;
-- (void)visionDidStartVideoCapture:(AHVision *)vision;
-- (void)visionDidPauseVideoCapture:(AHVision *)vision; // stopped but not ended
-- (void)visionDidResumeVideoCapture:(AHVision *)vision;
-- (void)visionDidEndVideoCapture:(AHVision *)vision;
-- (void)vision:(AHVision *)vision capturedVideo:(NSDictionary *)videoDict error:(NSError *)error;
+- (NSString *)vision:(IPVision *)vision willStartVideoCaptureToFile:(NSString *)fileName;
+- (void)visionDidStartVideoCapture:(IPVision *)vision;
+- (void)visionDidPauseVideoCapture:(IPVision *)vision; // stopped but not ended
+- (void)visionDidResumeVideoCapture:(IPVision *)vision;
+- (void)visionDidEndVideoCapture:(IPVision *)vision;
+- (void)vision:(IPVision *)vision capturedVideo:(NSDictionary *)videoDict error:(NSError *)error;
 
 // video capture progress
-- (void)vision:(AHVision *)vision didCaptureDuration:(CMTime)duration;
+- (void)vision:(IPVision *)vision didCaptureDuration:(CMTime)duration;
 
 @end

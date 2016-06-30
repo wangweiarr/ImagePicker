@@ -120,9 +120,11 @@
         
         self.rightCornerBtn.hidden = YES;
     }else if ( _model.assetType ==IPAssetModelMediaTypeTakeVideo){
+        self.backgroundColor = [UIColor colorWithRed:0.7 green:0.1 blue:0.7 alpha:0.6];
         self.imgView.image = [UIImage imageNamed:@"icon_video_big"];
         self.rightCornerBtn.hidden = YES;
     }else {
+        
         self.rightCornerBtn.selected = model.isSelect;
         [[IPAssetManager defaultAssetManager]getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
             weakSelf.imgView.image = photo;

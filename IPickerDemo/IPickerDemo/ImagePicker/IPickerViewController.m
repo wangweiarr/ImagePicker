@@ -905,7 +905,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self presentViewController:takeVideo animated:YES completion:nil];
 }
 
-- (void)VisionDidCaptureFinish:(AHVision *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration{
+- (void)VisionDidCaptureFinish:(IPVision *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration{
     UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:thumbnail]];
     
     __weak typeof(self) weakSelf = self;

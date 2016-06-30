@@ -7,14 +7,14 @@
 //
 
 #import "IPTakeVideoViewController.h"
-#import "AHCaptureProgressBar.h"
-#import "AHTooltipView.h"
+#import "IPCaptureProgressBar.h"
+#import "IPTooltipView.h"
 #define ScreenSize ([UIScreen mainScreen].bounds.size)
 @interface IPTakeVideoViewController ()<AHVisionDelegate,AHCaptureProgressDegelate,UIAlertViewDelegate>
 {
     UIView *_previewView;
     
-    AHCaptureProgressBar *_progressBar;
+    IPCaptureProgressBar *_progressBar;
     UILabel *_progressLabel;
     
     UIButton *_cancelBtn;
@@ -25,7 +25,7 @@
     UIView *_shadeView;
     
     UILabel *_tipLabel;
-    AHTooltipView *_tooltipView;
+    IPTooltipView *_tooltipView;
     
     UILongPressGestureRecognizer *_longPressGestureRecognizer;
     
@@ -135,14 +135,14 @@
     // iOS 6 support
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationSlide];
     [self _resetCapture];
-    [[AHVision sharedInstance] startPreview];
+    [[IPVision sharedInstance] startPreview];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
     
-    [[AHVision sharedInstance] stopPreview];
+    [[IPVision sharedInstance] stopPreview];
     
     // iOS 6 support
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationSlide];
@@ -186,7 +186,7 @@
 //    _previewView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, ScreenSize.width,middleView.frame.size.height-10)];
     _previewView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, ScreenSize.width,ScreenSize.width*9/16)];
     _previewView.backgroundColor = [UIColor blackColor];
-    AVCaptureVideoPreviewLayer *_previewLayer = [[AHVision sharedInstance] previewLayer];
+    AVCaptureVideoPreviewLayer *_previewLayer = [[IPVision sharedInstance] previewLayer];
     _previewLayer.frame = _previewView.bounds;
     _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     [_previewView.layer addSublayer:_previewLayer];
@@ -204,13 +204,13 @@
     [_tipLabel setText:@"长按蓝色按钮进行拍摄"];
     [middleView addSubview:_tipLabel];
     
-    _progressBar = [[AHCaptureProgressBar alloc] initWithFrame:CGRectMake(0,CGRectGetMaxY(_previewView.frame), ScreenSize.width, 10)];
+    _progressBar = [[IPCaptureProgressBar alloc] initWithFrame:CGRectMake(0,CGRectGetMaxY(_previewView.frame), ScreenSize.width, 10)];
     _progressBar.delegate = self;
     _progressBar.maxValue = self.maximumCaptureDuration;
     _progressBar.limitValue = self.minimumCaptureDuration;
     [middleView addSubview:_progressBar];
     
-    _tooltipView = [[AHTooltipView alloc] initWithFrame:CGRectMake(ScreenSize.width*self.minimumCaptureDuration/self.maximumCaptureDuration-60, _previewView.frame.size.height-40,120, 40)];
+    _tooltipView = [[IPTooltipView alloc] initWithFrame:CGRectMake(ScreenSize.width*self.minimumCaptureDuration/self.maximumCaptureDuration-60, _previewView.frame.size.height-40,120, 40)];
     [_tooltipView setText:@"最少拍到这里"];
     [_tooltipView setHidden:YES];
     [middleView addSubview:_tooltipView];
@@ -267,7 +267,7 @@
 }
 - (void)dealloc
 {
-    [AHVision sharedInstance].delegate = nil;
+    [IPVision sharedInstance].delegate = nil;
 }
 
 #pragma mark - init & dealloc
@@ -288,7 +288,7 @@
 - (void) _handleCancelBtn:(id)sender
 {
     //是否放弃这段视频？
-    AHVision *vision = [AHVision sharedInstance];
+    IPVision *vision = [IPVision sharedInstance];
     if(vision.capturedVideoSeconds>0)
     {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"提示" message:@"是否放弃这段视频？" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
@@ -297,14 +297,14 @@
     }
     else
     {
-        [[AHVision sharedInstance] cancelVideoCapture];
+        [[IPVision sharedInstance] cancelVideoCapture];
         [self dismissViewControllerAnimated:YES completion:nil];
     }
 }
 - (void) _handleDoneBtn:(UIButton *)sender
 {
     if (!sender.selected) {
-        if ([[AHVision sharedInstance] endVideoCapture]) {
+        if ([[IPVision sharedInstance] endVideoCapture]) {
             [self dismissViewControllerAnimated:YES completion:nil];
         }
     }
@@ -339,14 +339,14 @@
     //    PLog(@"isDel = %i",isDel);
     [_progressBar delete: isDel ];
     if (isDel) {
-        [[AHVision sharedInstance] backspaceVideoCapture];
+        [[IPVision sharedInstance] backspaceVideoCapture];
     }
     sender.selected = !isDel;
     [_tipLabel setHidden:YES];
 }
 -(void) _handleFlipBtn:(UIButton *) sender
 {
-    AHVision *vision = [AHVision sharedInstance];
+    IPVision *vision = [IPVision sharedInstance];
     vision.cameraDevice = vision.cameraDevice == AHCameraDeviceBack ? AHCameraDeviceFront : AHCameraDeviceBack;
     
     sender.selected = ! sender.selected;
@@ -388,7 +388,7 @@
     }
     else if (alertView.tag==101){
         if (buttonIndex==1) {
-            [[AHVision sharedInstance] cancelVideoCapture];
+            [[IPVision sharedInstance] cancelVideoCapture];
             [self dismissViewControllerAnimated:YES completion:nil];
         }
     }
@@ -397,7 +397,7 @@
 
 - (void)_startCapture
 {
-    AHVision * vision = [AHVision sharedInstance];
+    IPVision * vision = [IPVision sharedInstance];
     
     if(!vision.isRecording)
     {
@@ -411,7 +411,7 @@
 
 - (void)_pauseCapture
 {
-    [[AHVision sharedInstance] pauseVideoCapture];
+    [[IPVision sharedInstance] pauseVideoCapture];
 }
 
 - (void)_resumeCapture
@@ -422,14 +422,14 @@
 - (void)_endCapture
 {
     [UIApplication sharedApplication].idleTimerDisabled = NO;
-    [[AHVision sharedInstance] endVideoCapture];
+    [[IPVision sharedInstance] endVideoCapture];
 }
 
 - (void)_resetCapture
 {
     _longPressGestureRecognizer.enabled = YES;
     
-    AHVision *vision = [AHVision sharedInstance];
+    IPVision *vision = [IPVision sharedInstance];
     vision.delegate = self;
     
     if ([vision isCameraDeviceAvailable:AHCameraDeviceBack]) {
@@ -451,7 +451,7 @@
 }
 
 #pragma mark AHVisionDelegate
-- (void)visionSessionDidStartPreview:(AHVision *)vision
+- (void)visionSessionDidStartPreview:(IPVision *)vision
 {
     [_recordBtn setEnabled:YES];
 }
@@ -461,13 +461,13 @@
 //    [_recordBtn setEnabled:YES];
 //}
 
-- (void)visionDidStartVideoCapture:(AHVision *)vision
+- (void)visionDidStartVideoCapture:(IPVision *)vision
 {
     [_shadeView setHidden:NO];
     [_tipLabel setHidden:YES]; //隐藏“长按蓝色按钮进行拍摄“提示
 }
 
-- (void)visionDidPauseVideoCapture:(AHVision *)vision
+- (void)visionDidPauseVideoCapture:(IPVision *)vision
 {
     [_shadeView setHidden:YES];
     [_progressBar interrupt];
@@ -479,26 +479,26 @@
     }
 }
 
-- (void)visionDidResumeVideoCapture:(AHVision *)vision
+- (void)visionDidResumeVideoCapture:(IPVision *)vision
 {
     [_tipLabel setHidden:YES];
 }
 
--(void) visionDidEndVideoCapture:(AHVision *)vision
+-(void) visionDidEndVideoCapture:(IPVision *)vision
 {
     if (self.delegate && [self.delegate respondsToSelector:@selector(VisionDidCaptureFinish:withThumbnail:withVideoDuration:)]){
         [self.delegate VisionDidCaptureFinish:vision withThumbnail:vision.thumbnail withVideoDuration:_progressBar.currentValue];
     }
 }
 
-- (void)vision:(AHVision *)vision didCaptureDuration:(CMTime)duration
+- (void)vision:(IPVision *)vision didCaptureDuration:(CMTime)duration
 {
     [_progressBar setProgressValue:CMTimeGetSeconds(duration)];
 }
 
 #pragma mark - AHCaptureProgressDelegate
 
--(void) captureProgress:(AHCaptureProgressBar *)sender
+-(void) captureProgress:(IPCaptureProgressBar *)sender
 {
     [_progressLabel setText:[NSString stringWithFormat:@"00:%02.0f/00:%02.0f",
                              floor(_progressBar.currentValue),_progressBar.maxValue]];

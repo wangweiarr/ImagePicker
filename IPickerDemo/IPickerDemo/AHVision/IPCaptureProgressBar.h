@@ -10,7 +10,7 @@
 
 @protocol AHCaptureProgressDegelate;
 
-@interface AHCaptureProgressBar : UIView
+@interface IPCaptureProgressBar : UIView
 
 @property(nonatomic) Float64 maxValue;
 
@@ -34,6 +34,6 @@
 
 @optional
 
--(void) captureProgress:(AHCaptureProgressBar *)sender;
+-(void) captureProgress:(IPCaptureProgressBar *)sender;
 
 @end

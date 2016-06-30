@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 
-@interface AHTooltipView : UIView
+@interface IPTooltipView : UIView
 
 @property(nonatomic,retain) UIFont *font;
 

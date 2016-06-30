@@ -131,8 +131,8 @@ static NSString * const reuseIdentifier = @"Cell";
     
     UIButton *rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     rightBtn.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleWidth;
-    UIImage *image =[UIImage imageNamed:@"img_icon_check"];
-    UIImage *image_p =[UIImage imageNamed:@"img_icon_check_p"];
+    UIImage *image =[UIImage imageNamed:@"img_icon_check_Big"];
+    UIImage *image_p =[UIImage imageNamed:@"img_icon_check_Big_p"];
     [rightBtn setImage:image forState:UIControlStateNormal];
     [rightBtn setImage:image_p forState:UIControlStateSelected];
     [rightBtn addTarget:self action:@selector(selectBtn:) forControlEvents:UIControlEventTouchUpInside];

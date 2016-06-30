@@ -4,8 +4,8 @@
 //
 //  Created by yuchimin
 
-#import "AHVision.h"
-#import "AHVisionUtilities.h"
+#import "IPVision.h"
+#import "IPVisionUtilities.h"
 
 #import <ImageIO/ImageIO.h>
 #import <OpenGLES/EAGL.h>
@@ -75,7 +75,7 @@ NSString * const AHVisionVideoThumbnailArrayKey = @"AHVisionVideoThumbnailArrayK
 NSString * const AHVisionVideoCapturedDurationKey = @"AHVisionVideoCapturedDurationKey";
 
 
-@interface AHVision () <AVCaptureFileOutputRecordingDelegate>
+@interface IPVision () <AVCaptureFileOutputRecordingDelegate>
 {
     // AV
     AVCaptureSession *_captureSession;
@@ -159,7 +159,7 @@ NSString * const AHVisionVideoCapturedDurationKey = @"AHVisionVideoCapturedDurat
 
 @end
 
-@implementation AHVision
+@implementation IPVision
 
 @synthesize delegate = _delegate;
 @synthesize currentDevice = _currentDevice;
@@ -189,12 +189,12 @@ NSString * const AHVisionVideoCapturedDurationKey = @"AHVisionVideoCapturedDurat
 
 #pragma mark - singleton
 
-+ (AHVision *)sharedInstance
++ (IPVision *)sharedInstance
 {
-    static AHVision *singleton = nil;
+    static IPVision *singleton = nil;
     static dispatch_once_t once = 0;
     dispatch_once(&once, ^{
-        singleton = [[AHVision alloc] init];
+        singleton = [[IPVision alloc] init];
     });
     return singleton;
 }
@@ -714,8 +714,8 @@ typedef void (^AHVisionBlock)();
     }
     
     // capture devices
-    _captureDeviceFront = [AHVisionUtilities captureDeviceForPosition:AVCaptureDevicePositionFront];
-    _captureDeviceBack = [AHVisionUtilities captureDeviceForPosition:AVCaptureDevicePositionBack];
+    _captureDeviceFront = [IPVisionUtilities captureDeviceForPosition:AVCaptureDevicePositionFront];
+    _captureDeviceBack = [IPVisionUtilities captureDeviceForPosition:AVCaptureDevicePositionBack];
     
     // capture device inputs
     NSError *error = nil;
@@ -1246,7 +1246,7 @@ typedef void (^AHVisionBlock)();
         dir = [[dir stringByAppendingPathComponent:@"videos"]
                stringByAppendingPathComponent:[formatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:0]]];
         
-        if (![AHVisionUtilities createFolderIfNotExist:dir]) {
+        if (![IPVisionUtilities createFolderIfNotExist:dir]) {
             [self _failVideoCaptureWithErrorCode:AHVisionErrorBadOutputFile];
         }
         self.captureDirectory = dir;
@@ -1264,7 +1264,7 @@ typedef void (^AHVisionBlock)();
 
 - (BOOL)canCaptureVideo
 {
-    BOOL isDiskSpaceAvailable = [AHVisionUtilities availableDiskSpaceInBytes] > AHVisionRequiredMinimumDiskSpaceInBytes;
+    BOOL isDiskSpaceAvailable = [IPVisionUtilities availableDiskSpaceInBytes] > AHVisionRequiredMinimumDiskSpaceInBytes;
     return [self supportsVideoCapture] && [self isCaptureSessionActive] && !_flags.changingModes && isDiskSpaceAvailable;
 }
 

@@ -770,7 +770,33 @@ static IPAssetManager *manager;
 }
 - (void)getVideoAssetsFromFetchResult:(PHFetchResult *)result{
     [result enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        if (asset.mediaSubtypes != PHAssetMediaSubtypeVideoHighFrameRate && asset.mediaSubtypes != PHAssetMediaSubtypeVideoTimelapse) {//慢动作,延时摄影
+            IPAssetModelMediaType type = IPAssetModelMediaTypeVideo;
+            __block IPAssetModel *videoModel = [[IPAssetModel alloc]init];
+            videoModel.assetType = type;
+            videoModel.localIdentiy = asset.localIdentifier;
+            videoModel.asset = asset;
+            if (type == IPAssetModelMediaTypeVideo) {
+                [[PHImageManager defaultManager] requestPlayerItemForVideo:asset options:nil resultHandler:^(AVPlayerItem * _Nullable playerItem, NSDictionary * _Nullable info) {
+                    NSString *str = info[@"PHImageFileSandboxExtensionTokenKey"];
+                    NSArray *strArr = [str componentsSeparatedByString:@";"];
+                    NSString *videoPath = [strArr lastObject];
+                    videoModel.assetUrl = [NSURL URLWithString:videoPath];
+                }];
+                
+            }
             
+            NSString *timeLength = type == IPAssetModelMediaTypeVideo ? [NSString stringWithFormat:@"%0.0f",asset.duration] : @"";
+            videoModel.duration = asset.duration;
+            timeLength = [self getNewTimeFromDurationSecond:timeLength.integerValue];
+            videoModel.videoDuration = timeLength;
+            [self.currentPhotosArr addObject:videoModel];
+            
+        }
+        
+        
+        
     }];
     
 //    NSLog(@"performDelegateWithSuccess");
