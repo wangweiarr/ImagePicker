@@ -152,6 +152,8 @@ static IPAssetManager *manager;
                     if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypePhoto]) {
                         
                         IPAssetModel *imgModel = [[IPAssetModel alloc]init];
+                        imgModel.creatDate = [result valueForProperty:ALAssetPropertyDate];
+                        imgModel.location = [result valueForProperty:ALAssetPropertyLocation];
                         imgModel.assetType = IPAssetModelMediaTypePhoto;
                         imgModel.asset = result;
                         
@@ -432,8 +434,14 @@ static IPAssetManager *manager;
         imgModel.localIdentiy = asset.localIdentifier;
         imgModel.assetUrl = [NSURL URLWithString:asset.localIdentifier];
         imgModel.asset = asset;
+//        NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
+//        [outputFormatter setLocale:[NSLocale currentLocale]];
+//        [outputFormatter setDateFormat:@"yyyy年MM月dd日 HH时mm分ss秒"];
+//        NSString *creatDateStr = [outputFormatter stringFromDate:asset.creationDate];
+        imgModel.creatDate = asset.creationDate;
         
-       
+        imgModel.modityDate = asset.modificationDate;
+        
         if (self.allImageModel.count > 0) {
             [self.allImageModel enumerateObjectsUsingBlock:^(IPAssetModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                 
@@ -705,10 +713,6 @@ static IPAssetManager *manager;
                 if (result!=NULL) {
                     
                     if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypeVideo]) {
-                        
-                        
-                        
-                        
                         
                         IPAssetModel *videoModel = [[IPAssetModel alloc]init];
                         

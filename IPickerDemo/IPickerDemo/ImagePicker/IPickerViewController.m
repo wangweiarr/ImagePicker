@@ -355,7 +355,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
             takeVideo.delegate = weakSelf;
             [self presentViewController:takeVideo animated:YES completion:nil];
             
-        }else if(model.assetType == IPAssetModelMediaTypeVideo){
+        }
+        else if(model.assetType == IPAssetModelMediaTypeTakePhoto){
+            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"拍照" message:nil delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+            [alert show];
+            
+        }
+        else if(model.assetType == IPAssetModelMediaTypeVideo){
             __block IPAlertView *alert = [IPAlertView showAlertViewAt:self.view Text:@"视频加载中..."];
             [self.defaultAssetManager compressVideoWithAssetModel:model CompleteBlock:^(AVPlayerItem *item) {
                 [alert dismissFromHostView];
@@ -604,6 +610,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     
 }
+#pragma mark - Rotation
 //- (BOOL)shouldAutorotate{
 //    return NO;
 //}
@@ -664,7 +671,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
 }
 
-#pragma mark - alert框的处理 -
+#pragma mark - alert框的处理
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     [self exitIPicker];
 }

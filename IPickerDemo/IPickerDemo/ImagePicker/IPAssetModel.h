@@ -16,11 +16,19 @@ typedef enum : NSUInteger {
     IPAssetModelMediaTypeTakeVideo,
     IPAssetModelMediaTypeTakePhoto
 } IPAssetModelMediaType;
-@class AVPlayerItem;
+@class AVPlayerItem,CLLocation;
 typedef void(^functionBlock)(AVPlayerItem *);
 
 @interface IPAssetModel : NSObject
 
+/**创建日期*/
+@property (nonatomic, strong)NSDate *creatDate;
+
+/**改动日期  ios8以下系统.此属性为空*/
+@property (nonatomic, strong)NSDate *modityDate;
+
+/**地理位置*/
+@property (nonatomic, strong)CLLocation *location;
 
 /**当前是否被选中*/
 @property (nonatomic, assign)BOOL isSelect;

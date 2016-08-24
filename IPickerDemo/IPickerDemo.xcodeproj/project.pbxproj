@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		343E26B01D28E9050015C1FD /* IPTakePhotoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E26AF1D28E9050015C1FD /* IPTakePhotoViewController.m */; };
+		343E26B31D28ED310015C1FD /* IPTakeMediaManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E26B21D28ED310015C1FD /* IPTakeMediaManager.m */; };
+		343E26B61D28F4160015C1FD /* IPPreviewView.m in Sources */ = {isa = PBXBuildFile; fileRef = 343E26B51D28F4160015C1FD /* IPPreviewView.m */; };
 		344F37A91C814BC6006063B6 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37A81C814BC6006063B6 /* main.m */; };
 		344F37AC1C814BC6006063B6 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 344F37AB1C814BC6006063B6 /* AppDelegate.m */; };
 		344F37B41C814BC6006063B6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 344F37B31C814BC6006063B6 /* Assets.xcassets */; };
@@ -34,6 +37,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		343E26AE1D28E9050015C1FD /* IPTakePhotoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPTakePhotoViewController.h; sourceTree = "<group>"; };
+		343E26AF1D28E9050015C1FD /* IPTakePhotoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPTakePhotoViewController.m; sourceTree = "<group>"; };
+		343E26B11D28ED310015C1FD /* IPTakeMediaManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPTakeMediaManager.h; sourceTree = "<group>"; };
+		343E26B21D28ED310015C1FD /* IPTakeMediaManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPTakeMediaManager.m; sourceTree = "<group>"; };
+		343E26B41D28F4160015C1FD /* IPPreviewView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPPreviewView.h; sourceTree = "<group>"; };
+		343E26B51D28F4160015C1FD /* IPPreviewView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPPreviewView.m; sourceTree = "<group>"; };
 		344F37A41C814BC6006063B6 /* IPickerDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IPickerDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		344F37A81C814BC6006063B6 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		344F37AA1C814BC6006063B6 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -93,6 +102,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		343E26AD1D28E8EF0015C1FD /* IPTakePhoto */ = {
+			isa = PBXGroup;
+			children = (
+				343E26AE1D28E9050015C1FD /* IPTakePhotoViewController.h */,
+				343E26AF1D28E9050015C1FD /* IPTakePhotoViewController.m */,
+				343E26B41D28F4160015C1FD /* IPPreviewView.h */,
+				343E26B51D28F4160015C1FD /* IPPreviewView.m */,
+				343E26B11D28ED310015C1FD /* IPTakeMediaManager.h */,
+				343E26B21D28ED310015C1FD /* IPTakeMediaManager.m */,
+			);
+			path = IPTakePhoto;
+			sourceTree = "<group>";
+		};
 		344F379B1C814BC6006063B6 = {
 			isa = PBXGroup;
 			children = (
@@ -163,6 +185,7 @@
 				344F37F21C83D62C006063B6 /* IPZoomScrollView.m */,
 				344F37F41C83DD47006063B6 /* IPAssetManager.h */,
 				344F37F51C83DD47006063B6 /* IPAssetManager.m */,
+				343E26AD1D28E8EF0015C1FD /* IPTakePhoto */,
 				3488EE011D254703002C0FA3 /* IPVision */,
 			);
 			path = ImagePicker;
@@ -256,6 +279,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				343E26B61D28F4160015C1FD /* IPPreviewView.m in Sources */,
 				34E40DA31CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m in Sources */,
 				344F3BD91C842444006063B6 /* IPImageReaderViewController.m in Sources */,
 				344F37ED1C83D508006063B6 /* IPTapDetectView.m in Sources */,
@@ -273,8 +297,10 @@
 				344F37E81C83D4C0006063B6 /* IPickerViewController.m in Sources */,
 				3453E6251CC8D99F004DAFDA /* IPAssetModel.m in Sources */,
 				3488EE0B1D254703002C0FA3 /* IPTooltipView.m in Sources */,
+				343E26B01D28E9050015C1FD /* IPTakePhotoViewController.m in Sources */,
 				344F37F31C83D62C006063B6 /* IPZoomScrollView.m in Sources */,
 				344F37F01C83D530006063B6 /* IPTapDetectImageView.m in Sources */,
+				343E26B31D28ED310015C1FD /* IPTakeMediaManager.m in Sources */,
 				344F37E71C83D4C0006063B6 /* IPAlbumView.m in Sources */,
 				3461FC9E1C86B99100FF3015 /* IPAlertView.m in Sources */,
 			);
