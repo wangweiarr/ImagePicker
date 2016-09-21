@@ -9,7 +9,12 @@
 #import "IPImageCell.h"
 #import "IPAssetModel.h"
 #import "IPAssetManager.h"
-//#import "AHUIImageNameHandle.h"
+#import "IPickerViewController.h"
+
+@interface IPickerViewController ()
+- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+
+@end
 
 @interface IPImageCell ()
 /**缩略图*/
@@ -50,6 +55,14 @@
         [self creatSubViews];
     }
     return self;
+}
+- (void)endDisplay{
+    if (self.model.assetType != IPAssetModelMediaTypePhoto) {
+        self.bottomBackView.hidden = YES;
+        self.timeLabel.hidden = YES;
+        self.videoImgView.hidden = YES;
+        self.actionImageView.hidden = YES;
+    }
 }
 - (void)creatSubViews{
     UIImageView *imgView = [[UIImageView alloc]initWithFrame:self.bounds];
@@ -136,7 +149,7 @@
     __weak typeof(self) weakSelf = self;
     
     if (_model.assetType == IPAssetModelMediaTypeVideo ) {
-        [[IPAssetManager defaultAssetManager]getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
+        [self.ipVc getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
             weakSelf.imgView.image = photo;
         }];
         self.bottomBackView.hidden = NO;
@@ -161,7 +174,7 @@
     }else {
         
         self.rightCornerBtn.selected = model.isSelect;
-        [[IPAssetManager defaultAssetManager]getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
+        [self.ipVc getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
             weakSelf.imgView.image = photo;
         }];
     }

@@ -36,17 +36,17 @@
 static IPAssetManager *manager;
 
 + (instancetype)defaultAssetManager{
-    if (manager == nil) {
-        manager = [[IPAssetManager alloc]init];
-    }
+//    if (manager == nil) {
+        IPAssetManager *manager = [[IPAssetManager alloc]init];
+//    }
     
     return manager;
 }
 + (void)freeAssetManger{
-    if (manager) {
-        [manager clearData];
-        manager = nil;
-    }
+//    if (manager) {
+//        [manager clearData];
+//        manager = nil;
+//    }
     
 }
 - (void)clearData{

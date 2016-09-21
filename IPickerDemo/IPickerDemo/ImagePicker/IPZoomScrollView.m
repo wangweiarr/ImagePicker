@@ -11,7 +11,16 @@
 #import "IPTapDetectImageView.h"
 #import "IPTapDetectView.h"
 #import "IPAssetManager.h"
+#import "IPickerViewController.h"
 
+@interface IPickerViewController ()
+
+- (void)getImagesForAlbumModel:(IPAlbumModel *)albumModel;
+- (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+
+@end
 @interface IPZoomScrollView ()<UIScrollViewDelegate,IPTapDetectViewDelegate,IPTapDetectImageViewDelegate>
 
 /**背景view*/
@@ -78,7 +87,7 @@
 }
 - (void)displayImageWithFullScreenImage{
     
-    [[IPAssetManager defaultAssetManager]getFullScreenImageWithAsset:_imageModel photoWidth:CGSizeMake(self.bounds.size.width, 0) completion:^(UIImage *img, NSDictionary *info) {
+    [self.ipVc getFullScreenImageWithAsset:_imageModel photoWidth:CGSizeMake(self.bounds.size.width, 0) completion:^(UIImage *img, NSDictionary *info) {
         if (img) {
             if (!CGSizeEqualToSize(img.size, _photoImageView.image.size)) {
                 // Set image
@@ -116,7 +125,7 @@
         
         
         // Get image from browser as it handles ordering of fetching
-        [[IPAssetManager defaultAssetManager]getAspectPhotoWithAsset:_imageModel photoWidth:CGSizeMake(self.bounds.size.width, 0) completion:^(UIImage *img, NSDictionary *info) {
+        [self.ipVc getAspectPhotoWithAsset:_imageModel photoWidth:CGSizeMake(self.bounds.size.width, 0) completion:^(UIImage *img, NSDictionary *info) {
             if (img) {
                 
                 // Reset

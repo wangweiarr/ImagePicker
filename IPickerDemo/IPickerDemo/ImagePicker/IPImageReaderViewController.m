@@ -198,9 +198,6 @@ static NSString * const reuseIdentifier = @"Cell";
     NSLog(@"IPImageReaderViewController---dealloc");
 }
 - (void)cancle{
-    if (self.dismissBlock) {
-        self.dismissBlock();
-    }
     if (self.presentingViewController) {
         [self dismissViewControllerAnimated:YES completion:nil];
     }else {
@@ -274,7 +271,9 @@ static NSString * const reuseIdentifier = @"Cell";
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     IPAssetModel *model = [self.dataArr objectAtIndex:indexPath.item];
+    cell.zoomScroll.ipVc = self.ipVc;
     cell.zoomScroll.imageModel = model;
+    
     return cell;
 }
 

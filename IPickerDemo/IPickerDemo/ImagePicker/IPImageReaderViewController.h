@@ -11,19 +11,18 @@
 
 typedef void(^FunctionBlock)();
 
-@class IPAssetModel;
+@class IPAssetModel,IPickerViewController;
 @protocol IPImageReaderViewControllerDelegate<NSObject>
 
 - (void)clickSelectBtnForReaderView:(IPAssetModel *)assetModel;
 
 @end
 @interface IPImageReaderViewController : UICollectionViewController
-
+/**核心组件*/
+@property (nonatomic, weak)IPickerViewController *ipVc;
 /**代理*/
 @property (nonatomic, weak)id <IPImageReaderViewControllerDelegate> delegate;
 
-/**退出控制器时,回调*/
-@property (nonatomic, copy)  FunctionBlock dismissBlock;
 
 /**当前选择的图片数量*/
 @property (nonatomic, assign)NSUInteger currentCount;

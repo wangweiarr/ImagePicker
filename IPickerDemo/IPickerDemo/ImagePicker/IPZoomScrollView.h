@@ -8,9 +8,12 @@
 
 #import <UIKit/UIKit.h>
 
-@class IPAssetModel;
+@class IPAssetModel,IPickerViewController;
 
 @interface IPZoomScrollView : UIScrollView
+
+/**核心*/
+@property (nonatomic, weak)IPickerViewController *ipVc;
 
 @property (nonatomic) IPAssetModel * imageModel;
 

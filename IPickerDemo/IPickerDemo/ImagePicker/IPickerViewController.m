@@ -18,8 +18,6 @@
 #import "IPAlertView.h"
 #import "IPTakeVideoViewController.h"
 
-//#import "AHUIImageNameHandle.h"
-//#import "AHStringUtil.h"
 
 #define IS_Above_IOS7 ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
 #define IOS7_STATUS_BAR_HEGHT (IS_Above_IOS7 ? 20.0f : 0.0f)
@@ -37,7 +35,7 @@ typedef NS_ENUM(NSUInteger,  GetImageType) {
 
 NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION";
 
-@interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate,IPTakeVideoViewControllerDelegate,UIViewControllerPreviewingDelegate,PHPhotoLibraryChangeObserver>
+@interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate,IPTakeVideoViewControllerDelegate,UIViewControllerPreviewingDelegate,PHPhotoLibraryChangeObserver,CAAnimationDelegate>
 /**图库*/
 @property (nonatomic, strong)IPAssetManager *defaultAssetManager;
 
@@ -133,12 +131,12 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
 }
 - (void)freeAllData{
-    self.refreshData = NO;
-    self.defaultAssetManager = nil;
-    [self.imageModelDic removeAllObjects];
-    [self.curImageModelArr removeAllObjects];
-    self.selectPhotoCount = 0;
-    [self.priCurrentSelArr removeAllObjects];
+    _refreshData = NO;
+    _defaultAssetManager = nil;
+    [_imageModelDic removeAllObjects];
+    [_curImageModelArr removeAllObjects];
+    _selectPhotoCount = 0;
+    [_priCurrentSelArr removeAllObjects];
     [IPAssetManager freeAssetManger];
     
 }
@@ -198,17 +196,11 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     self.leftBtn.frame = CGRectMake(MaxMargin, IOS7_STATUS_BAR_HEGHT, btnW, btnH);
     
     CGSize tempSize = CGSizeZero;
-    if ([[UIDevice currentDevice].systemVersion doubleValue]>= 7.0f) {
-        //        NSMutableParagraphStyle *paragraph=[[NSMutableParagraphStyle alloc]init];
-        //        paragraph.lineBreakMode=NSLineBreakByTruncatingMiddle;
-        NSDictionary *attribute = @{NSFontAttributeName: [UIFont systemFontOfSize:15.0f]/*,NSParagraphStyleAttributeName:paragraph*/};
-        tempSize = [@"这里是汽车之家测试" boundingRectWithSize:CGSizeMake(MAXFLOAT, btnH) options: NSStringDrawingTruncatesLastVisibleLine |
+    NSDictionary *attribute = @{NSFontAttributeName: [UIFont systemFontOfSize:15.0f]/*,NSParagraphStyleAttributeName:paragraph*/};
+    tempSize = [@"这里是汽车之家测试" boundingRectWithSize:CGSizeMake(MAXFLOAT, btnH) options: NSStringDrawingTruncatesLastVisibleLine |
                     NSStringDrawingUsesLineFragmentOrigin |
                     NSStringDrawingUsesFontLeading attributes:attribute context:nil].size;
-        
-    }else {
-        tempSize = [@"这里是汽车之家测试" sizeWithFont:[UIFont systemFontOfSize:15.0f] constrainedToSize:CGSizeMake(MAXFLOAT, btnH) lineBreakMode:NSLineBreakByTruncatingMiddle];
-    }
+    
     
     CGSize size = [self.centerBtn sizeThatFits:tempSize];
     CGFloat minMargin = 0;
@@ -319,9 +311,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 }
 - (IPImageCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     IPImageCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:IPicker_CollectionID forIndexPath:indexPath];
-    IPAssetModel *model = self.curImageModelArr[indexPath.item];
-    cell.model = model;
-    cell.delegate = self;
+    cell.ipVc = self;
+    if (self.curImageModelArr.count > indexPath.item) {
+        
+        IPAssetModel *model = self.curImageModelArr[indexPath.item];
+        cell.model = model;
+        cell.delegate = self;
+    }
     if ([[UIDevice currentDevice].systemVersion doubleValue] >= 9.0f) {
         [self registerForPreviewingWithDelegate:self sourceView:cell];
     }
@@ -381,9 +377,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
             reader.maxCount = self.maxCount;
             reader.currentCount = self.selectPhotoCount;
             reader.delegate = self;
-            reader.dismissBlock = ^(){
-                [self.mainView reloadData];
-            };
+            reader.ipVc = self;
             if (reader) {
                 //定义个转场动画
                 CATransition *animation = [CATransition animation];
@@ -409,9 +403,18 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     
 }
-
+- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
+    [cell endDisplay];
+}
 
 #pragma  mark - 导航条左右按钮的处理逻辑 -
+- (void)exitIPickerWithAnimation:(BOOL)animation{
+    if (animation) {
+        [self exitIPicker];
+    }else {
+        [self freeAllData];
+    }
+}
 /**
  *  左上角的取消按钮点击
  */
@@ -675,7 +678,16 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     [self exitIPicker];
 }
-
+#pragma mark -private
+- (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    [self.defaultAssetManager getAspectPhotoWithAsset:imageModel photoWidth:photoSize completion:completion];
+}
+- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    [self.defaultAssetManager getFullScreenImageWithAsset:imageModel photoWidth:photoSize completion:completion];
+}
+- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    [self.defaultAssetManager getThumibImageWithAsset:imageModel photoWidth:photoSize completion:completion];
+}
 #pragma mark - lazy -
 - (IPAssetManager *)defaultAssetManager{
     if (_defaultAssetManager == nil) {
