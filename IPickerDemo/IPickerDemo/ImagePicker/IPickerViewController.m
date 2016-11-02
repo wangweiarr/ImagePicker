@@ -18,10 +18,8 @@
 #import "IPAlertView.h"
 #import "IPTakeVideoViewController.h"
 
+#import "IPPrivateDefine.h"
 
-#define IS_Above_IOS7 ([[[UIDevice currentDevice] systemVersion] floatValue] >= 7)
-#define IOS7_STATUS_BAR_HEGHT (IS_Above_IOS7 ? 20.0f : 0.0f)
-#define headerHeight 44.0f
 
 /**获取图片样式*/
 typedef NS_ENUM(NSUInteger,  GetImageType) {
@@ -601,8 +599,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self shouldRemoveFrom:View];
     self.selectPhotoCount = self.priCurrentSelArr.count;
     
-    if ([self.imageModelDic objectForKey:model.albumName]) {
-        self.curImageModelArr = [self.imageModelDic objectForKey:model.albumName];
+    if ([self.imageModelDic objectForKey:model.albumIdentifier]) {
+        self.curImageModelArr = [self.imageModelDic objectForKey:model.albumIdentifier];
 
         [self.mainView reloadData];
     }else {
@@ -654,8 +652,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (void)loadImageDataFinish:(IPAssetManager *)manager{
     
     self.curImageModelArr = [NSMutableArray arrayWithArray:self.defaultAssetManager.currentPhotosArr];
-    if (self.defaultAssetManager.currentAlbumModel.albumName) {
-        [self.imageModelDic setObject:self.curImageModelArr forKey:self.defaultAssetManager.currentAlbumModel.albumName];
+    if (self.defaultAssetManager.currentAlbumModel.albumIdentifier) {
+        [self.imageModelDic setObject:self.curImageModelArr forKey:self.defaultAssetManager.currentAlbumModel.albumIdentifier];
     }
     
     

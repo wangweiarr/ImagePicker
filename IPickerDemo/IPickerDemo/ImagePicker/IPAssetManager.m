@@ -14,6 +14,7 @@
 #import "IPAlbumModel.h"
 #import "IPAlbumView.h"
 #import "IPImageCell.h"
+#import "IPPrivateDefine.h"
 
 @interface IPAssetManager ()
 
@@ -56,7 +57,7 @@ static IPAssetManager *manager;
 }
 - (void)dealloc{
      
-    NSLog(@"IPAssetManager--dealloc");
+    IPLog(@"IPAssetManager--dealloc");
 }
 
 
@@ -163,7 +164,7 @@ static IPAssetManager *manager;
                         
                     }
                 }else {
-                    NSLog(@"遍历相册完毕");
+                    IPLog(@"遍历相册完毕");
                 }
             };
             
@@ -206,7 +207,7 @@ static IPAssetManager *manager;
                         else {
                             model.albumName = (NSString *)[group valueForProperty:ALAssetsGroupPropertyName];
                         }
-                        NSLog(@"%@",(NSString *)[group valueForProperty:ALAssetsGroupPropertyName]);
+                        IPLog(@"%@",(NSString *)[group valueForProperty:ALAssetsGroupPropertyName]);
                         model.groupURL = (NSURL *)[group valueForProperty:ALAssetsGroupPropertyURL];
                         [weakSelf.albumArr addObject:model];
                         if (weakSelf.currentAlbumModel == nil || weakSelf.currentAlbumModel.imageCount < model.imageCount) {
@@ -339,12 +340,13 @@ static IPAssetManager *manager;
     
     PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum  subtype:smartAlbumSubtype options:nil];
     for (PHAssetCollection *collection in smartAlbums) {
-        NSLog(@"collection %@",collection.localizedTitle);
+        IPLog(@"collection %@",collection.localizedTitle);
         PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
         if (fetchResult.count < 1) continue;
         if ([collection.localizedTitle containsString:@"Deleted"]) continue;
         
         IPAlbumModel * model = [self modelWithResult:fetchResult name:collection.localizedTitle];
+        model.albumIdentifier = collection.localIdentifier;
         [self.albumArr addObject:model];
         if (self.currentAlbumModel == nil || self.currentAlbumModel.imageCount < model.imageCount) {
             
@@ -355,11 +357,12 @@ static IPAssetManager *manager;
     //获取普通相册
     PHFetchResult *albums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumRegular | PHAssetCollectionSubtypeAlbumSyncedAlbum options:nil];
     for (PHAssetCollection *collection in albums) {
-        NSLog(@"collection %@",collection.localizedTitle);
+        IPLog(@"collection %@",collection.localizedTitle);
         PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
         
         if (fetchResult.count < 1) continue;
         IPAlbumModel * model = [self modelWithResult:fetchResult name:collection.localizedTitle];
+        model.albumIdentifier = collection.localIdentifier;
         [self.albumArr addObject:model];
         if (self.currentAlbumModel == nil || self.currentAlbumModel.imageCount < model.imageCount) {
             
@@ -587,7 +590,7 @@ static IPAssetManager *manager;
     CGFloat pixelWidth = imageSize.width * multiple;//PHImageManagerMaximumSize
     CGFloat pixelHeight = imageSize.height * multiple;//CGSizeMake(pixelWidth, pixelHeight)
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-//        NSLog(@"高清缩略图--%@",info);
+//        IPLog(@"高清缩略图--%@",info);
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (tempModel.assetType == IPAssetModelMediaTypeVideo) {
             tempModel.VideoThumbail = result;
@@ -615,7 +618,7 @@ static IPAssetManager *manager;
     PHAsset *phAsset = (PHAsset *)imagModel.asset;
     
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFill options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-//                NSLog(@"高清图--%@",info);
+//                IPLog(@"高清图--%@",info);
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (downloadFinined) {
             completion(result,nil);
@@ -639,7 +642,7 @@ static IPAssetManager *manager;
     CGFloat pixelWidth = imageSize.width * multiple;
     CGFloat pixelHeight = pixelWidth / aspectRatio;
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-        //        NSLog(@"高清缩略图--%@",info);
+        //        IPLog(@"高清缩略图--%@",info);
         // 排除取消，错误，得到低清图三种情况，即已经获取到了低清图
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && [[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (downloadFinined) {
@@ -684,7 +687,7 @@ static IPAssetManager *manager;
     //获取普通相册albums	PHUnauthorizedFetchResult
     PHFetchResult *albums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeSmartAlbumVideos options:nil];
     for (PHAssetCollection *collection in albums) {
-        NSLog(@"collection %@",collection.localizedTitle);
+        IPLog(@"collection %@",collection.localizedTitle);
         if ([collection.localizedTitle isEqualToString:@"Videos"] || [collection.localizedTitle isEqualToString:@"视频"]) {
             PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
             IPAlbumModel * model = [[IPAlbumModel alloc]init];
@@ -806,7 +809,7 @@ static IPAssetManager *manager;
         
     }];
     
-//    NSLog(@"performDelegateWithSuccess");
+//    IPLog(@"performDelegateWithSuccess");
     [self performDelegateWithSuccess:YES];
    
 }
@@ -866,7 +869,7 @@ static IPAssetManager *manager;
 //    AVAsset *avAsset = item.asset;
 //    CMTime assetTime = [avAsset duration];
 //    Float64 duration = CMTimeGetSeconds(assetTime);
-//    NSLog(@"视频时长 %f\n",duration);
+//    IPLog(@"视频时长 %f\n",duration);
 //    
 //    AVMutableVideoComposition *avMutableVideoComposition = [self getVideoComposition:avAsset];
 //    
@@ -886,12 +889,12 @@ static IPAssetManager *manager;
 //    [avAssetExportSession exportAsynchronouslyWithCompletionHandler:^(void){
 //        
 //            if(avAssetExportSession.status == AVAssetExportSessionStatusCompleted){
-//                NSLog(@"%f",[[NSDate date] timeIntervalSinceDate:beginDate]);
+//                IPLog(@"%f",[[NSDate date] timeIntervalSinceDate:beginDate]);
 //                dispatch_async(dispatch_get_main_queue(), ^{
 //                    block(output);
 //                });
 //            } else if(avAssetExportSession.status == AVAssetExportSessionStatusFailed){
-//                NSLog(@"exporting failed %@",[avAssetExportSession error]);
+//                IPLog(@"exporting failed %@",[avAssetExportSession error]);
 //            }
 //    }];
 //    
@@ -904,7 +907,7 @@ static IPAssetManager *manager;
 //    CGSize videoSize = videoTrack.naturalSize;
 //    BOOL isPortrait_ = [self isVideoPortrait:asset];
 //    if(isPortrait_) {
-//        NSLog(@"video is portrait ");
+//        IPLog(@"video is portrait ");
 //        videoSize = CGSizeMake(videoSize.height, videoSize.width);
 //    }
 //    composition.naturalSize     = videoSize;
@@ -1004,7 +1007,7 @@ static IPAssetManager *manager;
 //            [assetLibrary assetForURL:url resultBlock:^(ALAsset *asset) {
 //                ALAssetRepresentation *rep = [asset defaultRepresentation];
 //                NSString * videoPath = [KCachesPath stringByAppendingPathComponent:fileName];
-//                NSLog(@"%@",videoPath);
+//                IPLog(@"%@",videoPath);
 //                char const *cvideoPath = [videoPath UTF8String];
 //                
 //                FILE *file = fopen(cvideoPath, "a+");
@@ -1040,7 +1043,7 @@ static IPAssetManager *manager;
 //    AVAsset *avAsset = item.asset;
 //    CMTime assetTime = [avAsset duration];
 //    Float64 duration = CMTimeGetSeconds(assetTime);
-//    NSLog(@"视频时长 %f\n",duration);
+//    IPLog(@"视频时长 %f\n",duration);
 //    
 //    AVMutableComposition *avMutableComposition = [AVMutableComposition composition];
 //    
@@ -1052,11 +1055,11 @@ static IPAssetManager *manager;
 //    if (portrait) {//竖屏
 //        //        [0, 1, -1, 0, 1080, 0]
 //        
-//        //        NSLog(@"%@",NSStringFromCGAffineTransform(layerTransform));
+//        //        IPLog(@"%@",NSStringFromCGAffineTransform(layerTransform));
 //        layerTransform = CGAffineTransformMakeTranslation(avAssetTrack.naturalSize.width, 0);
-//        ////        NSLog(@"%@",NSStringFromCGAffineTransform(layerTransform));
+//        ////        IPLog(@"%@",NSStringFromCGAffineTransform(layerTransform));
 //        layerTransform = CGAffineTransformScale(layerTransform,-1.0, 1.0);//
-//        //        NSLog(@"%@",NSStringFromCGAffineTransform(layerTransform));
+//        //        IPLog(@"%@",NSStringFromCGAffineTransform(layerTransform));
 //    }else {//横屏
 //        
 //    }
@@ -1067,7 +1070,7 @@ static IPAssetManager *manager;
 //    // 这个视频大小可以由你自己设置。比如源视频640*480.而你这320*480.最后出来的是320*480这么大的，640多出来的部分就没有了。并非是把图片压缩成那么大了。
 //    avMutableVideoComposition.renderSize = avAssetTrack.naturalSize;
 //    avMutableVideoComposition.frameDuration = CMTimeMake(1, 24);
-//    NSLog(@"natural:width=%f;height:%f",avAssetTrack.naturalSize.width,avAssetTrack.naturalSize.height);
+//    IPLog(@"natural:width=%f;height:%f",avAssetTrack.naturalSize.width,avAssetTrack.naturalSize.height);
 //    
 //    AVMutableVideoCompositionInstruction *avMutableVideoCompositionInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
 //    
@@ -1098,7 +1101,7 @@ static IPAssetManager *manager;
 //                block(output);
 //            });
 //        } else if(avAssetExportSession.status == AVAssetExportSessionStatusFailed){
-//            NSLog(@"exporting failed %@",[avAssetExportSession error]);
+//            IPLog(@"exporting failed %@",[avAssetExportSession error]);
 //        }
 //    }];
 //    

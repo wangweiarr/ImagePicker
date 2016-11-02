@@ -26,4 +26,7 @@
 /**是否被选中*/
 @property (nonatomic, assign)BOOL  isSelected;
 
+/**相册的唯一标识*/
+@property (nonatomic, copy)NSString *albumIdentifier;
+
 @end
