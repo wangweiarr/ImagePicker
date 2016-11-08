@@ -33,7 +33,7 @@ typedef NS_ENUM(NSUInteger,  GetImageType) {
 
 NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION";
 
-@interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate,IPTakeVideoViewControllerDelegate,UIViewControllerPreviewingDelegate,PHPhotoLibraryChangeObserver,CAAnimationDelegate>
+@interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate,IPTakeVideoViewControllerDelegate,UIViewControllerPreviewingDelegate,CAAnimationDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate>
 /**图库*/
 @property (nonatomic, strong)IPAssetManager *defaultAssetManager;
 
@@ -89,6 +89,9 @@ NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOAD
 /**需要重新刷新*/
 @property (nonatomic, assign)BOOL refreshData;
 
+/**拍照*/
+@property (nonatomic, strong)UIImagePickerController *imagePicker;
+
 @end
 static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
@@ -97,12 +100,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil{
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.maxCount = 50;
-        if (iOS8Later) {
-            [[PHPhotoLibrary sharedPhotoLibrary]registerChangeObserver:self];
-            if([PHPhotoLibrary authorizationStatus] == PHAuthorizationStatusDenied) {
-                //                [PHPhotoLibrary requestAuthorization:nil];
-            };
-        }
+        
     }
     return self;
 }
@@ -129,30 +127,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
 }
 - (void)freeAllData{
-    _refreshData = NO;
-    _defaultAssetManager = nil;
-    [_imageModelDic removeAllObjects];
-    [_curImageModelArr removeAllObjects];
-    _selectPhotoCount = 0;
-    [_priCurrentSelArr removeAllObjects];
-    [IPAssetManager freeAssetManger];
-    
-}
-- (void)photoLibraryDidChange:(PHChange *)changeInstance{
-    
-    if ([PHPhotoLibrary authorizationStatus] == PHAuthorizationStatusAuthorized) {
-        
-        
-        if (self.curImageModelArr.count == 0) {
-            if (self.displayStyle == IPickerViewControllerDisplayStyleVideo) {
-                
-                [self.defaultAssetManager reloadVideosFromLibrary];
-            }else {
-                [self.defaultAssetManager reloadImagesFromLibrary];
-            }
-        }
-        
-    }
+//    _refreshData = NO;
+//    _defaultAssetManager = nil;
+//    [_imageModelDic removeAllObjects];
+//    [_curImageModelArr removeAllObjects];
+//    _selectPhotoCount = 0;
+//    [_priCurrentSelArr removeAllObjects];
+//    [IPAssetManager freeAssetManger];
 }
 
 - (void)viewDidLoad
@@ -174,7 +155,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     NSLog(@"IPickerViewController--dealloc");
     [self freeAllData];
     
-    [[PHPhotoLibrary sharedPhotoLibrary]unregisterChangeObserver:self];
+    
     
 }
 
@@ -351,8 +332,20 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
             
         }
         else if(model.assetType == IPAssetModelMediaTypeTakePhoto){
-            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"拍照" message:nil delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
-            [alert show];
+//            UIAlertView *alert = [[UIAlertView alloc]initWithTitle:@"拍照" message:nil delegate:nil cancelButtonTitle:@"OK" otherButtonTitles:nil, nil];
+//            [alert show];
+            
+            if (_imagePicker == nil) {
+                _imagePicker = [[UIImagePickerController alloc]init];
+                _imagePicker.delegate = self;
+                if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+                    _imagePicker.sourceType = UIImagePickerControllerSourceTypeCamera;
+//                if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeSavedPhotosAlbum]) {
+//                    _imagePicker.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+//                }
+            }
+            [self presentViewController:_imagePicker animated:YES completion:nil];
+            
             
         }
         else if(model.assetType == IPAssetModelMediaTypeVideo){
@@ -721,6 +714,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     IPickerViewController *ipVC = [[IPickerViewController alloc]init];
     
     ipVC.displayStyle = style;
+    ipVC.defaultAssetManager.dataType = (IPAssetManagerDataType)style;
     return ipVC;
 }
 + (void)getAspectThumbailImageWithImageURL:(NSURL *)imageUrl Width:(CGFloat)width RequestBlock:(RequestImageBlock)block{
@@ -979,7 +973,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     UICollectionViewCell *cell = (UICollectionViewCell *)previewingContext.sourceView;
     
-    NSIndexPath *path = [self.mainView indexPathForCell:cell];
+//    NSIndexPath *path = [self.mainView indexPathForCell:cell];
 //    IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.curImageModelArr TargetIndex:path.item];
 //    
 //    [self showViewController:reader sender:self];
@@ -987,5 +981,16 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     [self showViewController:viewControllerToCommit sender:self];
 }
-
+#pragma mark 拍照
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(nullable NSDictionary<NSString *,id> *)editingInfo NS_DEPRECATED_IOS(2_0, 3_0){
+    IPLog(@"didFinishPickingImage");
+}
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
+    IPLog(@"didFinishPickingMediaWithInfo");
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
+    IPLog(@"imagePickerControllerDidCancel");
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
 @end

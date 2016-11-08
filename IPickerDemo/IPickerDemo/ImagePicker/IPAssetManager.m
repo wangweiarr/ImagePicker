@@ -16,7 +16,7 @@
 #import "IPImageCell.h"
 #import "IPPrivateDefine.h"
 
-@interface IPAssetManager ()
+@interface IPAssetManager ()<PHPhotoLibraryChangeObserver>
 
 /**数据模型暂存数组*/
 @property (nonatomic, strong)NSMutableArray *tempArray;
@@ -30,6 +30,18 @@
 /**用于倒序数据--数组*/
 @property (nonatomic, strong)NSMutableArray *reverserArray;
 
+/**相册数组*/
+@property (nonatomic, strong,readwrite)NSMutableArray *albumArr;
+
+/**当前显示的照片数组*/
+@property (nonatomic, strong,readwrite)NSMutableArray *currentPhotosArr;
+
+/**用户对于访问相册的之前状态*/
+@property (nonatomic, assign)PHAuthorizationStatus previousStaus;
+
+/**用户对于访问相册的当前状态*/
+@property (nonatomic, assign)PHAuthorizationStatus currentStaus;
+
 @end
 
 @implementation IPAssetManager
@@ -37,34 +49,105 @@
 static IPAssetManager *manager;
 
 + (instancetype)defaultAssetManager{
-//    if (manager == nil) {
-        IPAssetManager *manager = [[IPAssetManager alloc]init];
-//    }
-    
+    if (manager == nil) {
+        manager = [[IPAssetManager alloc]init];
+        if (iOS8Later) {
+            [[PHPhotoLibrary sharedPhotoLibrary]registerChangeObserver:manager];
+        }
+    }
     return manager;
 }
-+ (void)freeAssetManger{
-//    if (manager) {
-//        [manager clearData];
-//        manager = nil;
-//    }
-    
-}
-- (void)clearData{
+
+- (void)clearAssetManagerData{
+    [self.tempArray removeAllObjects];
     [self.allImageModel removeAllObjects];
     [self.albumArr removeAllObjects];
     [self.currentPhotosArr removeAllObjects];
+    self.currentAlbumModel = nil;
 }
 - (void)dealloc{
-     
+    [[PHPhotoLibrary sharedPhotoLibrary]unregisterChangeObserver:self];
     IPLog(@"IPAssetManager--dealloc");
+}
+- (void)photoLibraryDidChange:(PHChange *)changeInstance{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        _currentStaus = [PHPhotoLibrary authorizationStatus];
+        if ([PHPhotoLibrary authorizationStatus] == PHAuthorizationStatusAuthorized && _previousStaus != PHAuthorizationStatusAuthorized) {//在用户对app访问相册的权限,由不允许变为允许,则全局刷新数据
+            if (self.dataType == IPAssetManagerDataTypeVideo) {
+                [self reloadVideosFromLibrary];
+            }else {
+                [self reloadImagesFromLibrary];
+            }
+        }
+        if (_currentStaus != PHAuthorizationStatusAuthorized) {
+            [self clearAssetManagerData];
+            if ([self.delegate respondsToSelector:@selector(loadImageUserDeny:)]) {
+                [self.delegate loadImageUserDeny:self];
+            }
+        }
+        PHObjectChangeDetails *details = [changeInstance changeDetailsForObject:self.currentAlbumModel.assetCollection];
+        if (details) {
+            PHAssetCollection *collection = (PHAssetCollection *)details.objectAfterChanges;
+            PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
+            imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+            imageOption.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
+            PHFetchResult *result = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
+            NSLog(@"%lu",(unsigned long)result.count);
+        }
+        
+        PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
+        imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+        imageOption.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
+        PHFetchResult *result = [PHAsset fetchAssetsInAssetCollection:self.currentAlbumModel.assetCollection options:imageOption];
+        
+        PHFetchResultChangeDetails *collectionChanges = [changeInstance changeDetailsForFetchResult:result];
+        if (collectionChanges) {
+            // Get the new fetch result for future change tracking.
+                NSLog(@"%@",collectionChanges.fetchResultAfterChanges);
+            
+            if (collectionChanges.hasIncrementalChanges)  {
+                // Tell the collection view to animate insertions/deletions/moves
+                // and to refresh any cells that have changed content.
+//                [self.collectionView performBatchUpdates:^{
+//                    NSIndexSet *removed = collectionChanges.removedIndexes;
+//                    if (removed.count) {
+//                        [self.collectionView deleteItemsAtIndexPaths:[self indexPathsFromIndexSet:removed]];
+//                    }
+//                    NSIndexSet *inserted = collectionChanges.insertedIndexes;
+//                    if (inserted.count) {
+//                        [self.collectionView insertItemsAtIndexPaths:[self indexPathsFromIndexSet:inserted]];
+//                    }
+//                    NSIndexSet *changed = collectionChanges.changedIndexes;
+//                    if (changed.count) {
+//                        [self.collectionView reloadItemsAtIndexPaths:[self indexPathsFromIndexSet:changed]];
+//                    }
+//                    if (collectionChanges.hasMoves) {
+//                        [collectionChanges enumerateMovesWithBlock:^(NSUInteger fromIndex, NSUInteger toIndex) {
+//                            NSIndexPath *fromIndexPath = [NSIndexPath indexPathForItem:fromIndex inSection:0];
+//                            NSIndexPath *toIndexPath = [NSIndexPath indexPathForItem:toIndex inSection:0];
+//                            [self.collectionView moveItemAtIndexPath:fromIndexPath toIndexPath:toIndexPath];
+//                        }];
+//                    }
+//                } completion:nil];
+            } else {
+                // Detailed change information is not available;
+                // repopulate the UI from the current fetch result.
+//                [self.collectionView reloadData];
+            }
+        }
+        
+        
+        _previousStaus = [PHPhotoLibrary authorizationStatus];
+    });
+    
+    
 }
 
 
 #pragma mark 获取相册的所有图片
 - (void)reloadImagesFromLibrary
 {
-    [self clearData];
+    [self clearAssetManagerData];
     if (iOS8Later) {
         [self getAllAlbumsIOS8];
     }else{
@@ -128,7 +211,7 @@ static IPAssetManager *manager;
         }
         [self.currentPhotosArr removeAllObjects];
         [self.tempArray removeAllObjects];
-        [self getImageAssetsFromFetchResult:albumModel.groupAsset];
+        [self getImageAssetsFromAssetCollection:albumModel.assetCollection];
     }else{
         [self getImagesWithGroupModel:albumModel];
     }
@@ -341,13 +424,16 @@ static IPAssetManager *manager;
     PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum  subtype:smartAlbumSubtype options:nil];
     for (PHAssetCollection *collection in smartAlbums) {
         IPLog(@"collection %@",collection.localizedTitle);
-        PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
-        if (fetchResult.count < 1) continue;
+//        PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
+//        if (fetchResult.count < 1) continue;
         if ([collection.localizedTitle containsString:@"Deleted"]) continue;
         
-        IPAlbumModel * model = [self modelWithResult:fetchResult name:collection.localizedTitle];
-        model.albumIdentifier = collection.localIdentifier;
-        [self.albumArr addObject:model];
+        IPAlbumModel * model = [self modelWithResult:collection name:collection.localizedTitle];
+        if (model) {
+            model.albumIdentifier = collection.localIdentifier;
+            model.assetCollection = collection;
+            [self.albumArr addObject:model];
+        }
         if (self.currentAlbumModel == nil || self.currentAlbumModel.imageCount < model.imageCount) {
             
             self.currentAlbumModel = model;
@@ -358,19 +444,22 @@ static IPAssetManager *manager;
     PHFetchResult *albums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAlbumRegular | PHAssetCollectionSubtypeAlbumSyncedAlbum options:nil];
     for (PHAssetCollection *collection in albums) {
         IPLog(@"collection %@",collection.localizedTitle);
-        PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
-        
-        if (fetchResult.count < 1) continue;
-        IPAlbumModel * model = [self modelWithResult:fetchResult name:collection.localizedTitle];
-        model.albumIdentifier = collection.localIdentifier;
-        [self.albumArr addObject:model];
+//        PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
+//        if (fetchResult.count < 1) continue;
+        IPAlbumModel * model = [self modelWithResult:collection name:collection.localizedTitle];
+        if (model) {
+            model.albumIdentifier = collection.localIdentifier;
+            model.assetCollection = collection;
+            [self.albumArr addObject:model];
+        }
+       
         if (self.currentAlbumModel == nil || self.currentAlbumModel.imageCount < model.imageCount) {
             
             self.currentAlbumModel = model;
         }
         
     }
-    [self getImageAssetsFromFetchResult:self.currentAlbumModel.groupAsset];
+    [self getImageAssetsFromAssetCollection:self.currentAlbumModel.assetCollection];
     self.currentAlbumModel.isSelected = YES;
     
     
@@ -385,12 +474,19 @@ static IPAssetManager *manager;
  */
 - (IPAlbumModel *)modelWithResult:(id)result name:(NSString *)name{
     IPAlbumModel *model = [[IPAlbumModel alloc] init];
-    model.groupAsset = result;
+    model.assetCollection = result;
     model.albumName = [self getNewAlbumName:name];
+    
     [self getPhotoWithAsset:model photoWidth:CGSizeMake(50.0f, 50.0f)];
-    if ([result isKindOfClass:[PHFetchResult class]]) {
-        PHFetchResult *fetchResult = (PHFetchResult *)result;
+    if ([result isKindOfClass:[PHAssetCollection class]]) {
+        PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
+        imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+        imageOption.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
+        PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:(PHAssetCollection *)result options:imageOption];
         model.imageCount = fetchResult.count;
+        if (fetchResult.count < 1){
+            return nil;
+        }
     }
     return model;
 }
@@ -424,7 +520,13 @@ static IPAssetManager *manager;
  *
  *  @param result 相册集合
  */
-- (void)getImageAssetsFromFetchResult:(PHFetchResult *)result{
+
+//- (void)getImageAssetsFromFetchResult:(PHFetchResult *)result{
+- (void)getImageAssetsFromAssetCollection:(PHAssetCollection *)collection{
+    PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
+    imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+    imageOption.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
+    PHFetchResult *result = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
     [result enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL * _Nonnull stop) {
         
         IPAssetModelMediaType type = IPAssetModelMediaTypePhoto;
@@ -466,6 +568,7 @@ static IPAssetManager *manager;
     [self.currentPhotosArr addObjectsFromArray:self.tempArray];
     [self performDelegateWithSuccess:YES];
 }
+
 /**
  *  获取相册的封面图片
  *
@@ -473,7 +576,11 @@ static IPAssetManager *manager;
  *  @param photoSize  相框尺寸
  */
 - (void)getPhotoWithAsset:(IPAlbumModel *)albumModel photoWidth:(CGSize)photoSize{
-    PHAsset *phAsset = [albumModel.groupAsset lastObject];
+    PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
+    imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+    imageOption.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
+    PHFetchResult *result = [PHAsset fetchAssetsInAssetCollection:albumModel.assetCollection options:imageOption];
+    PHAsset *phAsset = [result lastObject];
     // 在 PHImageManager 中，targetSize 等 size 都是使用 px 作为单位，因此需要对targetSize 中对传入的 Size 进行处理，宽高各自乘以 ScreenScale，从而得到正确的图片
     
     CGFloat multiple = [UIScreen mainScreen].scale;
@@ -657,7 +764,7 @@ static IPAssetManager *manager;
 #pragma mark 视频
 - (void)reloadVideosFromLibrary{
     
-     [self clearData];
+     [self clearAssetManagerData];
     
     if (self.currentPhotosArr.count == 0) {
         IPAssetModel *imgModel = [[IPAssetModel alloc]init];

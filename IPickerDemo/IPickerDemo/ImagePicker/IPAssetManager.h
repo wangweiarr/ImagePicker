@@ -10,10 +10,16 @@
 
 #import "IPAssetModel.h"
 
-#define iOS7Later ([UIDevice currentDevice].systemVersion.floatValue >= 7.0f)
-#define iOS8Later ([UIDevice currentDevice].systemVersion.floatValue >= 8.0f)
-#define iOS9Later ([UIDevice currentDevice].systemVersion.floatValue >= 9.0f)
-@class IPAssetManager,IPAlbumModel,ALAssetsLibrary;
+
+@class IPAssetManager,IPAlbumModel,ALAssetsLibrary,PHFetchResult;
+
+/**展示样式*/
+typedef NS_ENUM(NSUInteger,  IPAssetManagerDataType) {
+    /**展示相册*/
+    IPAssetManagerDataTypeImage,
+    /**展示视频*/
+    IPAssetManagerDataTypeVideo
+};
 
 @protocol IPAssetManagerDelegate <NSObject>
 
@@ -32,16 +38,19 @@
 @property (nonatomic, weak) id <IPAssetManagerDelegate> delegate;
 
 /**相册数组*/
-@property (nonatomic, strong)NSMutableArray *albumArr;
+@property (nonatomic, strong,readonly)NSMutableArray *albumArr;
 
 /**当前显示的照片数组*/
-@property (nonatomic, strong)NSMutableArray *currentPhotosArr;
+@property (nonatomic, strong,readonly)NSMutableArray *currentPhotosArr;
 
 /**当前显示的专辑列表*/
 @property (nonatomic, strong)IPAlbumModel *currentAlbumModel;
 
+/**当前存储的数据类型*/
+@property (nonatomic, assign)IPAssetManagerDataType dataType;
+
 + (instancetype)defaultAssetManager;
-+ (void)freeAssetManger;
+- (void)clearAssetManagerData;
 /**图库*/
 @property (nonatomic, strong)ALAssetsLibrary *defaultLibrary;
 
