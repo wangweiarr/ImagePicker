@@ -112,19 +112,20 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return self;
 }
 - (void)getDataFromManager{
-    if (self.refreshData == YES) return;
-    
-    self.refreshData = YES;
-    if (self.displayStyle == IPickerViewControllerDisplayStyleVideo) {
-        self.arrowImge.hidden = YES;
-        self.centerBtn.userInteractionEnabled = NO;
-        [self.centerBtn setTitle:@"选择视频" forState:UIControlStateNormal];
-        
-        [self.defaultAssetManager reloadVideosFromLibrary];
-        self.rightBtn.hidden = YES;
-    }else {
-        [self.defaultAssetManager reloadImagesFromLibrary];
-    }
+//    if (self.refreshData == YES) return;
+//    
+//    self.refreshData = YES;
+    [self.defaultAssetManager requestUserpermission];
+//    if (self.displayStyle == IPickerViewControllerDisplayStyleVideo) {
+//        self.arrowImge.hidden = YES;
+//        self.centerBtn.userInteractionEnabled = NO;
+//        [self.centerBtn setTitle:@"选择视频" forState:UIControlStateNormal];
+//        
+//        [self.defaultAssetManager reloadVideosFromLibrary];
+//        self.rightBtn.hidden = YES;
+//    }else {
+//        [self.defaultAssetManager reloadImagesFromLibrary];
+//    }
 }
 - (void)freeAllData{
 //    _refreshData = NO;
@@ -223,7 +224,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     centerBtn.contentMode = UIViewContentModeCenter;
     centerBtn.titleLabel.font = [UIFont systemFontOfSize:15];//textsize04
     centerBtn.backgroundColor = [UIColor clearColor];
-    [centerBtn setTitle:@"选择相册" forState:UIControlStateNormal];
+    [centerBtn setTitle:@"获取资源中..." forState:UIControlStateNormal];
     [centerBtn setTitleColor:[UIColor colorWithRed:0.3 green:0.3 blue:0.3 alpha:1.0] forState:UIControlStateNormal];
     [centerBtn sizeToFit];
     [headerView addSubview:centerBtn];
@@ -235,6 +236,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     UIImage *image =[UIImage imageNamed:@"common_icon_arrow"];
     [arrowImge  setImage:image];
     [headerView addSubview:arrowImge];
+    arrowImge.hidden = YES;
     self.arrowImge = arrowImge;
     
     UILabel    *rightLabel = [[UILabel alloc]init];
@@ -648,20 +650,19 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     if (self.defaultAssetManager.currentAlbumModel.albumIdentifier) {
         [self.imageModelDic setObject:self.curImageModelArr forKey:self.defaultAssetManager.currentAlbumModel.albumIdentifier];
     }
-    
-    
-    if ([[NSThread currentThread] isMainThread]) {
+    if (self.displayStyle == IPickerViewControllerDisplayStyleImage) {
         [self.centerBtn setTitle:self.defaultAssetManager.currentAlbumModel.albumName forState:UIControlStateNormal];
+        self.arrowImge.hidden = NO;
         [self.centerBtn sizeToFit];
         [self.view setNeedsLayout];
         [self.mainView reloadData];
     }else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self.centerBtn setTitle:self.defaultAssetManager.currentAlbumModel.albumName forState:UIControlStateNormal];
-            [self.centerBtn sizeToFit];
-            [self.view setNeedsLayout];
-            [self.mainView reloadData];
-        });
+        self.centerBtn.userInteractionEnabled = NO;
+        [self.centerBtn setTitle:@"选择视频" forState:UIControlStateNormal];
+        self.rightBtn.hidden = YES;
+        [self.centerBtn sizeToFit];
+        [self.view setNeedsLayout];
+        [self.mainView reloadData];
     }
 }
 
@@ -683,6 +684,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (IPAssetManager *)defaultAssetManager{
     if (_defaultAssetManager == nil) {
         _defaultAssetManager = [IPAssetManager defaultAssetManager];
+        _defaultAssetManager.dataType = (IPAssetManagerDataType)self.displayStyle;
         _defaultAssetManager.delegate = self;
     }
     return _defaultAssetManager;
@@ -714,7 +716,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     IPickerViewController *ipVC = [[IPickerViewController alloc]init];
     
     ipVC.displayStyle = style;
-    ipVC.defaultAssetManager.dataType = (IPAssetManagerDataType)style;
+//    ipVC.defaultAssetManager.dataType = (IPAssetManagerDataType)style;
     return ipVC;
 }
 + (void)getAspectThumbailImageWithImageURL:(NSURL *)imageUrl Width:(CGFloat)width RequestBlock:(RequestImageBlock)block{

@@ -36,12 +36,6 @@
 /**当前显示的照片数组*/
 @property (nonatomic, strong,readwrite)NSMutableArray *currentPhotosArr;
 
-/**用户对于访问相册的之前状态*/
-@property (nonatomic, assign)PHAuthorizationStatus previousStaus;
-
-/**用户对于访问相册的当前状态*/
-@property (nonatomic, assign)PHAuthorizationStatus currentStaus;
-
 @end
 
 @implementation IPAssetManager
@@ -53,6 +47,8 @@ static IPAssetManager *manager;
         manager = [[IPAssetManager alloc]init];
         if (iOS8Later) {
             [[PHPhotoLibrary sharedPhotoLibrary]registerChangeObserver:manager];
+        }else {
+//            [[NSNotificationCenter defaultCenter]addObserver:manager selector:@selector(text) name:ALAssetsLibraryChangedNotification object:nil];
         }
     }
     return manager;
@@ -69,22 +65,10 @@ static IPAssetManager *manager;
     [[PHPhotoLibrary sharedPhotoLibrary]unregisterChangeObserver:self];
     IPLog(@"IPAssetManager--dealloc");
 }
+
 - (void)photoLibraryDidChange:(PHChange *)changeInstance{
     dispatch_async(dispatch_get_main_queue(), ^{
-        _currentStaus = [PHPhotoLibrary authorizationStatus];
-        if ([PHPhotoLibrary authorizationStatus] == PHAuthorizationStatusAuthorized && _previousStaus != PHAuthorizationStatusAuthorized) {//在用户对app访问相册的权限,由不允许变为允许,则全局刷新数据
-            if (self.dataType == IPAssetManagerDataTypeVideo) {
-                [self reloadVideosFromLibrary];
-            }else {
-                [self reloadImagesFromLibrary];
-            }
-        }
-        if (_currentStaus != PHAuthorizationStatusAuthorized) {
-            [self clearAssetManagerData];
-            if ([self.delegate respondsToSelector:@selector(loadImageUserDeny:)]) {
-                [self.delegate loadImageUserDeny:self];
-            }
-        }
+        
         PHObjectChangeDetails *details = [changeInstance changeDetailsForObject:self.currentAlbumModel.assetCollection];
         if (details) {
             PHAssetCollection *collection = (PHAssetCollection *)details.objectAfterChanges;
@@ -135,14 +119,38 @@ static IPAssetManager *manager;
 //                [self.collectionView reloadData];
             }
         }
-        
-        
-        _previousStaus = [PHPhotoLibrary authorizationStatus];
     });
     
     
 }
 
+- (void)requestUserpermission{
+    if(iOS8Later){
+        [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (status == PHAuthorizationStatusAuthorized) {//在用户对app访问相册的权限,由不允许变为允许,则全局刷新数据
+                    if (self.dataType == IPAssetManagerDataTypeVideo) {
+                        [self reloadVideosFromLibrary];
+                    }else {
+                        [self reloadImagesFromLibrary];
+                    }
+                }else if (status == PHAuthorizationStatusDenied){
+                    if ([self.delegate respondsToSelector:@selector(loadImageUserDeny:)]) {
+                        [self.delegate loadImageUserDeny:self];
+                    }
+                }
+            });
+            
+        }];
+    }else {
+        if (self.dataType == IPAssetManagerDataTypeVideo) {
+            [self reloadVideosFromLibrary];
+        }else {
+            [self reloadImagesFromLibrary];
+        }
+    }
+    
+}
 
 #pragma mark 获取相册的所有图片
 - (void)reloadImagesFromLibrary
@@ -260,6 +268,10 @@ static IPAssetManager *manager;
                     [weakSelf.defaultLibrary groupForURL:weakSelf.currentAlbumModel.groupURL resultBlock:^(ALAssetsGroup *group) {
                         [group enumerateAssetsUsingBlock:groupEnumerAtion];
                         
+                        IPAssetModel *model = [[IPAssetModel alloc]init];
+                        model.assetType = IPAssetModelMediaTypeTakePhoto;
+                        [weakSelf.reverserArray addObject:model];
+                        
                         weakSelf.currentPhotosArr = [NSMutableArray arrayWithArray:[[weakSelf.reverserArray reverseObjectEnumerator] allObjects]];
                         [weakSelf.reverserArray removeAllObjects];
                         
@@ -339,8 +351,11 @@ static IPAssetManager *manager;
                     }
                 }else {
                     [weakSelf.reverserArray addObjectsFromArray:weakSelf.tempArray];
-                    
+                    IPAssetModel *model = [[IPAssetModel alloc]init];
+                    model.assetType = IPAssetModelMediaTypeTakePhoto;
+                    [self.reverserArray addObject:model];
                     weakSelf.currentPhotosArr = [NSMutableArray arrayWithArray:[[weakSelf.reverserArray reverseObjectEnumerator] allObjects]];
+                    
                     [weakSelf.reverserArray removeAllObjects];
                     
                     [self performDelegateWithSuccess:YES];
@@ -405,11 +420,6 @@ static IPAssetManager *manager;
  *  遍历图库,获得所有相册数据
  */
 - (void)getAllAlbumsIOS8{
-    
-    if ([PHPhotoLibrary authorizationStatus] == PHAuthorizationStatusDenied ) {
-        [self performDelegateWithSuccess:NO];
-        return;
-    }
     PHAssetCollectionSubtype smartAlbumSubtype = PHAssetCollectionSubtypeSmartAlbumUserLibrary | PHAssetCollectionSubtypeSmartAlbumRecentlyAdded ;
     // For iOS 9, We need to show ScreenShots Album && SelfPortraits Album
     if (iOS9Later) {
@@ -783,10 +793,6 @@ static IPAssetManager *manager;
 }
 - (void)getAllVideosIOS8{
     
-    if ([PHPhotoLibrary authorizationStatus] == PHAuthorizationStatusDenied ) {
-        [self performDelegateWithSuccess:NO];
-        return;
-    }
     PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
     imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
     imageOption.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];

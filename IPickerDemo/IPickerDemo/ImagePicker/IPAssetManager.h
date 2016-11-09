@@ -56,7 +56,7 @@ typedef NS_ENUM(NSUInteger,  IPAssetManagerDataType) {
 
 /**访问类型*/
 @property (nonatomic, assign)BOOL isImage;
-
+- (void)requestUserpermission;
 - (void)reloadImagesFromLibrary;
 - (void)reloadVideosFromLibrary;
 
