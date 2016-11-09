@@ -36,7 +36,7 @@ typedef void(^functionBlock)(AVPlayerItem *);
 /**是否存在一样的图像*/
 @property (nonatomic, assign)BOOL isSame;
 
-/**比例缩略图高宽比例*/
+/**比例缩略图高宽比例 内部不要使用,赋值*/
 @property (nonatomic, assign)CGFloat thumbnailScale;
 
 /**唯一标识符*/

@@ -300,7 +300,10 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         cell.delegate = self;
     }
     if ([[UIDevice currentDevice].systemVersion doubleValue] >= 9.0f) {
-        [self registerForPreviewingWithDelegate:self sourceView:cell];
+        if (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable) {
+            [self registerForPreviewingWithDelegate:self sourceView:cell];
+        }
+        
     }
     
     return cell;
@@ -963,10 +966,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     NSIndexPath *path = [self.mainView indexPathForCell:cell];
     IPAssetModel *model = self.curImageModelArr[path.item];
     
-//    IP3DTouchPreviewVC *reader = [IP3DTouchPreviewVC previewViewControllerWithModel:model];
-    IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.curImageModelArr TargetIndex:path.item];
+    __block IP3DTouchPreviewVC *reader = [IP3DTouchPreviewVC previewViewControllerWithModel:model];
     
-
+    reader.preferredContentSize = CGSizeMake(0, self.view.bounds.size.height);
     return reader;
     
 }
@@ -975,14 +977,18 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     UICollectionViewCell *cell = (UICollectionViewCell *)previewingContext.sourceView;
     
-//    NSIndexPath *path = [self.mainView indexPathForCell:cell];
-//    IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.curImageModelArr TargetIndex:path.item];
-//    
-//    [self showViewController:reader sender:self];
+    NSIndexPath *path = [self.mainView indexPathForCell:cell];
     
+    IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.curImageModelArr TargetIndex:path.item];
+    reader.maxCount = self.maxCount;
+    reader.currentCount = self.selectPhotoCount;
+    reader.delegate = self;
+    reader.ipVc = self;
+    reader.forceTouch = YES;
+    [self showViewController:reader sender:self];
     
-    [self showViewController:viewControllerToCommit sender:self];
 }
+
 #pragma mark 拍照
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(nullable NSDictionary<NSString *,id> *)editingInfo NS_DEPRECATED_IOS(2_0, 3_0){
     IPLog(@"didFinishPickingImage");

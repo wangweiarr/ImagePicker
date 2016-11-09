@@ -572,9 +572,9 @@ static IPAssetManager *manager;
         }
         
     }];
-    IPAssetModel *model = [[IPAssetModel alloc]init];
-    model.assetType = IPAssetModelMediaTypeTakePhoto;
-    [self.currentPhotosArr addObject:model];
+//    IPAssetModel *model = [[IPAssetModel alloc]init];
+//    model.assetType = IPAssetModelMediaTypeTakePhoto;
+//    [self.currentPhotosArr addObject:model];
     [self.currentPhotosArr addObjectsFromArray:self.tempArray];
     [self performDelegateWithSuccess:YES];
 }

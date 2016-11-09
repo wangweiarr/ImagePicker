@@ -9,5 +9,11 @@
 #import <UIKit/UIKit.h>
 @class IPAssetModel;
 @interface IP3DTouchPreviewVC : UIViewController
+/**size*/
+//@property (nonatomic, assign)CGSize imgSize;
+
+/**容器*/
+@property (nonatomic, weak)UIImageView *imgView;
+
 + (instancetype)previewViewControllerWithModel:(IPAssetModel *)model;
 @end

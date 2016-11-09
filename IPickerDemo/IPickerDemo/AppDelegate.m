@@ -17,6 +17,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
     if ([[UIDevice currentDevice].systemVersion doubleValue] >= 9.0f) {
         UIApplicationShortcutItem *shortItem1 = [[UIApplicationShortcutItem alloc] initWithType:@"打开相册" localizedTitle:@"打开相册"];
         

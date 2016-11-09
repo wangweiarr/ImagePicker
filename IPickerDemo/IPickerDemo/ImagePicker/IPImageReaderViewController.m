@@ -35,6 +35,10 @@
     }
     return self;
 }
+- (void)prepareForReuse{
+    [super prepareForReuse];
+    [self.zoomScroll prepareForReuse];
+}
 - (void)layoutSubviews{
     [super layoutSubviews];
     _zoomScroll.frame = self.bounds;
@@ -174,7 +178,18 @@ static NSString * const reuseIdentifier = @"Cell";
         IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
         [thePage displayImageWithFullScreenImage];
     }
-    
+    if (self.forceTouch) {
+        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentIndex inSection:0];
+        [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
+        
+        IPAssetModel *model = self.dataArr[_currentIndex];
+        IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
+        if (thePage) {
+            self.forceTouch = NO;
+            [thePage displayImageWithFullScreenImage];
+        }
+        
+    }
 }
 
 -(void)viewDidAppear:(BOOL)animated{
@@ -185,13 +200,13 @@ static NSString * const reuseIdentifier = @"Cell";
 }
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-     NSLog(@"IPImageReaderViewController---didReceiveMemoryWarning");
+     IPLog(@"IPImageReaderViewController---didReceiveMemoryWarning");
     
     // Dispose of any resources that can be recreated.
 }
 - (void)dealloc{
     
-    NSLog(@"IPImageReaderViewController---dealloc");
+    IPLog(@"IPImageReaderViewController---dealloc");
 }
 - (void)cancle{
     if (self.presentingViewController) {
@@ -268,21 +283,19 @@ static NSString * const reuseIdentifier = @"Cell";
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     IPAssetModel *model = [self.dataArr objectAtIndex:indexPath.item];
     cell.zoomScroll.ipVc = self.ipVc;
+    IPLog(@"cellForItemAtIndexPath%tu",indexPath.item);
     cell.zoomScroll.imageModel = model;
     
     return cell;
 }
 
-- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-    [self dismissViewControllerAnimated:YES completion:nil];
-}
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath{
     
     return self.view.bounds.size;
 }
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageReaderCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
-    NSLog(@"%tu",indexPath.item);
-    [cell.zoomScroll prepareForReuse];
+    IPLog(@"didEndDisplayingCell%tu",indexPath.item);
+//    [cell.zoomScroll prepareForReuse];
     
 }
 

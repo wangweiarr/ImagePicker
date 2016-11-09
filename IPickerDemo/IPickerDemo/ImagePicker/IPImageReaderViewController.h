@@ -33,6 +33,9 @@ typedef void(^FunctionBlock)();
 /**图库管理*/
 @property (nonatomic, weak)IPAssetManager *manger;
 
+/**3DTouch*/
+@property (nonatomic, assign)BOOL forceTouch;
+
 + (instancetype)imageReaderViewControllerWithData:(NSArray<IPAssetModel *> *)data TargetIndex:(NSUInteger)index;
 
 @end
