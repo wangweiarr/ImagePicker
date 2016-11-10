@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate.h"
+#import "IPickerViewController.h"
 
 @interface AppDelegate ()
 
@@ -20,14 +21,27 @@
     
     if ([[UIDevice currentDevice].systemVersion doubleValue] >= 9.0f) {
         UIApplicationShortcutItem *shortItem1 = [[UIApplicationShortcutItem alloc] initWithType:@"打开相册" localizedTitle:@"打开相册"];
+        UIApplicationShortcutItem *shortItem2 = [[UIApplicationShortcutItem alloc] initWithType:@"打开视频" localizedTitle:@"打开视频"];
         
-        NSArray *shortItems = [[NSArray alloc] initWithObjects:shortItem1, nil];
+        NSArray *shortItems = [[NSArray alloc] initWithObjects:shortItem1,shortItem2, nil];
         
         [[UIApplication sharedApplication] setShortcutItems:shortItems];
     }
     
     
     return YES;
+}
+- (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void(^)(BOOL succeeded))completionHandler{
+    IPickerViewController *IP;
+    if ([shortcutItem.type isEqualToString:@"打开相册"]) {
+        IP = [IPickerViewController instanceWithDisplayStyle:IPickerViewControllerDisplayStyleImage];
+        
+    }else if ([shortcutItem.type isEqualToString:@"打开视频"]){
+        IP = [IPickerViewController instanceWithDisplayStyle:IPickerViewControllerDisplayStyleVideo];
+    }else {
+        
+    }
+    [self.window.rootViewController presentViewController:IP animated:YES completion:nil];
 }
 
 - (void)applicationWillResignActive:(UIApplication *)application {
@@ -50,10 +64,5 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-}
-- (void)application:(UIApplication *)application performActionForShortcutItem:(UIApplicationShortcutItem *)shortcutItem completionHandler:(void (^)(BOOL))completionHandler{
-    if ([shortcutItem.localizedTitle  isEqual:@"打开相册"]) {
-        NSLog(@"打开相册");
-    }
 }
 @end
