@@ -12,7 +12,7 @@
 
 #import <Photos/Photos.h>
 
-@interface ViewController ()<IPickerViewControllerDelegate>
+@interface ViewController ()<IPickerViewControllerDelegate,UICollectionViewDataSource,UICollectionViewDelegate>
 /**sdf*/
 @property (nonatomic, strong)NSArray *arr;
 
@@ -41,9 +41,47 @@ static UIViewController *vc;
     vc = [[UIViewController alloc]init];
     NSLog(@"%@",vc);
 //    D7DD1D1D-DC89-4A5A-B30F-E735F3589C19/L0/001
+    UICollectionViewFlowLayout *flow = [[UICollectionViewFlowLayout alloc]init];
     
+    flow.scrollDirection = UICollectionViewScrollDirectionHorizontal;
+    flow.minimumInteritemSpacing = 0;
+    flow.minimumLineSpacing = 0;
+    UICollectionView *collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(100, 64, 100, 100) collectionViewLayout:flow];
+    [collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"cell"];
+    collectionView.pagingEnabled = YES;
+    collectionView.showsHorizontalScrollIndicator = NO;
+    collectionView.showsVerticalScrollIndicator = NO;
+    collectionView.dataSource = self;
+    collectionView.delegate   = self;
+//    [self.view addSubview:collectionView];
     
 }
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return 1;
+}
+
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    return 3;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+    UICollectionViewCell *cell =[collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
+    cell.backgroundColor = [UIColor colorWithRed:arc4random_uniform(255)/255.0 green:arc4random_uniform(255)/255.0 blue:arc4random_uniform(255)/255.0 alpha:arc4random_uniform(255)/255.0];
+    NSLog(@"cellForItemAtIndexPath%tu",indexPath.item);
+    return cell;
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath{
+    
+    return CGSizeMake(100, 100);
+}
+- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(UICollectionViewCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
+    NSLog(@"didEndDisplayingCell%tu",indexPath.item);
+
+    
+}
+
 - (IBAction)pickerVideo:(UIButton *)sender {
     IPickerViewController *ip = [IPickerViewController instanceWithDisplayStyle:IPickerViewControllerDisplayStyleVideo];
     ip.delegate = self;

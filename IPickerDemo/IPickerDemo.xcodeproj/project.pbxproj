@@ -133,8 +133,8 @@
 		344F37A61C814BC6006063B6 /* IPickerDemo */ = {
 			isa = PBXGroup;
 			children = (
-				344F37AA1C814BC6006063B6 /* AppDelegate.h */,
 				344F37AB1C814BC6006063B6 /* AppDelegate.m */,
+				344F37AA1C814BC6006063B6 /* AppDelegate.h */,
 				344F37C21C814BF0006063B6 /* ViewController.h */,
 				344F37C31C814BF0006063B6 /* ViewController.m */,
 				344F37BE1C814BE7006063B6 /* Main.storyboard */,

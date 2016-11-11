@@ -17,9 +17,13 @@
 
 @property (nonatomic) IPAssetModel * imageModel;
 
+/**是否显示高清 */
+//@property (nonatomic, assign)BOOL isDisplayingHighQuality;
+
 - (void)prepareForReuse;
 
 - (void)displayImage;
-//- (void)displayImageWithFullScreenImage:(UIImage *)img;
+
 - (void)displayImageWithFullScreenImage;
+
 @end

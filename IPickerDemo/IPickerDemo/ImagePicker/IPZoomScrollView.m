@@ -12,6 +12,7 @@
 #import "IPTapDetectView.h"
 #import "IPAssetManager.h"
 #import "IPickerViewController.h"
+#import "IPPrivateDefine.h"
 
 @interface IPickerViewController ()
 
@@ -74,39 +75,46 @@
     _imageModel = nil;
     _photoImageView.hidden = YES;
     _photoImageView.image = nil;
-    
+//    _isDisplayingHighQuality = NO;
 }
 
 - (void)setImageModel:(IPAssetModel *)imageModel{
     
     if (_imageModel != imageModel && imageModel != nil) {
         _imageModel = imageModel;
+//        if (self.isDisplayingHighQuality) {
+//            [self displayImageWithFullScreenImage];
+//        }else {
+            [self displayImage];
+//        }
         
-        [self displayImage];
     }
 }
 - (void)displayImageWithFullScreenImage{
-    
-    [self.ipVc getFullScreenImageWithAsset:_imageModel photoWidth:CGSizeMake(self.bounds.size.width, 0) completion:^(UIImage *img, NSDictionary *info) {
+    CGSize size = CGSizeMake(self.bounds.size.width, self.bounds.size.height);
+    if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
+        size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
+    }
+    [self.ipVc getFullScreenImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
         if (img) {
             if (!CGSizeEqualToSize(img.size, _photoImageView.image.size)) {
                 // Set image
                 _photoImageView.image = img;
                 _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
-                // Setup photo frame
-                CGRect photoImageViewFrame;
-                photoImageViewFrame.origin = CGPointZero;
-                
-                CGFloat width = self.bounds.size.width;
-                
-                CGFloat height = width *  _imageModel.thumbnailScale;
-                
-                photoImageViewFrame.size = CGSizeMake(width, height);
-                
-                _photoImageView.frame = photoImageViewFrame;
-                
-                self.contentSize = photoImageViewFrame.size;
-                
+//                // Setup photo frame
+//                CGRect photoImageViewFrame;
+//                photoImageViewFrame.origin = CGPointZero;
+//                
+//                CGFloat width = self.bounds.size.width;
+//                
+//                CGFloat height = width *  _imageModel.thumbnailScale;
+//                
+//                photoImageViewFrame.size = CGSizeMake(width, height);
+//                
+//                _photoImageView.frame = photoImageViewFrame;
+//                
+//                self.contentSize = photoImageViewFrame.size;
+//                self.isDisplayingHighQuality = YES;
                 // Set zoom to minimum zoom
                 [self setMaxMinZoomScalesForCurrentBounds];
                 [self setNeedsLayout];
@@ -122,10 +130,13 @@
 - (void)displayImage {
     if (_imageModel && _photoImageView.image == nil) {
         
-        
-        
+        CGSize size = CGSizeMake(self.bounds.size.width, self.bounds.size.height);
+        if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
+            size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
+        }
         // Get image from browser as it handles ordering of fetching
-        [self.ipVc getAspectPhotoWithAsset:_imageModel photoWidth:CGSizeMake(self.bounds.size.width, 0) completion:^(UIImage *img, NSDictionary *info) {
+        
+        [self.ipVc getAspectPhotoWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
             if (img) {
                 
                 // Reset
@@ -133,21 +144,33 @@
                 self.minimumZoomScale = 1;
                 self.zoomScale = 1;
                 
-                 _photoImageView.contentMode = UIViewContentModeScaleToFill;
+                 _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
                 // Set image
                 _photoImageView.image = img;
                 _photoImageView.hidden = NO;
-                
+                IPLog(@"displayImage imageSize %@",NSStringFromCGSize(img.size));
                 // Setup photo frame
                 CGRect photoImageViewFrame;
+                
                 photoImageViewFrame.origin = CGPointZero;
-                CGFloat width = self.bounds.size.width;
-                
-                 CGFloat height = width * img.size.height /img.size.width;
-                _imageModel.thumbnailScale = img.size.height /img.size.width;
-                photoImageViewFrame.size = CGSizeMake(width, height);
-                
-                _photoImageView.frame = photoImageViewFrame;
+                if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
+                    CGFloat height = self.bounds.size.height;
+                    
+                    CGFloat width = height * img.size.width /img.size.height;
+                    _imageModel.thumbnailScale = img.size.height /img.size.width;
+                    photoImageViewFrame.size = CGSizeMake(width, height);
+                    IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
+                    _photoImageView.frame = photoImageViewFrame;
+                }else {
+                    
+                    CGFloat width = self.bounds.size.width;
+                    
+                    CGFloat height = width * img.size.height /img.size.width;
+                    _imageModel.thumbnailScale = img.size.height /img.size.width;
+                    photoImageViewFrame.size = CGSizeMake(width, height);
+                    IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
+                    _photoImageView.frame = photoImageViewFrame;
+                }
                 
             }
             [self setNeedsLayout];
@@ -165,7 +188,7 @@
     
     // Bail if no image
     if (_photoImageView.image == nil) return;
-    
+    IPLog(@"setMaxMinZoomScalesForCurrentBounds%@",NSStringFromCGRect(_photoImageView.frame));
     // Reset position
     _photoImageView.frame = CGRectMake(0, 0, _photoImageView.frame.size.width, _photoImageView.frame.size.height);
     
@@ -194,7 +217,7 @@
     self.maximumZoomScale = maxScale;
     
     // Disable scrolling initially until the first pinch to fix issues with swiping on an initally zoomed in photo
-//    self.scrollEnabled = NO;
+    self.scrollEnabled = NO;
     
 }
 
@@ -250,8 +273,11 @@
     }
     
     // Center
-    if (!CGRectEqualToRect(_photoImageView.frame, frameToCenter))
+    if (!CGRectEqualToRect(_photoImageView.frame, frameToCenter)){
+         IPLog(@"layoutSubviews%@",NSStringFromCGRect(frameToCenter));
         _photoImageView.frame = frameToCenter;
+    }
+    
     
 }
 

@@ -239,10 +239,10 @@ static NSString * const reuseIdentifier = @"Cell";
 }
 
 - (BOOL)shouldAutorotate{
-    return NO;
+    return YES;
 }
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations{
-    return UIInterfaceOrientationMaskPortrait;
+    return UIInterfaceOrientationMaskPortrait|UIInterfaceOrientationMaskLandscapeLeft|UIInterfaceOrientationMaskLandscapeRight;
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
@@ -252,6 +252,19 @@ static NSString * const reuseIdentifier = @"Cell";
     
     
 }
+
+//#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+//- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator{
+//    // Perform layout
+//    _currentIndex = _pageIndexBeforeRotation;
+//    self.isRoration = YES;
+//    
+//    IPAssetModel *model = self.dataArr[_currentIndex];
+//    self.rightButton.selected = model.isSelect;
+//    
+//    [self.collectionView reloadData];
+//}
+//#else
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
     
     // Perform layout
@@ -264,8 +277,16 @@ static NSString * const reuseIdentifier = @"Cell";
     [self.collectionView reloadData];
     
 }
+//#endif
+
+
+
+
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation{
     self.isRoration = NO;
+    IPAssetModel *model = self.dataArr[_currentIndex];
+    IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
+    [thePage displayImageWithFullScreenImage];
     
 }
 #pragma mark <UICollectionViewDataSource>
@@ -283,9 +304,8 @@ static NSString * const reuseIdentifier = @"Cell";
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     IPAssetModel *model = [self.dataArr objectAtIndex:indexPath.item];
     cell.zoomScroll.ipVc = self.ipVc;
-    IPLog(@"cellForItemAtIndexPath%tu",indexPath.item);
+    IPLog(@"cellForItemAtIndexPath--%tu",indexPath.item);
     cell.zoomScroll.imageModel = model;
-    
     return cell;
 }
 
@@ -294,7 +314,7 @@ static NSString * const reuseIdentifier = @"Cell";
     return self.view.bounds.size;
 }
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageReaderCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
-    IPLog(@"didEndDisplayingCell%tu",indexPath.item);
+    IPLog(@"didEndDisplayingCell--%tu",indexPath.item);
 //    [cell.zoomScroll prepareForReuse];
     
 }
