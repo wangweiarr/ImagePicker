@@ -16,6 +16,8 @@
 @end
 @interface IPImageCell : UICollectionViewCell
 
+/**缩略图*/
+@property (nonatomic, weak,readonly) UIImageView *imgView;
 
 /**ipvc*/
 @property (nonatomic, weak)IPickerViewController *ipVc;

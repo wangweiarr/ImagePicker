@@ -8,7 +8,6 @@
 
 #import "IPZoomScrollView.h"
 #import "IPAssetModel.h"
-#import "IPTapDetectImageView.h"
 #import "IPTapDetectView.h"
 #import "IPAssetManager.h"
 #import "IPickerViewController.h"
@@ -28,7 +27,7 @@
 @property (nonatomic, strong)IPTapDetectView *tapView;
 
 /**图像view*/
-@property (nonatomic, strong)IPTapDetectImageView *photoImageView;
+@property (nonatomic, strong,readwrite)IPTapDetectImageView *photoImageView;
 
 
 

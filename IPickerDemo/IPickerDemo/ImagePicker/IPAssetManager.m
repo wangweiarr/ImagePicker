@@ -626,6 +626,39 @@ static IPAssetManager *manager;
         }
     }
 }
+- (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    
+    if (iOS8Later) {
+        [self ios8_AsyncLoadHighQualityImageWithSize:photoSize asset:imageModel completion:completion];
+    }else {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            
+            @try {
+                ALAsset *asset = (ALAsset *)imageModel.asset;
+                ALAssetRepresentation *rep = [asset defaultRepresentation];
+                CGImageRef iref = [rep fullScreenImage];
+                UIImage *fullScreenImage;
+                if (iref) {
+                    fullScreenImage = [UIImage imageWithCGImage:iref];
+                    
+                }
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (completion) {
+                        completion(fullScreenImage,nil);
+                    }
+                    
+                });
+            } @catch (NSException *e) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completion(nil,nil);
+                });
+            }
+            
+        });
+    }
+    
+    
+}
 - (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     
     if (iOS8Later) {
@@ -726,6 +759,28 @@ static IPAssetManager *manager;
 }
 /**
  *  加载高清图
+ */
+- (void)ios8_AsyncLoadHighQualityImageWithSize:(CGSize)imageSize asset:(IPAssetModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+    options.networkAccessAllowed = YES;
+    options.resizeMode = PHImageRequestOptionsResizeModeExact;
+    options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    PHAsset *phAsset = (PHAsset *)imagModel.asset;
+    //    PHImageManagerMaximumSize
+    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:imageSize contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+        //                IPLog(@"高清图--%@",info);
+        BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+        if (downloadFinined) {
+            completion(result,nil);
+            
+        }else {
+            completion(nil,nil);
+        }
+    }];
+}
+
+/**
+ *  加载全屏图
  */
 - (void)ios8_AsyncLoadFullScreenImageWithSize:(CGSize)imageSize asset:(IPAssetModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];

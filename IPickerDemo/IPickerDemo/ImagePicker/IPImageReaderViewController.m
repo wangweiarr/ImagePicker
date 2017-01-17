@@ -12,49 +12,19 @@
 #import "IPAlertView.h"
 #import<AssetsLibrary/AssetsLibrary.h>
 #import "IPPrivateDefine.h"
+#import "IPAnimationTranstion.h"
+#import "IPImageReaderCell.h"
 
-
-@interface IPImageReaderCell : UICollectionViewCell
-/**伸缩图*/
-@property (nonatomic, strong)IPZoomScrollView *zoomScroll;
-
-
-@end
-
-@implementation IPImageReaderCell
-
-- (instancetype)initWithFrame:(CGRect)frame{
-    if (self = [super initWithFrame:frame]) {
-        
-        // Configure the cell
-        self.backgroundColor = [UIColor blackColor];
-        self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        _zoomScroll  = [[IPZoomScrollView alloc]init];
-        _zoomScroll.frame = self.bounds;
-        [self addSubview:_zoomScroll];
-    }
-    return self;
-}
-- (void)prepareForReuse{
-    [super prepareForReuse];
-    [self.zoomScroll prepareForReuse];
-}
-- (void)layoutSubviews{
-    [super layoutSubviews];
-    _zoomScroll.frame = self.bounds;
-}
-
-@end
-
-
-@interface IPImageReaderViewController ()<UICollectionViewDelegateFlowLayout>
+@interface IPImageReaderViewController ()<UICollectionViewDelegateFlowLayout,UINavigationControllerDelegate>
 /**图片数组*/
 @property (nonatomic, strong)NSArray *dataArr;
+
 /**第一次出现时,要滚动到指定位置*/
 @property (nonatomic, assign)BOOL isFirst;
 
 /**发生转屏时,要滚动到指定位置*/
 @property (nonatomic, assign)BOOL isRoration;
+
 /**需要跳转到指定位置*/
 @property (nonatomic, assign)NSUInteger targetIndex;
 
@@ -77,6 +47,8 @@
 //@property (nonatomic, assign)CGSize itemSize;
 
 
+@property (strong, nonatomic) UIImageView *imageViewForSecond;
+
 @end
 
 @implementation IPImageReaderViewController
@@ -94,6 +66,7 @@ static NSString * const reuseIdentifier = @"Cell";
     IPImageReaderViewController *vc = [[IPImageReaderViewController alloc]initWithCollectionViewLayout:flow];
     vc.dataArr = data;
     vc.targetIndex = index;
+    vc.currentIndex = index;
     return vc;
     
     
@@ -101,7 +74,7 @@ static NSString * const reuseIdentifier = @"Cell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+    self.navigationController.delegate = self;
     self.collectionView.pagingEnabled = YES;
     self.collectionView.showsHorizontalScrollIndicator = NO;
     self.collectionView.showsVerticalScrollIndicator = NO;
@@ -197,6 +170,8 @@ static NSString * const reuseIdentifier = @"Cell";
     IPAssetModel *model = self.dataArr[_targetIndex];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
     [thePage displayImageWithFullScreenImage];
+    self.navigationController.delegate = self;
+    
 }
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -369,7 +344,18 @@ static NSString * const reuseIdentifier = @"Cell";
     }
     return thePage;
 }
-
+#pragma mark <UINavigationControllerDelegate>
+- (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+                                   animationControllerForOperation:(UINavigationControllerOperation)operation
+                                                fromViewController:(UIViewController *)fromVC
+                                                  toViewController:(UIViewController *)toVC{
+    if ([toVC isKindOfClass:NSClassFromString(@"IPickerViewController")]) {
+        IPAnimationInverseTransition *inverseTransition = [[IPAnimationInverseTransition alloc]init];
+        return inverseTransition;
+    }else{
+        return nil;
+    }
+}
 
 
 

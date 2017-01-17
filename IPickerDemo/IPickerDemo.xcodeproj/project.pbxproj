@@ -32,6 +32,8 @@
 		3488EE0C1D254703002C0FA3 /* IPVision.m in Sources */ = {isa = PBXBuildFile; fileRef = 3488EE071D254703002C0FA3 /* IPVision.m */; };
 		3488EE0D1D254703002C0FA3 /* IPVisionUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 3488EE091D254703002C0FA3 /* IPVisionUtilities.m */; };
 		3488EE101D254727002C0FA3 /* IPTakeVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3488EE0F1D254727002C0FA3 /* IPTakeVideoViewController.m */; };
+		349EB9CD1E2E22CC00351FC4 /* IPAnimationTranstion.m in Sources */ = {isa = PBXBuildFile; fileRef = 349EB9CC1E2E22CC00351FC4 /* IPAnimationTranstion.m */; };
+		349EB9D01E2E563F00351FC4 /* IPImageReaderCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 349EB9CF1E2E563F00351FC4 /* IPImageReaderCell.m */; };
 		34E40DA31CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */; };
 /* End PBXBuildFile section */
 
@@ -85,6 +87,10 @@
 		3488EE091D254703002C0FA3 /* IPVisionUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPVisionUtilities.m; sourceTree = "<group>"; };
 		3488EE0E1D254727002C0FA3 /* IPTakeVideoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPTakeVideoViewController.h; sourceTree = "<group>"; };
 		3488EE0F1D254727002C0FA3 /* IPTakeVideoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPTakeVideoViewController.m; sourceTree = "<group>"; };
+		349EB9CB1E2E22CC00351FC4 /* IPAnimationTranstion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPAnimationTranstion.h; sourceTree = "<group>"; };
+		349EB9CC1E2E22CC00351FC4 /* IPAnimationTranstion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPAnimationTranstion.m; sourceTree = "<group>"; };
+		349EB9CE1E2E563F00351FC4 /* IPImageReaderCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPImageReaderCell.h; sourceTree = "<group>"; };
+		349EB9CF1E2E563F00351FC4 /* IPImageReaderCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPImageReaderCell.m; sourceTree = "<group>"; };
 		34A524281DC9E5AA0094915B /* IPPrivateDefine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPPrivateDefine.h; sourceTree = "<group>"; };
 		34E40DA11CCB5EBF00DCC366 /* IP3DTouchPreviewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IP3DTouchPreviewVC.h; sourceTree = "<group>"; };
 		34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IP3DTouchPreviewVC.m; sourceTree = "<group>"; };
@@ -157,6 +163,7 @@
 		344F37D81C83D4C0006063B6 /* ImagePicker */ = {
 			isa = PBXGroup;
 			children = (
+				349EB9CA1E2E22A400351FC4 /* AnimationTranstion */,
 				34A524281DC9E5AA0094915B /* IPPrivateDefine.h */,
 				3453E6231CC8D99F004DAFDA /* IPAssetModel.h */,
 				3453E6241CC8D99F004DAFDA /* IPAssetModel.m */,
@@ -172,6 +179,8 @@
 				34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */,
 				344F3BD71C842444006063B6 /* IPImageReaderViewController.h */,
 				344F3BD81C842444006063B6 /* IPImageReaderViewController.m */,
+				349EB9CE1E2E563F00351FC4 /* IPImageReaderCell.h */,
+				349EB9CF1E2E563F00351FC4 /* IPImageReaderCell.m */,
 				3461FC9C1C86B99100FF3015 /* IPAlertView.h */,
 				3461FC9D1C86B99100FF3015 /* IPAlertView.m */,
 				344F37E11C83D4C0006063B6 /* IPImageCell.h */,
@@ -205,6 +214,15 @@
 				3488EE091D254703002C0FA3 /* IPVisionUtilities.m */,
 			);
 			path = IPVision;
+			sourceTree = "<group>";
+		};
+		349EB9CA1E2E22A400351FC4 /* AnimationTranstion */ = {
+			isa = PBXGroup;
+			children = (
+				349EB9CB1E2E22CC00351FC4 /* IPAnimationTranstion.h */,
+				349EB9CC1E2E22CC00351FC4 /* IPAnimationTranstion.m */,
+			);
+			path = AnimationTranstion;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -281,6 +299,7 @@
 				34E40DA31CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m in Sources */,
 				344F3BD91C842444006063B6 /* IPImageReaderViewController.m in Sources */,
 				344F37ED1C83D508006063B6 /* IPTapDetectView.m in Sources */,
+				349EB9CD1E2E22CC00351FC4 /* IPAnimationTranstion.m in Sources */,
 				3488EE101D254727002C0FA3 /* IPTakeVideoViewController.m in Sources */,
 				344F37AC1C814BC6006063B6 /* AppDelegate.m in Sources */,
 				3488EE0A1D254703002C0FA3 /* IPCaptureProgressBar.m in Sources */,
@@ -299,6 +318,7 @@
 				344F37F31C83D62C006063B6 /* IPZoomScrollView.m in Sources */,
 				344F37F01C83D530006063B6 /* IPTapDetectImageView.m in Sources */,
 				343E26B31D28ED310015C1FD /* IPTakeMediaManager.m in Sources */,
+				349EB9D01E2E563F00351FC4 /* IPImageReaderCell.m in Sources */,
 				344F37E71C83D4C0006063B6 /* IPAlbumView.m in Sources */,
 				3461FC9E1C86B99100FF3015 /* IPAlertView.m in Sources */,
 			);
@@ -397,7 +417,7 @@
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.jl.new;
+				PRODUCT_BUNDLE_IDENTIFIER = com.JL.Imagepicker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -412,7 +432,7 @@
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.jl.new;
+				PRODUCT_BUNDLE_IDENTIFIER = com.JL.Imagepicker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

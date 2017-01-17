@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "IPTapDetectImageView.h"
 
 @class IPAssetModel,IPickerViewController;
 
@@ -16,6 +17,8 @@
 @property (nonatomic, weak)IPickerViewController *ipVc;
 
 @property (nonatomic) IPAssetModel * imageModel;
+
+@property (nonatomic, strong,readonly)IPTapDetectImageView *photoImageView;
 
 /**是否显示高清 */
 //@property (nonatomic, assign)BOOL isDisplayingHighQuality;

@@ -13,12 +13,12 @@
 
 @interface IPickerViewController ()
 - (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-
+- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 @end
 
 @interface IPImageCell ()
 /**缩略图*/
-@property (nonatomic, weak) UIImageView *imgView;
+@property (nonatomic, weak,readwrite) UIImageView *imgView;
 /**右上角按钮*/
 @property (nonatomic, weak) UIButton *rightCornerBtn;
 
@@ -149,7 +149,10 @@
     __weak typeof(self) weakSelf = self;
     
     if (_model.assetType == IPAssetModelMediaTypeVideo ) {
-        [self.ipVc getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
+//        [self.ipVc getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
+//            weakSelf.imgView.image = photo;
+//        }];
+        [self.ipVc getFullScreenImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
             weakSelf.imgView.image = photo;
         }];
         self.bottomBackView.hidden = NO;

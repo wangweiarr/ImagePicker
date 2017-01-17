@@ -17,7 +17,7 @@
 #import "IPImageReaderViewController.h"
 #import "IPAlertView.h"
 #import "IPTakeVideoViewController.h"
-
+#import "IPAnimationTranstion.h"
 #import "IPPrivateDefine.h"
 
 
@@ -92,6 +92,10 @@ NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOAD
 /**拍照*/
 @property (nonatomic, strong)UIImagePickerController *imagePicker;
 
+@property(nonatomic,assign)CGRect finalCellRect;
+
+@property(nonatomic,strong)NSIndexPath *indexPath;
+
 @end
 static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
@@ -141,7 +145,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 {
     [super viewDidLoad];
     self.automaticallyAdjustsScrollViewInsets = NO;
-    
+    self.navigationController.delegate = self;
     [self.navigationController setNavigationBarHidden:YES animated:NO];
     
     [self addMainView];
@@ -374,24 +378,25 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
             reader.currentCount = self.selectPhotoCount;
             reader.delegate = self;
             reader.ipVc = self;
-            if (reader) {
-                //定义个转场动画
-                CATransition *animation = [CATransition animation];
-                //转场动画持续时间
-                animation.duration = 0.2f;
-                //计时函数，从头到尾的流畅度？？？
-                animation.timingFunction=UIViewAnimationCurveEaseInOut;
-                //转场动画类型
-                animation.type = kCATransitionPush;
-                //转场动画将去的方向
-                animation.subtype = kCATransitionFromRight;
-                animation.delegate = self;
-                //添加动画 （转场动画是添加在层上的动画）
-                [self.view.window.layer addAnimation:animation forKey:nil];
-                [self presentViewController:reader animated:YES completion:nil];
-            }else {
-                NSLog(@"内存吃紧啊");
-            }
+//            if (reader) {
+//                //定义个转场动画
+//                CATransition *animation = [CATransition animation];
+//                //转场动画持续时间
+//                animation.duration = 0.2f;
+//                //计时函数，从头到尾的流畅度？？？
+//                animation.timingFunction=UIViewAnimationCurveEaseInOut;
+//                //转场动画类型
+//                animation.type = kCATransitionPush;
+//                //转场动画将去的方向
+//                animation.subtype = kCATransitionFromRight;
+//                animation.delegate = self;
+//                //添加动画 （转场动画是添加在层上的动画）
+//                [self.view.window.layer addAnimation:animation forKey:nil];
+//                [self presentViewController:reader animated:YES completion:nil];
+//            }else {
+//                NSLog(@"内存吃紧啊");
+//            }
+            [self.navigationController pushViewController:reader animated:YES];
             
         }
         
@@ -623,6 +628,10 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self.mainView reloadData];
     
 }
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    self.navigationController.delegate = self;
+}
 
 #pragma mark 获取相册的所有图片
 - (void)loadImageUserDeny:(IPAssetManager *)manager{
@@ -682,6 +691,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 }
 - (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     [self.defaultAssetManager getThumibImageWithAsset:imageModel photoWidth:photoSize completion:completion];
+}
+- (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    [self.defaultAssetManager getHighQualityImageWithAsset:imageModel photoWidth:photoSize completion:completion];
 }
 #pragma mark - lazy -
 - (IPAssetManager *)defaultAssetManager{
@@ -1001,4 +1013,20 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     IPLog(@"imagePickerControllerDidCancel");
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
+
+#pragma mark transition 
+#pragma mark <UINavigationControllerDelegate>
+- (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+                                   animationControllerForOperation:(UINavigationControllerOperation)operation
+                                                fromViewController:(UIViewController *)fromVC
+                                                  toViewController:(UIViewController *)toVC{
+    
+    if ([toVC isKindOfClass:[IPImageReaderViewController class]]) {
+        IPAnimationTranstion *transition = [[IPAnimationTranstion alloc]init];
+        return transition;
+    }else{
+        return nil;
+    }
+}
+
 @end
