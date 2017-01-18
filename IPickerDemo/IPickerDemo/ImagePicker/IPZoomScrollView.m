@@ -19,7 +19,7 @@
 - (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 - (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 - (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-
+- (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 @end
 @interface IPZoomScrollView ()<UIScrollViewDelegate,IPTapDetectViewDelegate,IPTapDetectImageViewDelegate>
 
@@ -94,6 +94,7 @@
     if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
         size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
     }
+    
     [self.ipVc getFullScreenImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
         if (img) {
             if (!CGSizeEqualToSize(img.size, _photoImageView.image.size)) {

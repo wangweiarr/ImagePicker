@@ -64,8 +64,8 @@
         CGRect photoImageViewFrame;
         CGFloat height = fromVC.view.bounds.size.height;
         
-        photoImageViewFrame.size = photosize;
-        photoImageViewFrame.origin = CGPointMake(0, (height - photosize.height)/2);
+        photoImageViewFrame.size = CGSizeMake(photosize.width, photosize.height + 20) ;
+        photoImageViewFrame.origin = CGPointMake(0, (height - photosize.height)/2 - 10);
         
         
         //设置第二个控制器的位置、透明度
@@ -95,17 +95,20 @@
             [containerView layoutIfNeeded];
             toVC.view.alpha = 1.0;
             CGRect rect = [containerView convertRect:photoImageViewFrame fromView:toVC.view];
-            snapShotView.frame = photoImageViewFrame;
+            snapShotView.frame = rect;
         } completion:^(BOOL finished) {
             //为了让回来的时候，cell上的图片显示，必须要让cell上的图片显示出来
             cell.imgView.hidden = NO;
-            [snapShotView removeFromSuperview];
-            //告诉系统动画结束
-            [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
+            [UIView animateWithDuration:0.3 animations:^{
+                snapShotView.alpha = 0.0f;
+            } completion:^(BOOL finished) {
+                [snapShotView removeFromSuperview];
+                //告诉系统动画结束
+                [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
+            }];
+            
         }];
     }];
-//    snapShotView = [cell.imgView snapshotViewAfterScreenUpdates:NO];
-    
     
 }
 @end
@@ -123,9 +126,11 @@
     UIView *containerView = [transitionContext containerView];
     
     IPImageReaderCell *cell = (IPImageReaderCell *)[fromVC.collectionView visibleCells].lastObject;
-    
+    NSIndexPath *currentIndexPath = [[fromVC.collectionView indexPathsForVisibleItems] lastObject];
+    IPImageCell *from_cell = (IPImageCell *)[toVC.mainView cellForItemAtIndexPath:currentIndexPath];
     //在前一个VC上创建一个截图
     UIView  *snapShotView = [cell.zoomScroll.photoImageView snapshotViewAfterScreenUpdates:NO];
+    
     snapShotView.backgroundColor = [UIColor clearColor];
     snapShotView.frame = [containerView convertRect:cell.zoomScroll.photoImageView.frame fromView:cell.zoomScroll.superview];
     cell.hidden = YES;
@@ -138,16 +143,26 @@
     [containerView addSubview:snapShotView];
     
     //发生动画
-    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0f usingSpringWithDamping:0.6f initialSpringVelocity:1.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+//    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0f usingSpringWithDamping:0.6f initialSpringVelocity:1.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+//        fromVC.view.alpha = 0.0f;
+//        snapShotView.frame = [containerView convertRect:from_cell.frame fromView:toVC.mainView];
+//    } completion:^(BOOL finished) {
+//        [snapShotView removeFromSuperview];
+//        fromVC.imageViewForSecond.hidden = NO;
+//        cell.hidden = NO;
+//        [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
+//    }];
+    [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0f options:UIViewAnimationOptionCurveEaseInOut animations:^{
         fromVC.view.alpha = 0.0f;
-        snapShotView.frame = toVC.finalCellRect;
+        snapShotView.frame = [containerView convertRect:from_cell.frame fromView:toVC.mainView];
     } completion:^(BOOL finished) {
+        //为了让回来的时候，cell上的图片显示，必须要让cell上的图片显示出来
         [snapShotView removeFromSuperview];
         fromVC.imageViewForSecond.hidden = NO;
         cell.hidden = NO;
-        [transitionContext completeTransition:![transitionContext transitionWasCancelled]];
+        //告诉系统动画结束
+        [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
     }];
-    
     
 }
 @end

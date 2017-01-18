@@ -163,7 +163,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     
 }
-
+- (BOOL)prefersStatusBarHidden{
+    return NO;
+}
 
 #pragma mark - UI -
 - (void)viewDidLayoutSubviews{
