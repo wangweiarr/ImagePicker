@@ -729,6 +729,7 @@ static IPAssetManager *manager;
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
     options.resizeMode = PHImageRequestOptionsResizeModeExact;
     options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    options.networkAccessAllowed = YES;
     PHAsset *phAsset = (PHAsset *)imagModel.asset;
     
     __block IPAssetModel *tempModel = imagModel;
