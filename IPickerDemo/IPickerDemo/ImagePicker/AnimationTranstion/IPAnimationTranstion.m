@@ -20,6 +20,8 @@
 @property(nonatomic,assign)CGRect finalCellRect;
 @property(nonatomic,strong)NSIndexPath *indexPath;
 - (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+- (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+
 @end
 
 @interface IPImageReaderViewController ()

@@ -719,7 +719,7 @@ static IPAssetManager *manager;
 
 #pragma mark - ios8later -
 /**
- *  正方形缩略图
+ *  正方形缩略图---1
  *
  *  @param imageSize 图片size
  *  @param imagModel 图片模型
@@ -781,27 +781,6 @@ static IPAssetManager *manager;
 }
 
 /**
- *  加载全屏图
- */
-- (void)ios8_AsyncLoadFullScreenImageWithSize:(CGSize)imageSize asset:(IPAssetModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
-    PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
-    options.networkAccessAllowed = YES;
-    options.resizeMode = PHImageRequestOptionsResizeModeExact;
-    options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-    PHAsset *phAsset = (PHAsset *)imagModel.asset;
-//    PHImageManagerMaximumSize
-    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-//                IPLog(@"高清图--%@",info);
-        BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
-        if (downloadFinined) {
-            completion(result,nil);
-            
-        }else {
-            completion(nil,nil);
-        }
-    }];
-}
-/**
  *  高清预览图
  */
 - (void)ios8_AsyncLoadAspectThumbilImageWithSize:(CGSize)imageSize asset:(IPAssetModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
@@ -826,6 +805,30 @@ static IPAssetManager *manager;
         }
     }];
 }
+
+
+/**
+ *  加载全屏图
+ */
+- (void)ios8_AsyncLoadFullScreenImageWithSize:(CGSize)imageSize asset:(IPAssetModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+    options.networkAccessAllowed = YES;
+    options.resizeMode = PHImageRequestOptionsResizeModeExact;
+    options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    PHAsset *phAsset = (PHAsset *)imagModel.asset;
+    //    PHImageManagerMaximumSize
+    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+        //                IPLog(@"高清图--%@",info);
+        BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+        if (downloadFinined) {
+            completion(result,nil);
+            
+        }else {
+            completion(nil,nil);
+        }
+    }];
+}
+
 
 #pragma mark 视频
 - (void)reloadVideosFromLibrary{

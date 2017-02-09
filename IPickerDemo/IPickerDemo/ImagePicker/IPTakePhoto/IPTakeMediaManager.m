@@ -393,7 +393,6 @@ static const NSString *IPCameraAdjustingExposureContext;
     [self.movieOutput startRecordingToOutputFileURL:self.outputURL recordingDelegate:self];
 }
 - (NSURL *)uniqueURL{
-    NSFileManager *filemanager = [NSFileManager defaultManager];
     NSString *dirPath = @"";
     if (dirPath) {
         NSString *filePath = [dirPath stringByAppendingPathComponent:@"ipmovie.mov"];

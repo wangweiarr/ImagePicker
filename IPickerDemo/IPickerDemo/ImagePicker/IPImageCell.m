@@ -149,9 +149,7 @@
     __weak typeof(self) weakSelf = self;
     
     if (_model.assetType == IPAssetModelMediaTypeVideo ) {
-//        [self.ipVc getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
-//            weakSelf.imgView.image = photo;
-//        }];
+
         [self.ipVc getFullScreenImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
             weakSelf.imgView.image = photo;
         }];

@@ -29,7 +29,11 @@ typedef NS_ENUM(NSUInteger,  IPickerViewControllerDisplayStyle) {
 typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
 
 @class IPickerViewController;
+
+
 @protocol IPickerViewControllerDelegate <NSObject>
+
+@optional
 /**
  *  选择图片完成后的回调方法
  *

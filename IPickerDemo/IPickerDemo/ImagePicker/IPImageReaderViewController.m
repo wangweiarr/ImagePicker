@@ -83,6 +83,9 @@ static NSString * const reuseIdentifier = @"Cell";
     [self addHeaderView];
     
 }
+- (BOOL)prefersStatusBarHidden{
+    return YES;
+}
 - (void)addHeaderView{
     
     //添加背景图
