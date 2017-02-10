@@ -549,6 +549,8 @@ static IPAssetManager *manager;
         imgModel.localIdentiy = asset.localIdentifier;
         imgModel.assetUrl = [NSURL URLWithString:asset.localIdentifier];
         imgModel.asset = asset;
+        imgModel.priexScale = asset.pixelWidth/asset.pixelHeight;
+        IPLog(@"ImageAssets->%ld--%ld",asset.pixelWidth,asset.pixelHeight);
 //        NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
 //        [outputFormatter setLocale:[NSLocale currentLocale]];
 //        [outputFormatter setDateFormat:@"yyyy年MM月dd日 HH时mm分ss秒"];
@@ -740,7 +742,7 @@ static IPAssetManager *manager;
     CGFloat multiple = [UIScreen mainScreen].scale;
     CGFloat pixelWidth = imageSize.width * multiple;//PHImageManagerMaximumSize
     CGFloat pixelHeight = imageSize.height * multiple;//CGSizeMake(pixelWidth, pixelHeight)
-    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFill options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
 //        IPLog(@"高清缩略图--%@",info);
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (tempModel.assetType == IPAssetModelMediaTypeVideo) {
@@ -767,9 +769,9 @@ static IPAssetManager *manager;
     options.resizeMode = PHImageRequestOptionsResizeModeExact;
     options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
     PHAsset *phAsset = (PHAsset *)imagModel.asset;
+    options.synchronous = YES;
     //    PHImageManagerMaximumSize
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:imageSize contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
-        //                IPLog(@"高清图--%@",info);
         BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
         if (downloadFinined) {
             completion(result,nil);
@@ -815,6 +817,7 @@ static IPAssetManager *manager;
     options.networkAccessAllowed = YES;
     options.resizeMode = PHImageRequestOptionsResizeModeExact;
     options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    options.synchronous = YES;
     PHAsset *phAsset = (PHAsset *)imagModel.asset;
     //    PHImageManagerMaximumSize
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {

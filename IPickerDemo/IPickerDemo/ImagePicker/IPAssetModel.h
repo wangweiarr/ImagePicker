@@ -37,7 +37,7 @@ typedef void(^functionBlock)(AVPlayerItem *);
 @property (nonatomic, assign)BOOL isSame;
 
 /**比例缩略图高宽比例 内部不要使用,赋值*/
-@property (nonatomic, assign)CGFloat thumbnailScale;
+@property (nonatomic, assign)CGFloat priexScale;
 
 /**唯一标识符*/
 @property (nonatomic, copy)NSString *localIdentiy;

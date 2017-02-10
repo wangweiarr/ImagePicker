@@ -136,7 +136,7 @@
         }
         // Get image from browser as it handles ordering of fetching
         
-        [self.ipVc getAspectPhotoWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
+        [self.ipVc getHighQualityImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
             if (img) {
                 
                 // Reset
@@ -157,7 +157,6 @@
                     CGFloat height = self.bounds.size.height;
                     
                     CGFloat width = height * img.size.width /img.size.height;
-                    _imageModel.thumbnailScale = img.size.height /img.size.width;
                     photoImageViewFrame.size = CGSizeMake(width, height);
                     IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
                     _photoImageView.frame = photoImageViewFrame;
@@ -166,7 +165,6 @@
                     CGFloat width = self.bounds.size.width;
                     
                     CGFloat height = width * img.size.height /img.size.width;
-                    _imageModel.thumbnailScale = img.size.height /img.size.width;
                     photoImageViewFrame.size = CGSizeMake(width, height);
                     IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
                     _photoImageView.frame = photoImageViewFrame;

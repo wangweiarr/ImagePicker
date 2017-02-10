@@ -16,6 +16,7 @@
 #import "IPImageReaderCell.h"
 
 @interface IPImageReaderViewController ()<UICollectionViewDelegateFlowLayout,UINavigationControllerDelegate>
+
 /**图片数组*/
 @property (nonatomic, strong)NSArray *dataArr;
 
@@ -47,7 +48,6 @@
 //@property (nonatomic, assign)CGSize itemSize;
 
 
-@property (strong, nonatomic) UIImageView *imageViewForSecond;
 
 @end
 
