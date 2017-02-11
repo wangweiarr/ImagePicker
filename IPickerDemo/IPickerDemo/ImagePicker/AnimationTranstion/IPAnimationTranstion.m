@@ -17,7 +17,6 @@
 @interface IPickerViewController ()
 /**collectionview*/
 @property (nonatomic, strong)UICollectionView *mainView;
-@property(nonatomic,assign)CGRect finalCellRect;
 @property(nonatomic,strong)NSIndexPath *indexPath;
 - (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 - (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
@@ -27,7 +26,7 @@
 
 @implementation IPAnimationTranstion
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext{
-    return 0.3f;
+    return 0.6f;
 }
 
 //UIViewControllerAnimatedTransitioning
@@ -46,17 +45,20 @@
         size = CGSizeMake(fromVC.view.bounds.size.height, fromVC.view.bounds.size.width);
     }
     
-//    __block CGSize photosize;
-//    __block UIImageView *snapShotView;
     [fromVC getHighQualityImageWithAsset:cell.model photoWidth:size completion:^(UIImage *photo, NSDictionary *info) {
         CGSize photosize = photo.size;
+        
+        UIView *backGroundView = [[UIView alloc]init];
+        backGroundView.backgroundColor = [UIColor blackColor];
+        
         UIImageView *snapShotView = [[UIImageView alloc]initWithImage:photo];
         
+        backGroundView.frame = [containerView convertRect:cell.imgView.frame fromView:cell.imgView.superview];
         
-        snapShotView.frame = fromVC.finalCellRect = [containerView convertRect:cell.imgView.frame fromView:cell.imgView.superview];
         cell.imgView.hidden = YES;
+        snapShotView.frame = [containerView convertRect:cell.imgView.frame fromView:cell.imgView.superview];
         
-        
+//        backGroundView.alpha = 0.0f;
         CGRect photoImageViewFrame;
         CGFloat height = fromVC.view.bounds.size.height;
         
@@ -71,46 +73,65 @@
         
         //把动画前后的两个ViewController加到容器中,顺序很重要,snapShotView在上方
         [containerView addSubview:toVC.view];
+        [containerView addSubview:backGroundView];
         [containerView addSubview:snapShotView];
         
         //动起来。第二个控制器的透明度0~1；让截图SnapShotView的位置更新到最新；
         
-//        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.1f usingSpringWithDamping:0.95f initialSpringVelocity:1.0f options:UIViewAnimationOptionCurveLinear animations:^{
-//            [containerView layoutIfNeeded];
-//            
-//            CGRect rect = [containerView convertRect:photoImageViewFrame fromView:toVC.view];
-//            snapShotView.frame = rect;
-//            
-//            toVC.collectionView.alpha = 1.0;
+//        [UIView animateWithDuration:0.1 animations:^{
+//            backGroundView.alpha = 1.0f;
 //        } completion:^(BOOL finished) {
-//            //为了让回来的时候，cell上的图片显示，必须要让cell上的图片显示出来
-//            cell.imgView.hidden = NO;
-//            [UIView animateWithDuration:0.3 animations:^{
-//                snapShotView.alpha = 0.0f;
-//                
-//            } completion:^(BOOL finished) {
-//                [snapShotView removeFromSuperview];
-//                //告诉系统动画结束
-//                [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
-//            }];
-//        }];
-        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0f options:UIViewAnimationOptionCurveLinear animations:^{
-            [containerView layoutIfNeeded];
-            toVC.collectionView.alpha = 1.0;
-            CGRect rect = [containerView convertRect:photoImageViewFrame fromView:toVC.view];
-            snapShotView.frame = rect;
-        } completion:^(BOOL finished) {
-            //为了让回来的时候，cell上的图片显示，必须要让cell上的图片显示出来
-            cell.imgView.hidden = NO;
-            [UIView animateWithDuration:0.3 animations:^{
-                snapShotView.alpha = 0.0f;
+            [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.1f usingSpringWithDamping:0.6f initialSpringVelocity:1.0f options:UIViewAnimationOptionCurveLinear animations:^{
+                [containerView layoutIfNeeded];
+                backGroundView.frame = [containerView convertRect:CGRectMake(-10, -10, toVC.view.bounds.size.width + 20, toVC.view.bounds.size.height + 20) fromView:toVC.view];
+                CGRect rect = [containerView convertRect:photoImageViewFrame fromView:toVC.view];
+                snapShotView.frame = rect;
+                
+                //            toVC.collectionView.alpha = 1.0;
             } completion:^(BOOL finished) {
-                [snapShotView removeFromSuperview];
-                //告诉系统动画结束
-                [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
+                //为了让回来的时候，cell上的图片显示，必须要让cell上的图片显示出来
+                cell.imgView.hidden = NO;
+                backGroundView.backgroundColor = [UIColor clearColor];
+                toVC.collectionView.alpha = 1.0;
+                [containerView sendSubviewToBack:backGroundView];
+                [UIView animateWithDuration:0.3 animations:^{
+                    
+                    
+                } completion:^(BOOL finished) {
+                    //告诉系统动画结束
+                    [backGroundView removeFromSuperview];
+                    [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
+                }];
             }];
-            
-        }];
+//        }];
+        
+        
+        
+        
+        
+        
+        //        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0f options:UIViewAnimationOptionCurveLinear animations:^{
+        //            [containerView layoutIfNeeded];
+        //
+        //            CGRect rect = [containerView convertRect:photoImageViewFrame fromView:toVC.view];
+        //            snapShotView.frame = rect;
+        //            backGroundView.frame = [containerView convertRect:toVC.view.frame fromView:toVC.view];
+        //        } completion:^(BOOL finished) {
+        //            //为了让回来的时候，cell上的图片显示，必须要让cell上的图片显示出来
+        //            cell.imgView.hidden = NO;
+        //            backGroundView.backgroundColor = [UIColor clearColor];
+        //            toVC.collectionView.alpha = 1.0;
+        //            [containerView sendSubviewToBack:backGroundView];
+        //            [UIView animateWithDuration:0.3 animations:^{
+        //
+        //
+        //            } completion:^(BOOL finished) {
+        //                //告诉系统动画结束
+        //                [backGroundView removeFromSuperview];
+        //                [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
+        //            }];
+        //
+        //        }];
     }];
     
 }
@@ -132,10 +153,10 @@
     NSIndexPath *currentIndexPath = [[fromVC.collectionView indexPathsForVisibleItems] lastObject];
     IPImageCell *from_cell = (IPImageCell *)[toVC.mainView cellForItemAtIndexPath:currentIndexPath];
     
-
+    
     [toVC getThumibImageWithAsset:from_cell.model photoWidth:from_cell.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
         
-//        UIView *snapShotView = [cell.zoomScroll.photoImageView snapshotViewAfterScreenUpdates:NO];
+        //        UIView *snapShotView = [cell.zoomScroll.photoImageView snapshotViewAfterScreenUpdates:NO];
         UIImageView *snapShotView = [[UIImageView alloc]initWithImage:photo];
         
         snapShotView.contentMode = UIViewContentModeScaleAspectFill;
@@ -171,6 +192,6 @@
         }];
     }];
     
-
+    
 }
 @end
