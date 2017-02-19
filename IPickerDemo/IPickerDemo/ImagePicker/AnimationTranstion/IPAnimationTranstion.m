@@ -47,6 +47,7 @@
     
     [fromVC getHighQualityImageWithAsset:cell.model photoWidth:size completion:^(UIImage *photo, NSDictionary *info) {
         CGSize photosize = photo.size;
+        CGSize realPhotoSize = CGSizeMake(size.width, size.width*photosize.height/photosize.width);
         
         UIView *backGroundView = [[UIView alloc]init];
         backGroundView.backgroundColor = [UIColor blackColor];
@@ -62,8 +63,8 @@
         CGRect photoImageViewFrame;
         CGFloat height = fromVC.view.bounds.size.height;
         
-        photoImageViewFrame.size = CGSizeMake(photosize.width, photosize.height ) ;
-        photoImageViewFrame.origin = CGPointMake(0, (height - photosize.height)/2);
+        photoImageViewFrame.size = CGSizeMake(realPhotoSize.width, realPhotoSize.height ) ;
+        photoImageViewFrame.origin = CGPointMake(0, (height - realPhotoSize.height)/2);
         
         
         //设置第二个控制器的位置、透明度
@@ -99,6 +100,7 @@
                     
                 } completion:^(BOOL finished) {
                     //告诉系统动画结束
+                    [snapShotView removeFromSuperview];
                     [backGroundView removeFromSuperview];
                     [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
                 }];
