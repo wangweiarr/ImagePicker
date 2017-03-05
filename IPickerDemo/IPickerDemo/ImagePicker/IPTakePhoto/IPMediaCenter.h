@@ -20,6 +20,12 @@ typedef NS_ENUM(NSInteger, IPTakeMediaType) {
     IPTakeMediaTypeVideo
 };
 
+typedef NS_ENUM(NSInteger, IPAuthorizationStatus) {
+    IPAuthorizationStatusNotDetermined = 0,
+    IPAuthorizationStatusAuthorized,
+    IPAuthorizationStatusAudioDenied
+};
+
 
 @class IPMediaCenter;
 
@@ -29,6 +35,32 @@ typedef NS_ENUM(NSInteger, IPTakeMediaType) {
 - (void)mediaCenter:(IPMediaCenter *)mediaCenter DidStopPreview:(AVCaptureVideoPreviewLayer *)preViewLayer;
 
 - (void)mediaCenter:(IPMediaCenter *)mediaCenter DidStartPreview:(AVCaptureVideoPreviewLayer *)preViewLayer;
+
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter DidStartSession:(AVCaptureSession *)session;
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter DidStopSession:(AVCaptureSession *)session;
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter WillStartSession:(AVCaptureSession *)session;
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter WasInterruptedSession:(AVCaptureSession *)session;
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter InterruptionEndedSession:(AVCaptureSession *)session;
+
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter didChangeCleanAperture:(CGRect)cleanAperture;
+
+// focus / exposure
+
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter visionWillStartFocus:(AVCaptureDevice *)device;
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter visionDidStopFocus:(AVCaptureDevice *)device;
+
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter visionWillChangeExposure:(AVCaptureDevice *)device;
+
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter visionDidChangeExposure:(AVCaptureDevice *)device;
+
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter visionDidChangeFlashMode:(AVCaptureDevice *)device;
+
+
+// authorization / availability
+
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter visionDidChangeAuthorizationStatus:(IPAuthorizationStatus)status;
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter visionDidChangeFlashAvailability:(BOOL)availability; // flash or torch is available
+
 
 @end
 

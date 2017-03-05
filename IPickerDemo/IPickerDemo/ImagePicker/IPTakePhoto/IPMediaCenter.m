@@ -9,7 +9,7 @@
 #import "IPMediaCenter.h"
 #import "IPVisionUtilities.h"
 #import "IPPrivateDefine.h"
-
+#import <AssetsLibrary/AssetsLibrary.h>
 
 @interface VideoSegment : NSObject
 
@@ -130,6 +130,10 @@ static NSString * const IPVisionTorchAvailabilityObserverContext = @"IPVisionTor
 
 @property(nonatomic,strong) NSMutableSet* captureThumbnailTimes;
 @property(nonatomic,strong) NSMutableSet* captureThumbnailFrames;
+
+//需要清除孔径的范围
+@property(nonatomic,assign)CGRect cleanAperture;
+
 @end
 
 @implementation IPMediaCenter
@@ -233,10 +237,10 @@ static IPMediaCenter *defaultManager = nil;
     self.delegate = nil;
     self.captureSessionPreset = nil;
     
-    [self _destroyCamera];
+    [self IP_destroyCamera];
     
 }
-#pragma mark - 预览层
+#pragma mark - preview
 
 /**
  开启预览层  使用默认的会话
@@ -325,12 +329,26 @@ static IPMediaCenter *defaultManager = nil;
     }
     
     
-    
-    
-    
 }
-- (void)_destroyCamera{}
-
+- (void)IP_destroyCamera{}
+/**
+ 暂停视频捕获
+ */
+- (void)pauseVideoCapture
+{
+    [_captureSessionDispatchQueue addOperationWithBlock:^{
+        _flags.paused = YES; //标记为暂停状态
+        
+        //这里不直接调用stopRecording；防止还没有真正开始录就执行该操作，导致的一系列怪异问题，包括一直录不停止问题
+        
+        //        if(_captureMovieFileOutput.isRecording)
+        //        {
+        //            [_captureMovieFileOutput stopRecording];
+        //        }
+        
+        IPLog(@"pausing video capture");
+    }];
+}
 /**
  配置相机  
  @note only call from the session queue
@@ -368,29 +386,30 @@ static IPMediaCenter *defaultManager = nil;
 
     
     // add notification observers
-//    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     
     // session notifications
-//    [notificationCenter addObserver:self selector:@selector(_sessionRuntimeErrored:) name:AVCaptureSessionRuntimeErrorNotification object:_captureSession];
-//    [notificationCenter addObserver:self selector:@selector(_sessionStarted:) name:AVCaptureSessionDidStartRunningNotification object:_captureSession];
-//    [notificationCenter addObserver:self selector:@selector(_sessionStopped:) name:AVCaptureSessionDidStopRunningNotification object:_captureSession];
-//    [notificationCenter addObserver:self selector:@selector(_sessionWasInterrupted:) name:AVCaptureSessionWasInterruptedNotification object:_captureSession];
-//    [notificationCenter addObserver:self selector:@selector(_sessionInterruptionEnded:) name:AVCaptureSessionInterruptionEndedNotification object:_captureSession];
+    [notificationCenter addObserver:self selector:@selector(IP_sessionRuntimeErrored:) name:AVCaptureSessionRuntimeErrorNotification object:_captureSession];
+    [notificationCenter addObserver:self selector:@selector(IP_sessionStarted:) name:AVCaptureSessionDidStartRunningNotification object:_captureSession];
+    [notificationCenter addObserver:self selector:@selector(IP_sessionStopped:) name:AVCaptureSessionDidStopRunningNotification object:_captureSession];
+    [notificationCenter addObserver:self selector:@selector(IP_sessionWasInterrupted:) name:AVCaptureSessionWasInterruptedNotification object:_captureSession];
+    [notificationCenter addObserver:self selector:@selector(IP_sessionInterruptionEnded:) name:AVCaptureSessionInterruptionEndedNotification object:_captureSession];
     
     // capture input notifications
-//    [notificationCenter addObserver:self selector:@selector(_inputPortFormatDescriptionDidChange:) name:AVCaptureInputPortFormatDescriptionDidChangeNotification object:nil];
-//    
-//    // capture device notifications
-//    [notificationCenter addObserver:self selector:@selector(_deviceSubjectAreaDidChange:) name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
-//    
-//    // current device KVO notifications
-//    [self addObserver:self forKeyPath:@"currentDevice.adjustingFocus" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionFocusObserverContext];
-//    [self addObserver:self forKeyPath:@"currentDevice.adjustingExposure" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionExposureObserverContext];
-//    [self addObserver:self forKeyPath:@"currentDevice.adjustingWhiteBalance" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionWhiteBalanceObserverContext];
-//    [self addObserver:self forKeyPath:@"currentDevice.flashMode" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionFlashModeObserverContext];
-//    [self addObserver:self forKeyPath:@"currentDevice.torchMode" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionTorchModeObserverContext];
-//    [self addObserver:self forKeyPath:@"currentDevice.flashAvailable" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionFlashAvailabilityObserverContext];
-//    [self addObserver:self forKeyPath:@"currentDevice.torchAvailable" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionTorchAvailabilityObserverContext];
+    [notificationCenter addObserver:self selector:@selector(IP_inputPortFormatDescriptionDidChange:) name:AVCaptureInputPortFormatDescriptionDidChangeNotification object:nil];
+    
+    // capture device notifications
+    //This notification is only sent if you first set subjectAreaChangeMonitoringEnabled to YES
+    [notificationCenter addObserver:self selector:@selector(IP_deviceSubjectAreaDidChange:) name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
+
+    // current device KVO notifications
+    [self addObserver:self forKeyPath:@"currentDevice.adjustingFocus" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionFocusObserverContext];
+    [self addObserver:self forKeyPath:@"currentDevice.adjustingExposure" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionExposureObserverContext];
+    [self addObserver:self forKeyPath:@"currentDevice.adjustingWhiteBalance" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionWhiteBalanceObserverContext];
+    [self addObserver:self forKeyPath:@"currentDevice.flashMode" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionFlashModeObserverContext];
+    [self addObserver:self forKeyPath:@"currentDevice.torchMode" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionTorchModeObserverContext];
+    [self addObserver:self forKeyPath:@"currentDevice.flashAvailable" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionFlashAvailabilityObserverContext];
+    [self addObserver:self forKeyPath:@"currentDevice.torchAvailable" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionTorchAvailabilityObserverContext];
     
     IPLog(@"camera setup");
 }
@@ -576,6 +595,10 @@ static IPMediaCenter *defaultManager = nil;
         }
     }
 }
+
+/**
+ 设置相机的方向
+ */
 - (void)setCameraOrientation:(AVCaptureVideoOrientation)cameraOrientation
 {
     if (cameraOrientation == _cameraOrientation)
@@ -586,6 +609,10 @@ static IPMediaCenter *defaultManager = nil;
         [self setPreviewOrientation:cameraOrientation];
     }
 }
+
+/**
+ 设置预览图层的方向
+ */
 - (void)setPreviewOrientation:(AVCaptureVideoOrientation)previewOrientation
 {
     if (previewOrientation == _previewOrientation)
@@ -594,6 +621,64 @@ static IPMediaCenter *defaultManager = nil;
     if ([_previewLayer.connection isVideoOrientationSupported]) {
         _previewOrientation = previewOrientation;
         [self setOrientationForConnection:_previewLayer.connection];
+    }
+}
+#pragma mark - KVO
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    if ( context == (__bridge void *)IPVisionFocusObserverContext ) {
+        
+        BOOL isFocusing = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+        if (isFocusing) {
+            [self IP_focusStarted];
+        } else {
+            [self IP_focusEnded];
+        }
+        
+    }
+    else if ( context == (__bridge void *)IPVisionExposureObserverContext ) {
+        
+        BOOL isChangingExposure = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+        if (isChangingExposure) {
+            [self IP_exposureChangeStarted];
+        } else {
+            [self IP_exposureChangeEnded];
+        }
+        
+    }
+    else if ( context == (__bridge void *)IPVisionWhiteBalanceObserverContext ) {
+        
+        BOOL isWhiteBalanceChanging = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+        if (isWhiteBalanceChanging) {
+            [self IP_whiteBalanceChangeStarted];
+        } else {
+            [self IP_whiteBalanceChangeEnded];
+        }
+        
+    }
+    else if ( context == (__bridge void *)IPVisionFlashAvailabilityObserverContext ||
+             context == (__bridge void *)IPVisionTorchAvailabilityObserverContext ) {
+        BOOL FlashAvailability = [[change objectForKey:NSKeyValueChangeNewKey] boolValue];
+        //        IPLog(@"flash/torch availability did change");
+        [NSOperationQueue.mainQueue addOperationWithBlock:^{
+            if ([_delegate respondsToSelector:@selector(mediaCenter: visionDidChangeFlashAvailability:)])
+                [_delegate mediaCenter:self visionDidChangeFlashAvailability:FlashAvailability];
+        }];
+        
+    }
+    else if ( context == (__bridge void *)IPVisionFlashModeObserverContext ||
+             context == (__bridge void *)IPVisionTorchModeObserverContext ) {
+        
+        //        IPLog(@"flash/torch mode did change");
+        [NSOperationQueue.mainQueue addOperationWithBlock:^{
+            if ([_delegate respondsToSelector:@selector(mediaCenter:visionDidChangeFlashMode:)])
+                [_delegate mediaCenter:self visionDidChangeFlashMode:_currentDevice];
+        }];
+        
+    }
+    else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
     }
 }
 #pragma mark - App NSNotifications
@@ -626,19 +711,351 @@ static IPMediaCenter *defaultManager = nil;
         }];
     }
 }
-- (void)pauseVideoCapture
+#pragma mark - AV NSNotifications
+
+// capture session handlers
+
+- (void)IP_sessionRuntimeErrored:(NSNotification *)notification
 {
     [_captureSessionDispatchQueue addOperationWithBlock:^{
-        _flags.paused = YES; //标记为暂停状态
-        
-        //这里不直接调用stopRecording；防止还没有真正开始录就执行该操作，导致的一系列怪异问题，包括一直录不停止问题
-        
-        //        if(_captureMovieFileOutput.isRecording)
-        //        {
-        //            [_captureMovieFileOutput stopRecording];
-        //        }
-        
-        IPLog(@"pausing video capture");
+        if ([notification object] == _captureSession) {
+            NSError *error = [[notification userInfo] objectForKey:AVCaptureSessionErrorKey];
+            if (error) {
+                switch ([error code]) {
+                        //媒体服务重新启动时通知主线程
+                    case AVErrorMediaServicesWereReset:
+                    {
+                        IPLog(@"error media services were reset");
+                        [self IP_destroyCamera];
+                        if (_flags.previewRunning)
+                            [self startPreview];
+                        break;
+                    }
+                    case AVErrorDeviceIsNotAvailableInBackground:
+                    {
+                        IPLog(@"error media services not available in background");
+                        break;
+                    }
+                    default:
+                    {
+                        IPLog(@"error media services failed, error (%@)", error);
+                        [self IP_destroyCamera];
+                        if (_flags.previewRunning)
+                            [self startPreview];
+                        break;
+                    }
+                }
+            }
+        }
     }];
 }
+
+- (void)IP_sessionStarted:(NSNotification *)notification
+{
+    [NSOperationQueue.mainQueue addOperationWithBlock:^{
+        if ([notification object] != _captureSession)
+            return;
+        
+        IPLog(@"session was started");
+        
+        // ensure there is a capture device setup
+        if (_currentInput) {
+            AVCaptureDevice *device = [_currentInput device];
+            if (device) {
+                [self willChangeValueForKey:@"currentDevice"];
+                _currentDevice = device;
+                [self didChangeValueForKey:@"currentDevice"];
+            }
+        }
+        
+        if ([_delegate respondsToSelector:@selector(mediaCenter:DidStartSession:)]) {
+            [_delegate mediaCenter:self DidStartSession:_captureSession];
+        }
+    }];
+}
+
+- (void)IP_sessionStopped:(NSNotification *)notification
+{
+    [_captureSessionDispatchQueue addOperationWithBlock:^{
+        if ([notification object] != _captureSession)
+            return;
+        
+        IPLog(@"session was stopped");
+        
+        [NSOperationQueue.mainQueue addOperationWithBlock:^{
+            if ([_delegate respondsToSelector:@selector(mediaCenter:DidStopSession:)]) {
+                [_delegate mediaCenter:self DidStopSession:_captureSession];
+            }
+        }];
+    }];
+}
+
+- (void)IP_sessionWasInterrupted:(NSNotification *)notification
+{
+    [NSOperationQueue.mainQueue addOperationWithBlock:^{
+        if ([notification object] != _captureSession)
+            return;
+        
+        IPLog(@"session was interrupted");
+        
+        if (_flags.recording) {
+            [NSOperationQueue.mainQueue addOperationWithBlock:^{
+                if ([_delegate respondsToSelector:@selector(mediaCenter:DidStopSession:)]) {
+                    [_delegate mediaCenter:self DidStopSession:_captureSession];
+                }
+            }];
+        }
+        
+        [NSOperationQueue.mainQueue addOperationWithBlock:^{
+            if ([_delegate respondsToSelector:@selector(mediaCenter:WasInterruptedSession:)]) {
+                [_delegate mediaCenter:self WasInterruptedSession:_captureSession];
+            }
+        }];
+    }];
+}
+
+- (void)IP_sessionInterruptionEnded:(NSNotification *)notification
+{
+    [NSOperationQueue.mainQueue addOperationWithBlock:^{
+        
+        if ([notification object] != _captureSession)
+            return;
+        
+        IPLog(@"session interruption ended");
+        
+        [NSOperationQueue.mainQueue addOperationWithBlock:^{
+            if ([_delegate respondsToSelector:@selector(mediaCenter:InterruptionEndedSession:)]) {
+                [_delegate mediaCenter:self InterruptionEndedSession:_captureSession];
+            }
+        }];
+    }];
+}
+// capture input handler
+
+- (void)IP_inputPortFormatDescriptionDidChange:(NSNotification *)notification
+{
+    // when the input format changes, store the clean aperture
+    // (clean aperture is the rect that represents the valid image data for this display)
+    AVCaptureInputPort *inputPort = (AVCaptureInputPort *)[notification object];
+    if (inputPort) {
+        CMFormatDescriptionRef formatDescription = [inputPort formatDescription];
+        if (formatDescription) {
+            _cleanAperture = CMVideoFormatDescriptionGetCleanAperture(formatDescription, YES);
+            if ([_delegate respondsToSelector:@selector(mediaCenter:didChangeCleanAperture:)]) {
+                [_delegate mediaCenter:self didChangeCleanAperture:_cleanAperture];
+            }
+        }
+    }
+}
+
+// capture device handler
+
+- (void)IP_deviceSubjectAreaDidChange:(NSNotification *)notification
+{
+    [self IP_adjustFocusExposureAndWhiteBalance];
+}
+
+- (void)IP_adjustFocusExposureAndWhiteBalance
+{
+    if ([_currentDevice isAdjustingFocus] || [_currentDevice isAdjustingExposure])
+        return;
+    
+    // only notify clients when focus is triggered from an event
+    if ([_delegate respondsToSelector:@selector(mediaCenter:visionWillStartFocus:)])
+        [_delegate mediaCenter:self visionWillStartFocus:_currentDevice];
+    
+    CGPoint focusPoint = CGPointMake(0.5f, 0.5f);
+    [self IP_FocusAtAdjustedPointOfInterest:focusPoint];
+}
+/**
+ *  对焦到指定点
+ */
+- (void)IP_FocusAtAdjustedPointOfInterest:(CGPoint)adjustedPoint
+{
+    if ([_currentDevice isAdjustingFocus] || [_currentDevice isAdjustingExposure])
+        return;
+    
+    NSError *error = nil;
+    if ([_currentDevice lockForConfiguration:&error]) {
+        //锁定设备准备配置.如果获得了锁,将focusPointOfInterest 属性设置为传进来的CGPoint值,设置对焦模式为AVCaptureFocusModeAutoFocus.最后调用unlockForConfiguration 释放该锁定
+        BOOL isFocusAtPointSupported = [_currentDevice isFocusPointOfInterestSupported];
+        
+        if (isFocusAtPointSupported && [_currentDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
+            AVCaptureFocusMode fm = [_currentDevice focusMode];
+            [_currentDevice setFocusPointOfInterest:adjustedPoint];
+            [_currentDevice setFocusMode:fm];
+        }
+        [_currentDevice unlockForConfiguration];
+        
+    } else if (error) {
+        IPLog(@"error locking device for focus adjustment (%@)", error);
+    }
+}
+#pragma mark - focus, exposure, white balance
+- (void)IP_focusStarted
+{
+    IPLog(@"focus will started");
+    if ([_delegate respondsToSelector:@selector(mediaCenter:visionWillStartFocus:)])
+    {
+        [_delegate mediaCenter:self visionWillStartFocus:_currentDevice];
+    }
+    
+}
+- (void)IP_focusEnded
+{
+    AVCaptureFocusMode focusMode = [_currentDevice focusMode];
+    BOOL isFocusing = [_currentDevice isAdjustingFocus];
+    BOOL isAutoFocusEnabled = (focusMode == AVCaptureFocusModeAutoFocus ||
+                               focusMode == AVCaptureFocusModeContinuousAutoFocus);
+    if (!isFocusing && isAutoFocusEnabled) {
+        NSError *error = nil;
+        if ([_currentDevice lockForConfiguration:&error]) {
+            
+            [_currentDevice setSubjectAreaChangeMonitoringEnabled:YES];
+            [_currentDevice unlockForConfiguration];
+            
+        } else if (error) {
+            IPLog(@"error locking device post exposure for subject area change monitoring (%@)", error);
+        }
+    }
+    
+    if ([_delegate respondsToSelector:@selector(mediaCenter:visionDidStopFocus:)])
+    {
+        [_delegate mediaCenter:self visionDidStopFocus:_currentDevice];
+    }
+    
+    IPLog(@"focus ended");
+}
+
+- (void)IP_exposureChangeStarted
+{
+    //    IPLog(@"exposure change started");
+    if ([_delegate respondsToSelector:@selector(mediaCenter:visionWillChangeExposure:)])
+        [_delegate mediaCenter:self visionWillChangeExposure:_currentDevice];
+}
+
+- (void)IP_exposureChangeEnded
+{
+    BOOL isContinuousAutoExposureEnabled = [_currentDevice exposureMode] == AVCaptureExposureModeContinuousAutoExposure;
+    BOOL isExposing = [_currentDevice isAdjustingExposure];
+    BOOL isFocusSupported = [_currentDevice isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus];
+    
+    if (isContinuousAutoExposureEnabled && !isExposing && !isFocusSupported) {
+        
+        NSError *error = nil;
+        if ([_currentDevice lockForConfiguration:&error]) {
+            
+            [_currentDevice setSubjectAreaChangeMonitoringEnabled:YES];
+            [_currentDevice unlockForConfiguration];
+            
+        } else if (error) {
+            IPLog(@"error locking device post exposure for subject area change monitoring (%@)", error);
+        }
+        
+    }
+    
+    if ([_delegate respondsToSelector:@selector(mediaCenter:visionDidChangeExposure:)])
+    {
+        [_delegate mediaCenter:self visionDidChangeExposure:_currentDevice];
+    }
+    IPLog(@"exposure change ended");
+}
+
+- (void)IP_whiteBalanceChangeStarted
+{
+}
+
+- (void)IP_whiteBalanceChangeEnded
+{
+}
+
+
+- (void)exposeAtAdjustedPointOfInterest:(CGPoint)adjustedPoint
+{
+    if ([_currentDevice isAdjustingExposure])
+        return;
+    
+    NSError *error = nil;
+    if ([_currentDevice lockForConfiguration:&error]) {
+        
+        BOOL isExposureAtPointSupported = [_currentDevice isExposurePointOfInterestSupported];
+        if (isExposureAtPointSupported && [_currentDevice isExposureModeSupported:AVCaptureExposureModeContinuousAutoExposure]) {
+            AVCaptureExposureMode em = [_currentDevice exposureMode];
+            [_currentDevice setExposurePointOfInterest:adjustedPoint];
+            [_currentDevice setExposureMode:em];
+        }
+        [_currentDevice unlockForConfiguration];
+        
+    } else if (error) {
+        IPLog(@"error locking device for exposure adjustment (%@)", error);
+    }
+}
+
+
+// focusExposeAndAdjustWhiteBalanceAtAdjustedPoint: will put focus and exposure into auto
+- (void)focusExposeAndAdjustWhiteBalanceAtAdjustedPoint:(CGPoint)adjustedPoint
+{
+    if ([_currentDevice isAdjustingFocus] || [_currentDevice isAdjustingExposure])
+        return;
+    
+    NSError *error = nil;
+    if ([_currentDevice lockForConfiguration:&error]) {
+        
+        BOOL isFocusAtPointSupported = [_currentDevice isFocusPointOfInterestSupported];
+        BOOL isExposureAtPointSupported = [_currentDevice isExposurePointOfInterestSupported];
+        BOOL isWhiteBalanceModeSupported = [_currentDevice isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance];
+        
+        if (isFocusAtPointSupported && [_currentDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
+            [_currentDevice setFocusPointOfInterest:adjustedPoint];
+            [_currentDevice setFocusMode:AVCaptureFocusModeAutoFocus];
+        }
+        
+        if (isExposureAtPointSupported && [_currentDevice isExposureModeSupported:AVCaptureExposureModeContinuousAutoExposure]) {
+            [_currentDevice setExposurePointOfInterest:adjustedPoint];
+            [_currentDevice setExposureMode:AVCaptureExposureModeContinuousAutoExposure];
+        }
+        
+        if (isWhiteBalanceModeSupported) {
+            [_currentDevice setWhiteBalanceMode:AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance];
+        }
+        
+        [_currentDevice setSubjectAreaChangeMonitoringEnabled:NO];
+        
+        [_currentDevice unlockForConfiguration];
+        
+    } else if (error) {
+        IPLog(@"error locking device for focus / exposure / white-balance adjustment (%@)", error);
+    }
+}
+#pragma mark - capture image
+- (void)captureStillImage{
+    AVCaptureConnection *connection = [self.imgOutput connectionWithMediaType:AVMediaTypeVideo];
+    if (connection.isVideoOrientationSupported) {
+        connection.videoOrientation = _cameraOrientation;
+    }
+    
+    id handler = ^(CMSampleBufferRef sampleBuffer,NSError *error){
+        if (sampleBuffer != NULL) {
+            NSData *imgData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:sampleBuffer];
+            UIImage *image = [[UIImage alloc]initWithData:imgData];
+            [self writImageToSavePhotosAlbum:image];
+        }else {
+            NSLog(@"NULL sampleBuffer:%@",[error localizedDescription]);
+        }
+    };
+    [self.imgOutput captureStillImageAsynchronouslyFromConnection:connection completionHandler:handler];
+}
+- (void)postThumbnailNotification:(UIImage *)image{
+    
+}
+- (void)writImageToSavePhotosAlbum:(UIImage *)image{
+    ALAssetsLibrary *library = [[ALAssetsLibrary alloc]init];
+    
+    [library writeImageToSavedPhotosAlbum:image.CGImage orientation:(NSInteger)image.imageOrientation completionBlock:^(NSURL *assetURL, NSError *error) {
+        if (!error) {
+            [self postThumbnailNotification:image];
+        }
+    }];
+}
+
 @end

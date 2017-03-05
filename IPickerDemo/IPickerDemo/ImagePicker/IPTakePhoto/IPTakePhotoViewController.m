@@ -7,7 +7,9 @@
 //
 
 #import "IPTakePhotoViewController.h"
+
 @implementation IPTakePhotoViewController
+
 
 
 @end
