@@ -550,7 +550,7 @@ static IPAssetManager *manager;
         imgModel.assetUrl = [NSURL URLWithString:asset.localIdentifier];
         imgModel.asset = asset;
         imgModel.priexScale = asset.pixelWidth/asset.pixelHeight;
-        IPLog(@"ImageAssets->%ld--%ld",asset.pixelWidth,asset.pixelHeight);
+        IPLog(@"ImageAssets->%ld--%ld",(unsigned long)asset.pixelWidth,(unsigned long)asset.pixelHeight);
 //        NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
 //        [outputFormatter setLocale:[NSLocale currentLocale]];
 //        [outputFormatter setDateFormat:@"yyyy年MM月dd日 HH时mm分ss秒"];
@@ -574,9 +574,9 @@ static IPAssetManager *manager;
         }
         
     }];
-//    IPAssetModel *model = [[IPAssetModel alloc]init];
-//    model.assetType = IPAssetModelMediaTypeTakePhoto;
-//    [self.currentPhotosArr addObject:model];
+    IPAssetModel *model = [[IPAssetModel alloc]init];
+    model.assetType = IPAssetModelMediaTypeTakePhoto;
+    [self.currentPhotosArr addObject:model];
     [self.currentPhotosArr addObjectsFromArray:self.tempArray];
     [self performDelegateWithSuccess:YES];
 }

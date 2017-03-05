@@ -106,6 +106,22 @@
 
 + (AVCaptureDevice *)captureDeviceForPosition:(AVCaptureDevicePosition)position
 {
+    UIImagePickerControllerCameraDevice device;
+    if (position == AVCaptureDevicePositionBack)
+    {
+        device = UIImagePickerControllerCameraDeviceRear;
+    }
+    else if (position == AVCaptureDevicePositionFront)
+    {
+        device = UIImagePickerControllerCameraDeviceFront;
+    }else{
+        //当没有指定的时候，就走出此判断
+        device = UIImagePickerControllerCameraDeviceRear;
+    }
+    if ([UIImagePickerController isCameraDeviceAvailable:device] == NO) {
+        return nil;
+    }
+    
     NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
     for (AVCaptureDevice *device in devices) {
         if ([device position] == position) {

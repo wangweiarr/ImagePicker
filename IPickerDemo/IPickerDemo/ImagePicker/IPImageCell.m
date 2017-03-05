@@ -10,6 +10,7 @@
 #import "IPAssetModel.h"
 #import "IPAssetManager.h"
 #import "IPickerViewController.h"
+#import "IPMediaCenter.h"
 
 @interface IPickerViewController ()
 - (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
@@ -32,15 +33,25 @@
 
 /**拍照--拍视频*/
 @property (nonatomic, strong)UIImageView *actionImageView;
+
+@property(nonatomic,strong)UIView *cameraView;
+
 @end
 
 @implementation IPImageCell
 - (void)prepareForReuse{
-    self.imgView.image = nil;
-    self.actionImageView.hidden = YES;
-    self.videoImgView.hidden = YES;
-    self.bottomBackView.hidden = YES;
-    self.timeLabel.hidden = YES;
+    _imgView.image = nil;
+    _bottomBackView.hidden = YES;
+    _timeLabel.hidden = YES;
+    
+    [_videoImgView removeFromSuperview];
+    _videoImgView = nil;
+    
+    [_actionImageView removeFromSuperview];
+    _actionImageView = nil;
+    
+    [_cameraView removeFromSuperview];
+    _cameraView = nil;
 }
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -113,6 +124,17 @@
     }
     return _videoImgView;
 }
+- (UIView *)cameraView{
+    if (_cameraView == nil) {
+        _cameraView = [[UIView alloc]initWithFrame:self.bounds];
+        AVCaptureVideoPreviewLayer *previewLayer = [IPMediaCenter defaultManager].previewLayer;
+        previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+        previewLayer.frame = _cameraView.bounds;
+        [_cameraView.layer addSublayer:previewLayer];
+        _cameraView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
+    }
+    return _cameraView;
+}
 - (UIImageView *)actionImageView{
     if (_actionImageView == nil) {
         _actionImageView = [[UIImageView alloc]initWithFrame:self.bounds];
@@ -159,19 +181,31 @@
         self.timeLabel.text = _model.videoDuration;
         self.rightCornerBtn.hidden = YES;
     }else if ( _model.assetType ==IPAssetModelMediaTypeTakeVideo){
+        
+        [self.contentView addSubview:self.cameraView];
+        
         self.actionImageView.image = [UIImage imageNamed:@"icon_video_big"];
         self.actionImageView.hidden = NO;
         
-        self.backgroundColor = [UIColor colorWithRed:0.7 green:0.1 blue:0.7 alpha:0.6];
+        self.backgroundColor = [UIColor blackColor];
         
         self.rightCornerBtn.hidden = YES;
+//        [[IPMediaCenter defaultManager] setCameraOrientation:AVCaptureVideoOrientationPortrait];
+
+        [[IPMediaCenter defaultManager] startPreview];
     }
     else if ( _model.assetType ==IPAssetModelMediaTypeTakePhoto){
+        
+        [self.contentView addSubview:self.cameraView];
+        
         self.actionImageView.image = [UIImage imageNamed:@"photo"];
         self.actionImageView.hidden = NO;
-        self.backgroundColor = [UIColor colorWithRed:0.7 green:0.1 blue:0.7 alpha:0.6];
+        self.backgroundColor = [UIColor blackColor];
         
         self.rightCornerBtn.hidden = YES;
+//        [[IPMediaCenter defaultManager] setCameraOrientation:AVCaptureVideoOrientationPortrait];
+        [[IPMediaCenter defaultManager] startPreview];
+        
     }else {
         
         self.rightCornerBtn.selected = model.isSelect;

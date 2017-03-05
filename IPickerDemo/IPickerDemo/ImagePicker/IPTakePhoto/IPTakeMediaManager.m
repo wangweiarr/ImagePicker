@@ -12,19 +12,9 @@
 
 @interface IPTakeMediaManager ()<AVCaptureFileOutputRecordingDelegate>
 
-/**
- *  AVCaptureSession 是AVFoundation捕捉栈的核心类.一个捕捉会话相当于一个虚拟的插线板,用于连接输入和输出的资源.捕捉会话管理从物理设备得到的数据流,比如摄像头和麦克风设备,输出到一个或多个目的地,可以动态配置输入和输出的线路,让开发者能够在会话进行中按需重新配置捕捉环境
- */
+
 @property (nonatomic, strong,readwrite)AVCaptureSession *captureSession;
 
-/**
- *  AVCaptureDevice 为诸如摄像头或麦克风等物理设备定义了一个接口.多数情况下,这些设备都内置于mac,iPhone,iPad中,但也可能是外部数码相机或便携式摄像机.
- 
- *  定义了大量类方法用于访问系统的捕捉设备,最常用的一个方法是: deviceInputWithDevice:
- *
- *
- *  注意:   在使用捕捉设备进行处理前,首先需要将它添加为捕捉会话的输入.不过一个捕捉设备不能直接添加到AVCaptureSession中,可以将之封装到一个AVCaptureDeviceInput实例中.这个对象在设备输出数据和捕捉会话间扮演接线板的作用
- */
 @property (nonatomic, strong)AVCaptureDevice *videoDevice;
 
 /**
@@ -50,7 +40,10 @@
 
 /**<#说明#>*/
 @property (nonatomic, copy)NSURL *outputURL;
+
 @end
+
+
 @implementation IPTakeMediaManager
 
 
