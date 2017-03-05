@@ -8,8 +8,13 @@
 
 #import "IPTakePhotoViewController.h"
 
+
 @implementation IPTakePhotoViewController
 
-
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    
+}
 
 @end
