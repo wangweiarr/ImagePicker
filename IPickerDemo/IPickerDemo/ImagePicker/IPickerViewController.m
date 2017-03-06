@@ -976,13 +976,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 #pragma mark 3DTouch
 - (nullable UIViewController *)previewingContext:(id <UIViewControllerPreviewing>)previewingContext viewControllerForLocation:(CGPoint)location{
     UICollectionViewCell *cell = (UICollectionViewCell *)previewingContext.sourceView;
-    
+    IPLog(@"%@",NSStringFromCGRect(previewingContext.sourceRect));
     NSIndexPath *path = [self.mainView indexPathForCell:cell];
     IPAssetModel *model = self.curImageModelArr[path.item];
     
     __block IP3DTouchPreviewVC *reader = [IP3DTouchPreviewVC previewViewControllerWithModel:model];
     
-    reader.preferredContentSize = CGSizeMake(0, self.view.bounds.size.height);
+    reader.preferredContentSize = CGSizeMake(self.view.bounds.size.width, 0);
     return reader;
     
 }

@@ -28,10 +28,11 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor clearColor];
-    self.view.layer.cornerRadius = 5;
-    UIImageView *imgView = [[UIImageView alloc]initWithFrame:self.view.bounds];
-    imgView.contentMode = UIViewContentModeScaleAspectFit;
-    
+    UIImageView *imgView = [[UIImageView alloc]init];
+    imgView.contentMode = UIViewContentModeScaleAspectFill;
+    imgView.layer.cornerRadius = 20;
+    imgView.layer.masksToBounds = YES;
+    imgView.clipsToBounds = YES;
     self.imgView = imgView;
     [self.view addSubview:imgView];
 }
@@ -48,6 +49,8 @@
 //        NSLog(@"%f",imgH);
 //        weakSelf.preferredContentSize = CGSizeMake(0, [UIScreen mainScreen].bounds.size.height * (imgH/[UIScreen mainScreen].bounds.size.width)/([UIScreen mainScreen].bounds.size.height/[UIScreen mainScreen].bounds.size.width) );
         weakSelf.imgView.image = photo;
+        CGFloat height = self.view.bounds.size.width * photo.size.height / photo.size.width;
+        weakSelf.imgView.frame = CGRectMake(0, (self.view.bounds.size.height-height)/2, self.view.bounds.size.width, height);
     }];
 }
 - (NSArray<id<UIPreviewActionItem>> *)previewActionItems {

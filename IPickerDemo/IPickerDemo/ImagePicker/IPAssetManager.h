@@ -49,13 +49,12 @@ typedef NS_ENUM(NSUInteger,  IPAssetManagerDataType) {
 /**当前存储的数据类型*/
 @property (nonatomic, assign)IPAssetManagerDataType dataType;
 
-+ (instancetype)defaultAssetManager;
-- (void)clearAssetManagerData;
 /**图库*/
 @property (nonatomic, strong)ALAssetsLibrary *defaultLibrary;
 
-/**访问类型*/
-@property (nonatomic, assign)BOOL isImage;
++ (instancetype)defaultAssetManager;
+- (void)clearAssetManagerData;
+
 - (void)requestUserpermission;
 - (void)reloadImagesFromLibrary;
 - (void)reloadVideosFromLibrary;

@@ -4,5 +4,6 @@
 + support photokit And ALAssetLibrary framwork...
 + 支持横竖屏. support landscape
 + 支持转场动画 support animation transition
++ 支持3D Touch support 3D Touch
 
 ![image](https://github.com/jianlong108/ImagePicker/blob/master/ezgif.com-video-to-gif.gif)

@@ -24,6 +24,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>请陛下大开方便之门!</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>请陛下大开方便之门!</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>请陛下大开方便之门!</string>
 	<key>UIMainStoryboardFile</key>

@@ -183,7 +183,7 @@
 {
     [middleView setBackgroundColor:[UIColor blackColor]];
     // preview and AV layer
-//    _previewView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, ScreenSize.width,middleView.frame.size.height-10)];
+    
     _previewView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, ScreenSize.width,ScreenSize.width*9/16)];
     _previewView.backgroundColor = [UIColor blackColor];
     AVCaptureVideoPreviewLayer *_previewLayer = [[IPVision sharedInstance] previewLayer];
@@ -215,7 +215,9 @@
     [_tooltipView setHidden:YES];
     [middleView addSubview:_tooltipView];
 }
-
+- (UIStatusBarStyle)preferredStatusBarStyle{
+    return UIStatusBarStyleLightContent;
+}
 - (void) initBottom:(UIView *)bottomView
 {
     [bottomView setBackgroundColor:[UIColor blackColor]];

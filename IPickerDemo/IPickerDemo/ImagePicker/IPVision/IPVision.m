@@ -9,24 +9,8 @@
 
 #import <ImageIO/ImageIO.h>
 #import <OpenGLES/EAGL.h>
+#import "IPPrivateDefine.h"
 
-#define LOG_VISION 0
-#ifndef DLog
-#if !defined(NDEBUG) && LOG_VISION
-#   define DLog(fmt, ...) NSLog((@"VISION: " fmt), ##__VA_ARGS__);
-#else
-#   define DLog(...)
-#endif
-#endif
-
-//安全释放    重复，与AHContants 重复
-//#define AH_RELEASE_SAFELY(__POINTER) if((__POINTER) != nil) { [__POINTER release]; __POINTER = nil; }
-
-#if LOG_SWITCH
-#define PLog(format, ...) NSLog(format, ## __VA_ARGS__)
-#else
-#define PLog(format, ...)
-#endif
 
 @interface vSegment : NSObject
 
@@ -78,8 +62,18 @@ NSString * const AHVisionVideoCapturedDurationKey = @"AHVisionVideoCapturedDurat
 @interface IPVision () <AVCaptureFileOutputRecordingDelegate>
 {
     // AV
+    
     AVCaptureSession *_captureSession;
     
+    /**
+     *  AVCaptureDevice 为诸如摄像头或麦克风等物理设备定义了一个接口.多数情况下,这些设备都内置于mac,iPhone,iPad中,但也可能是外部数码相机或便携式摄像机.
+     
+     *  定义了大量类方法用于访问系统的捕捉设备,最常用的一个方法是: deviceInputWithDevice:
+     *
+     *
+     *  注意:   在使用捕捉设备进行处理前,首先需要将它添加为捕捉会话的输入.不过一个捕捉设备不能直接添加到AVCaptureSession中,可以将之封装到一个AVCaptureDeviceInput实例中.这个对象在设备输出数据和捕捉会话间扮演接线板的作用
+     */
+
     AVCaptureDevice *_captureDeviceFront;
     AVCaptureDevice *_captureDeviceBack;
     AVCaptureDevice *_captureDeviceAudio;
@@ -120,6 +114,7 @@ NSString * const AHVisionVideoCapturedDurationKey = @"AHVisionVideoCapturedDurat
     
     CGFloat _videoBitRate;
     NSInteger _audioBitRate;
+    //视频帧率
     NSInteger _videoFrameRate;
     
     NSMutableArray *_videoSegments;
@@ -412,7 +407,7 @@ NSString * const AHVisionVideoCapturedDurationKey = @"AHVisionVideoCapturedDurat
         [_currentDevice setFocusMode:(AVCaptureFocusMode)focusMode];
         [_currentDevice unlockForConfiguration];
     } else if (error) {
-        DLog(@"error locking device for focus mode change (%@)", error);
+        IPLog(@"error locking device for focus mode change (%@)", error);
     }
 }
 
@@ -434,7 +429,7 @@ NSString * const AHVisionVideoCapturedDurationKey = @"AHVisionVideoCapturedDurat
         [_currentDevice setExposureMode:(AVCaptureExposureMode)exposureMode];
         [_currentDevice unlockForConfiguration];
     } else if (error) {
-        DLog(@"error locking device for exposure mode change (%@)", error);
+        IPLog(@"error locking device for exposure mode change (%@)", error);
     }
     
 }
@@ -466,7 +461,7 @@ NSString * const AHVisionVideoCapturedDurationKey = @"AHVisionVideoCapturedDurat
         [_currentDevice unlockForConfiguration];
         
     } else if (error) {
-        DLog(@"error locking device for flash mode change (%@)", error);
+        IPLog(@"error locking device for flash mode change (%@)", error);
     }
 }
 
@@ -475,7 +470,7 @@ NSString * const AHVisionVideoCapturedDurationKey = @"AHVisionVideoCapturedDurat
 - (void)setVideoFrameRate:(NSInteger)videoFrameRate
 {
     if (![self supportsVideoFrameRate:videoFrameRate]) {
-        DLog(@"frame rate range not supported for current device format");
+        IPLog(@"frame rate range not supported for current device format");
         return;
     }
     
@@ -516,7 +511,7 @@ NSString * const AHVisionVideoCapturedDurationKey = @"AHVisionVideoCapturedDurat
                 _videoFrameRate = videoFrameRate;
                 [_currentDevice unlockForConfiguration];
             } else if (error) {
-                DLog(@"error locking device for frame rate change (%@)", error);
+                IPLog(@"error locking device for frame rate change (%@)", error);
             }
         }
         
@@ -533,14 +528,14 @@ NSString * const AHVisionVideoCapturedDurationKey = @"AHVisionVideoCapturedDurat
         if (connection.isVideoMaxFrameDurationSupported) {
             connection.videoMaxFrameDuration = fps;
         } else {
-            DLog(@"failed to set frame rate");
+            IPLog(@"failed to set frame rate");
         }
         
         if (connection.isVideoMinFrameDurationSupported) {
             connection.videoMinFrameDuration = fps;
             _videoFrameRate = videoFrameRate;
         } else {
-            DLog(@"failed to set frame rate");
+            IPLog(@"failed to set frame rate");
         }
         
         [self _enqueueBlockOnMainQueue:^{
@@ -721,13 +716,13 @@ typedef void (^AHVisionBlock)();
     NSError *error = nil;
     _captureDeviceInputFront = [AVCaptureDeviceInput deviceInputWithDevice:_captureDeviceFront error:&error];
     if (error) {
-        DLog(@"error setting up front camera input (%@)", error);
+        IPLog(@"error setting up front camera input (%@)", error);
         error = nil;
     }
     
     _captureDeviceInputBack = [AVCaptureDeviceInput deviceInputWithDevice:_captureDeviceBack error:&error];
     if (error) {
-        DLog(@"error setting up back camera input (%@)", error);
+        IPLog(@"error setting up back camera input (%@)", error);
         error = nil;
     }
     
@@ -735,7 +730,7 @@ typedef void (^AHVisionBlock)();
     _captureDeviceInputAudio = [AVCaptureDeviceInput deviceInputWithDevice:_captureDeviceAudio error:&error];
     
     if (error) {
-        DLog(@"error setting up audio input (%@)", error);
+        IPLog(@"error setting up audio input (%@)", error);
     }
     
     // capture device ouputs
@@ -782,7 +777,7 @@ typedef void (^AHVisionBlock)();
     [self addObserver:self forKeyPath:@"currentDevice.flashAvailable" options:NSKeyValueObservingOptionNew context:(__bridge void *)AHVisionFlashAvailabilityObserverContext];
     [self addObserver:self forKeyPath:@"currentDevice.torchAvailable" options:NSKeyValueObservingOptionNew context:(__bridge void *)AHVisionTorchAvailabilityObserverContext];
 
-    DLog(@"camera setup");
+    IPLog(@"camera setup");
 }
 
 // only call from the session queue
@@ -799,8 +794,8 @@ typedef void (^AHVisionBlock)();
     [self removeObserver:self forKeyPath:@"currentDevice.torchMode"];
     [self removeObserver:self forKeyPath:@"currentDevice.flashAvailable"];
     [self removeObserver:self forKeyPath:@"currentDevice.torchAvailable"];
-    
-    [_captureMovieFileOutput removeObserver:self forKeyPath:@"recordedDuration"];
+
+//    [_captureMovieFileOutput removeObserver:self forKeyPath:@"recordedDuration"];
     
     // remove notification observers (we don't want to just 'remove all' because we're also observing background notifications
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -840,7 +835,7 @@ typedef void (^AHVisionBlock)();
 
     _currentOutput = nil;
     
-    DLog(@"camera destroyed");
+    IPLog(@"camera destroyed");
 }
 
 #pragma mark - AVCaptureSession
@@ -856,7 +851,7 @@ typedef void (^AHVisionBlock)();
 - (void)_setupSession
 {
     if (!_captureSession) {
-        DLog(@"error, no session running to setup");
+        IPLog(@"error, no session running to setup");
         return;
     }
     
@@ -864,7 +859,7 @@ typedef void (^AHVisionBlock)();
     ((_currentDevice == _captureDeviceFront) && (_cameraDevice != AHCameraDeviceFront)) ||
     ((_currentDevice == _captureDeviceBack) && (_cameraDevice != AHCameraDeviceBack));
     
-    DLog(@"switchDevice %d", shouldSwitchDevice);
+    IPLog(@"switchDevice %d", shouldSwitchDevice);
     
     if (!shouldSwitchDevice)
         return;
@@ -942,7 +937,7 @@ typedef void (^AHVisionBlock)();
                 [newCaptureDevice unlockForConfiguration];
                 
             } else if (error) {
-                DLog(@"error locking device for video device configuration (%@)", error);
+                IPLog(@"error locking device for video device configuration (%@)", error);
             }
             
         }
@@ -968,7 +963,7 @@ typedef void (^AHVisionBlock)();
     
     [_captureSession commitConfiguration];
     
-    DLog(@"capture session setup");
+    IPLog(@"capture session setup");
 }
 
 #pragma mark - preview
@@ -996,7 +991,7 @@ typedef void (^AHVisionBlock)();
                     [_delegate visionSessionDidStartPreview:self];
                 }
             }];
-            DLog(@"capture session running");
+            IPLog(@"capture session running");
         }
         _flags.previewRunning = YES;
     }];
@@ -1016,7 +1011,7 @@ typedef void (^AHVisionBlock)();
                 [_delegate visionSessionDidStopPreview:self];
             }
         }];
-        DLog(@"capture session stopped");
+        IPLog(@"capture session stopped");
         _flags.previewRunning = NO;
     }];
 }
@@ -1025,7 +1020,7 @@ typedef void (^AHVisionBlock)();
 
 - (void)_focusStarted
 {
-    //    DLog(@"focus started");
+    //    IPLog(@"focus started");
     if ([_delegate respondsToSelector:@selector(visionWillStartFocus:)])
         [_delegate visionWillStartFocus:self];
 }
@@ -1044,18 +1039,18 @@ typedef void (^AHVisionBlock)();
             [_currentDevice unlockForConfiguration];
             
         } else if (error) {
-            DLog(@"error locking device post exposure for subject area change monitoring (%@)", error);
+            IPLog(@"error locking device post exposure for subject area change monitoring (%@)", error);
         }
     }
     
     if ([_delegate respondsToSelector:@selector(visionDidStopFocus:)])
         [_delegate visionDidStopFocus:self];
-    //    DLog(@"focus ended");
+    //    IPLog(@"focus ended");
 }
 
 - (void)_exposureChangeStarted
 {
-    //    DLog(@"exposure change started");
+    //    IPLog(@"exposure change started");
     if ([_delegate respondsToSelector:@selector(visionWillChangeExposure:)])
         [_delegate visionWillChangeExposure:self];
 }
@@ -1075,14 +1070,14 @@ typedef void (^AHVisionBlock)();
             [_currentDevice unlockForConfiguration];
             
         } else if (error) {
-            DLog(@"error locking device post exposure for subject area change monitoring (%@)", error);
+            IPLog(@"error locking device post exposure for subject area change monitoring (%@)", error);
         }
         
     }
     
     if ([_delegate respondsToSelector:@selector(visionDidChangeExposure:)])
         [_delegate visionDidChangeExposure:self];
-    //    DLog(@"exposure change ended");
+    //    IPLog(@"exposure change ended");
 }
 
 - (void)_whiteBalanceChangeStarted
@@ -1111,7 +1106,7 @@ typedef void (^AHVisionBlock)();
         [_currentDevice unlockForConfiguration];
         
     } else if (error) {
-        DLog(@"error locking device for focus adjustment (%@)", error);
+        IPLog(@"error locking device for focus adjustment (%@)", error);
     }
 }
 
@@ -1132,7 +1127,7 @@ typedef void (^AHVisionBlock)();
         [_currentDevice unlockForConfiguration];
         
     } else if (error) {
-        DLog(@"error locking device for exposure adjustment (%@)", error);
+        IPLog(@"error locking device for exposure adjustment (%@)", error);
     }
 }
 
@@ -1181,7 +1176,7 @@ typedef void (^AHVisionBlock)();
         [_currentDevice unlockForConfiguration];
         
     } else if (error) {
-        DLog(@"error locking device for focus / exposure / white-balance adjustment (%@)", error);
+        IPLog(@"error locking device for focus / exposure / white-balance adjustment (%@)", error);
     }
 }
 
@@ -1290,11 +1285,11 @@ typedef void (^AHVisionBlock)();
 {
     if (![self _canSessionCaptureWithOutput:_currentOutput]) {
         [self _failVideoCaptureWithErrorCode:AHVisionErrorSessionFailed];
-        DLog(@"session is not setup properly for capture");
+        IPLog(@"session is not setup properly for capture");
         return;
     }
     
-    DLog(@"starting video capture");
+    IPLog(@"starting video capture");
     
     [self _enqueueBlockOnCaptureVideoQueue:^{
         
@@ -1338,7 +1333,7 @@ typedef void (^AHVisionBlock)();
 //            [_captureMovieFileOutput stopRecording];
 //        }
         
-        DLog(@"pausing video capture");
+        IPLog(@"pausing video capture");
     }];
 }
 
@@ -1368,7 +1363,7 @@ typedef void (^AHVisionBlock)();
 
 - (BOOL)endVideoCapture
 {
-    DLog(@"ending video capture");
+    IPLog(@"ending video capture");
     
     //    [self _enqueueBlockOnCaptureVideoQueue:^{
     if (!_flags.recording) return NO;
@@ -1392,7 +1387,7 @@ typedef void (^AHVisionBlock)();
 
 - (void)cancelVideoCapture
 {
-    DLog(@"cancel video capture");
+    IPLog(@"cancel video capture");
     
     [self _enqueueBlockOnCaptureVideoQueue:^{
         if(_captureMovieFileOutput.isRecording){
@@ -1683,7 +1678,7 @@ typedef void (^AHVisionBlock)();
 
 - (void)_applicationWillEnterForeground:(NSNotification *)notification
 {
-    DLog(@"applicationWillEnterForeground");
+    IPLog(@"applicationWillEnterForeground");
     [self _enqueueBlockOnCaptureSessionQueue:^{
         if (!_flags.previewRunning)
             return;
@@ -1696,7 +1691,7 @@ typedef void (^AHVisionBlock)();
 
 - (void)_applicationDidEnterBackground:(NSNotification *)notification
 {
-    DLog(@"applicationDidEnterBackground");
+    IPLog(@"applicationDidEnterBackground");
     if (_flags.recording)
         [self pauseVideoCapture];
     
@@ -1721,7 +1716,7 @@ typedef void (^AHVisionBlock)();
                 switch ([error code]) {
                     case AVErrorMediaServicesWereReset:
                     {
-                        DLog(@"error media services were reset");
+                        IPLog(@"error media services were reset");
                         [self _destroyCamera];
                         if (_flags.previewRunning)
                             [self startPreview];
@@ -1729,12 +1724,12 @@ typedef void (^AHVisionBlock)();
                     }
                     case AVErrorDeviceIsNotAvailableInBackground:
                     {
-                        DLog(@"error media services not available in background");
+                        IPLog(@"error media services not available in background");
                         break;
                     }
                     default:
                     {
-                        DLog(@"error media services failed, error (%@)", error);
+                        IPLog(@"error media services failed, error (%@)", error);
                         [self _destroyCamera];
                         if (_flags.previewRunning)
                             [self startPreview];
@@ -1752,7 +1747,7 @@ typedef void (^AHVisionBlock)();
         if ([notification object] != _captureSession)
             return;
         
-        DLog(@"session was started");
+        IPLog(@"session was started");
         
         // ensure there is a capture device setup
         if (_currentInput) {
@@ -1776,7 +1771,7 @@ typedef void (^AHVisionBlock)();
         if ([notification object] != _captureSession)
             return;
         
-        DLog(@"session was stopped");
+        IPLog(@"session was stopped");
         
         [self _enqueueBlockOnMainQueue:^{
             if ([_delegate respondsToSelector:@selector(visionSessionDidStop:)]) {
@@ -1792,7 +1787,7 @@ typedef void (^AHVisionBlock)();
         if ([notification object] != _captureSession)
             return;
         
-        DLog(@"session was interrupted");
+        IPLog(@"session was interrupted");
         
         if (_flags.recording) {
             [self _enqueueBlockOnMainQueue:^{
@@ -1817,7 +1812,7 @@ typedef void (^AHVisionBlock)();
         if ([notification object] != _captureSession)
             return;
         
-        DLog(@"session interruption ended");
+        IPLog(@"session interruption ended");
         
         [self _enqueueBlockOnMainQueue:^{
             if ([_delegate respondsToSelector:@selector(visionSessionInterruptionEnded:)]) {
@@ -1889,7 +1884,7 @@ typedef void (^AHVisionBlock)();
     else if ( context == (__bridge void *)AHVisionFlashAvailabilityObserverContext ||
              context == (__bridge void *)AHVisionTorchAvailabilityObserverContext ) {
         
-        //        DLog(@"flash/torch availability did change");
+        //        IPLog(@"flash/torch availability did change");
         [self _enqueueBlockOnMainQueue:^{
             if ([_delegate respondsToSelector:@selector(visionDidChangeFlashAvailablility:)])
                 [_delegate visionDidChangeFlashAvailablility:self];
@@ -1899,7 +1894,7 @@ typedef void (^AHVisionBlock)();
     else if ( context == (__bridge void *)AHVisionFlashModeObserverContext ||
              context == (__bridge void *)AHVisionTorchModeObserverContext ) {
         
-        //        DLog(@"flash/torch mode did change");
+        //        IPLog(@"flash/torch mode did change");
         [self _enqueueBlockOnMainQueue:^{
             if ([_delegate respondsToSelector:@selector(visionDidChangeFlashMode:)])
                 [_delegate visionDidChangeFlashMode:self];
