@@ -37,12 +37,12 @@
     return UIStatusBarStyleLightContent;
 }
 - (void)addMainView{
-//    AVCaptureVideoPreviewLayer *previewLayer = [IPMediaCenter defaultCenter].previewLayer;
-//    if (previewLayer.superlayer) {
-//        [previewLayer removeFromSuperlayer];
-//    }
-//    previewLayer.frame = self.view.bounds;
-//    [self.view.layer addSublayer:previewLayer];
+    AVCaptureVideoPreviewLayer *previewLayer = [IPMediaCenter defaultCenter].previewLayer;
+    if (previewLayer.superlayer) {
+        [previewLayer removeFromSuperlayer];
+    }
+    previewLayer.frame = self.view.bounds;
+    [self.view.layer addSublayer:previewLayer];
 }
 - (void)addBottomView{
     

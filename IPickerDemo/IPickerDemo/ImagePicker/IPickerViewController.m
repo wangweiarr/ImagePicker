@@ -1021,7 +1021,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     else if ([toVC isKindOfClass:[IPTakePhotoViewController class]]) {
         if (operation == UINavigationControllerOperationPush) {
             IPAnimationTakePhotoTransition *transition = [[IPAnimationTakePhotoTransition alloc]init];
-            return transition;
+            return nil;
         }else if (operation == UINavigationControllerOperationPop) {
             
             return nil;

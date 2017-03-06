@@ -205,85 +205,69 @@
 - (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext{
     return 0.6f;
 }
-IPTakePhotoViewController *toVC;
-id <UIViewControllerContextTransitioning> _transitionContext;
-//UIViewControllerAnimatedTransitioning
+
+
 - (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext{
     //获取两个VC 和 动画发生的容器
      IPickerViewController *fromVC = (IPickerViewController *)[transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-     toVC   = (IPTakePhotoViewController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+     IPImageReaderViewController *toVC   = (IPImageReaderViewController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
      UIView *containerView = [transitionContext containerView];
     
-    IPImageCell *cell =(IPImageCell *)[fromVC.mainView cellForItemAtIndexPath:[[fromVC.mainView indexPathsForSelectedItems] firstObject]];
+    //对Cell上的 imageView 截图，同时将这个 imageView 本身隐藏
+     IPImageCell *cell =(IPImageCell *)[fromVC.mainView cellForItemAtIndexPath:[[fromVC.mainView indexPathsForSelectedItems] firstObject]];
+    
+    
     CALayer *layer = [IPMediaCenter defaultCenter].previewLayer;
-    
-    CGRect rect = [containerView convertRect:cell.imgView.layer.frame fromView:cell.imgView.superview];
-    layer.frame = rect;
-    //设置第二个控制器的位置、透明度
-    toVC.view.frame = [transitionContext finalFrameForViewController:toVC];
-    
-        
-        
-    //把动画前后的两个ViewController加到容器中,顺序很重要,snapShotView在上方
-    [containerView addSubview:toVC.view];
-    [layer removeFromSuperlayer];
-    [containerView.layer addSublayer:layer];
-    
-    //1.创建动画并指定动画属性
-    CABasicAnimation *basicAnimation=[CABasicAnimation animationWithKeyPath:@"position"];
-    
-    //2.设置动画属性初始值、结束值
-    //    basicAnimation.fromValue=[NSNumber numberWithInteger:50];//可以不设置，默认为图层初始状态
-    basicAnimation.toValue=[NSValue valueWithCGPoint:CGPointMake(0, 0)];
-    basicAnimation.removedOnCompletion = NO;
-    //设置其他动画属性
-    basicAnimation.duration = [self transitionDuration:transitionContext];//动画时间5秒
-    //basicAnimation.repeatCount=HUGE_VALF;//设置重复次数,HUGE_VALF可看做无穷大，起到循环动画的效果
-    //    basicAnimation.removedOnCompletion=NO;//运行一次是否移除动画
-//    basicAnimation.delegate=self;
-    //存储当前位置在动画结束后使用
-    
-//    basicAnimation.autoreverses=NO;//旋转后再旋转到原来的位置
-    
-    //1.创建动画并指定动画属性
-    CABasicAnimation *basicAnimation1=[CABasicAnimation animationWithKeyPath:@"bounds"];
-    
-    //2.设置动画属性初始值、结束值
-//        basicAnimation.fromValue=[NSNumber numberWithInteger:50];//可以不设置，默认为图层初始状态
-    basicAnimation1.toValue=[NSValue valueWithCGRect:CGRectMake(0, 0, 320, 568)];
-    
-    //设置其他动画属性
-    basicAnimation1.duration = [self transitionDuration:transitionContext];
-    basicAnimation1.removedOnCompletion = NO;
-    //动画时间5秒
-    //basicAnimation.repeatCount=HUGE_VALF;//设置重复次数,HUGE_VALF可看做无穷大，起到循环动画的效果
-    //    basicAnimation.removedOnCompletion=NO;//运行一次是否移除动画
-//    basicAnimation1.delegate=self;
-    //存储当前位置在动画结束后使用
-    
-    CAAnimationGroup *group = [[CAAnimationGroup alloc]init];
-    group.animations = @[basicAnimation,basicAnimation1];
-    group.removedOnCompletion = NO;
-    group.delegate = self;
-    //3.添加动画到图层，注意key相当于给动画进行命名，以后获得该图层时可以使用此名称获取
-    [containerView.layer addAnimation:group forKey:@"KCBasicAnimation_Translation"];
-
-    _transitionContext = transitionContext;
-    
-    
-}
-
-- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag{
-    if ([IPMediaCenter defaultCenter].previewLayer.superlayer) {
-        [[IPMediaCenter defaultCenter].previewLayer removeFromSuperlayer];
+    if (layer.superlayer) {
+        [layer removeFromSuperlayer];
     }
-//    [IPMediaCenter defaultCenter].previewLayer.bounds = CGRectMake(0, 0, 320, 568);
-//    [IPMediaCenter defaultCenter].previewLayer.position = CGPointMake(0, 0);
-    [toVC.view.layer insertSublayer:[IPMediaCenter defaultCenter].previewLayer atIndex:0];
-    
-    //告诉系统动画结束
-    [_transitionContext completeTransition:!_transitionContext.transitionWasCancelled];
+        
+        UIView *snapShotView = [[UIView alloc]init];
+    [snapShotView.layer addSublayer:layer];
+        snapShotView.frame = [containerView convertRect:cell.imgView.frame fromView:cell.imgView.superview];
+        
+        //        backGroundView.alpha = 0.0f;
+        CGRect photoImageViewFrame;
+        
 
+        //设置第二个控制器的位置、透明度
+        toVC.view.frame = [transitionContext finalFrameForViewController:toVC];
+    toVC.view.alpha = 0.0f;
+    photoImageViewFrame = toVC.view.frame;
+        
+        
+        //把动画前后的两个ViewController加到容器中,顺序很重要,snapShotView在上方
+        [containerView addSubview:toVC.view];
+        [containerView addSubview:snapShotView];
+        
+        //动起来。第二个控制器的透明度0~1；让截图SnapShotView的位置更新到最新；
+        
+    
+        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.1f usingSpringWithDamping:0.6f initialSpringVelocity:1.0f options:UIViewAnimationOptionCurveLinear animations:^{
+            [containerView layoutIfNeeded];
+  toVC.view.alpha = 1.0f;
+            CGRect rect = [containerView convertRect:photoImageViewFrame fromView:toVC.view];
+            snapShotView.frame = rect;
+            
+        } completion:^(BOOL finished) {
+            //为了让回来的时候，cell上的图片显示，必须要让cell上的图片显示出来
+            
+            
+            [snapShotView removeFromSuperview];
+            
+            [layer removeFromSuperlayer];
+            layer.frame = toVC.view.layer.frame;
+            [toVC.view.layer insertSublayer:layer atIndex:0];
+            
+            
+            
+            [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
+            
+        }];
+    
+    
 }
+
+
 @end
 
