@@ -199,6 +199,15 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     self.centerBtn.frame = CGRectMake(self.headerView.center.x - size.width/2, IOS7_STATUS_BAR_HEGHT, size.width, btnH);
     self.rightBtn.frame = CGRectMake(viewW - btnW -MaxMargin, IOS7_STATUS_BAR_HEGHT, btnW, btnH);
+    CGFloat labelW = 18.0f;
+    if (_selectPhotoCount > 9) {
+        
+        self.rightLabel.frame = CGRectMake(CGRectGetMinX(self.rightBtn.frame) - labelW-3, IOS7_STATUS_BAR_HEGHT+13, labelW+6, labelW);
+    }else {
+        
+        [self.rightLabel setFrame:CGRectMake(CGRectGetMinX(self.rightBtn.frame) - labelW, IOS7_STATUS_BAR_HEGHT+13, labelW, labelW)];
+        
+    }
     
     self.arrowImge.frame = CGRectMake(CGRectGetMaxX(self.centerBtn.frame)- minMargin, IOS7_STATUS_BAR_HEGHT, btnW/2, btnH);
     
@@ -218,8 +227,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     leftBtn.backgroundColor = [UIColor clearColor];
     [leftBtn sizeToFit];
     [leftBtn setTitle:@"取消" forState:UIControlStateNormal];
-    [leftBtn setTitleColor:[UIColor blueColor] forState:UIControlStateNormal];
-//    [leftBtn.titleLabel setFontSizeKey:textfont05];
+    [leftBtn setTitleColor:[UIColor colorWithRed:74/255.0 green:112/255.0 blue:210/255.0 alpha:1.0] forState:UIControlStateNormal];
+    [leftBtn.titleLabel setFont:[UIFont systemFontOfSize:15]];
     [leftBtn addTarget:self action:@selector(exitIPicker) forControlEvents:UIControlEventTouchUpInside];
     [headerView addSubview:leftBtn];
     self.leftBtn = leftBtn;
@@ -246,12 +255,12 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     self.arrowImge = arrowImge;
     
     UILabel    *rightLabel = [[UILabel alloc]init];
-    rightLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewContentModeBottom | UIViewContentModeBottomRight;
+//    rightLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewContentModeBottom | UIViewContentModeBottomRight;
     rightLabel.font = [UIFont systemFontOfSize:12];
     rightLabel.textAlignment = NSTextAlignmentCenter;
     rightLabel.clipsToBounds = YES;
     rightLabel.textColor = [UIColor whiteColor];
-    [rightLabel setBackgroundColor:[UIColor blueColor]];
+    [rightLabel setBackgroundColor:[UIColor colorWithRed:74/255.0 green:112/255.0 blue:210/255.0 alpha:1.0]];
     [rightLabel setText:@""];
     [rightLabel sizeToFit];
     rightLabel.hidden = YES;
@@ -261,8 +270,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     UIButton *rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     [rightBtn sizeToFit];
     [rightBtn setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
-    [rightBtn setTitleColor:[UIColor blueColor] forState:UIControlStateSelected];
-//    [rightBtn.titleLabel setFontSizeKey:textfont05];
+    [rightBtn setTitleColor:[UIColor colorWithRed:74/255.0 green:112/255.0 blue:210/255.0 alpha:1.0] forState:UIControlStateSelected];
+    rightBtn.titleLabel.font = [UIFont systemFontOfSize:15];
     [rightBtn setTitle:@"完成" forState:UIControlStateNormal];
     [rightBtn addTarget:self action:@selector(completeBtnClick) forControlEvents:UIControlEventTouchUpInside];
     
@@ -627,7 +636,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
     
     
-    [self.mainView reloadData];
+    [self.mainView layoutIfNeeded];
     
 }
 - (void)viewDidAppear:(BOOL)animated{

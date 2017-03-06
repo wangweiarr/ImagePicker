@@ -77,12 +77,14 @@
     [super layoutSubviews];
     CGFloat viewW = self.bounds.size.width;
     CGFloat viewH = self.bounds.size.height;
-    CGFloat MaxMargin = 10.0f;
+    CGFloat margin = 10.0f;
     
-    self.spliteline.frame = CGRectMake(0, 0, viewW, 0.5);
-    self.posterView.frame = CGRectMake(0, 0, viewH, viewH);
-    self.descLabel.frame = CGRectMake(viewH + MaxMargin, 0, viewW - viewH - 2*MaxMargin - 20, viewH);
-    self.accessoryImgView.frame = CGRectMake(viewW - MaxMargin - 20, 0, 20, viewH);
+    
+    _posterView.frame = CGRectMake(margin/4, margin/4, viewH-margin/2, viewH-margin/2);
+    _spliteline.frame = CGRectMake(CGRectGetMaxX(_posterView.frame), viewH-0.5, viewW, 0.5);
+    
+    _accessoryImgView.frame = CGRectMake(viewW - 2*margin - 20, 0, 20, viewH);
+    _descLabel.frame = CGRectMake(CGRectGetMaxX(_posterView.frame) + margin, 0, viewW - CGRectGetWidth(_posterView.frame) - CGRectGetWidth(_accessoryImgView.frame) - margin, viewH);
 
     
 }
@@ -93,7 +95,7 @@
         
         self.descLabel.text = [NSString stringWithFormat:@"%@ (%ld)",model.albumName, (long)model.imageCount];
         if (_model.isSelected) {
-            self.descLabel.textColor = [UIColor blueColor];
+            self.descLabel.textColor = [UIColor colorWithRed:74/255.0 green:112/255.0 blue:210/255.0 alpha:1.0];
             
         }else {
             

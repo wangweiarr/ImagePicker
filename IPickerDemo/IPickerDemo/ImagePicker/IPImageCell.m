@@ -21,7 +21,7 @@
 /**缩略图*/
 @property (nonatomic, weak,readwrite) UIImageView *imgView;
 /**右上角按钮*/
-@property (nonatomic, weak) UIButton *rightCornerBtn;
+@property (nonatomic, strong) UIButton *rightCornerBtn;
 
 
 /**背景*/
@@ -83,14 +83,24 @@
     imgView.image = [UIImage imageNamed:@"default_8_120"];
     self.imgView = imgView;
     
-    UIButton *rightCornerBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.bounds.size.width - 18-5, 5, 18, 18)];
-   
-    [rightCornerBtn addTarget:self action:@selector(clickBtnInCell:) forControlEvents:UIControlEventTouchUpInside];
-    [self.contentView addSubview:rightCornerBtn];
-    self.rightCornerBtn = rightCornerBtn;
+//    UIButton *rightCornerBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.bounds.size.width - 18-5, 5, 18, 18)];
+//   
+//    [rightCornerBtn addTarget:self action:@selector(clickBtnInCell:) forControlEvents:UIControlEventTouchUpInside];
+//    [self.contentView addSubview:rightCornerBtn];
+//    self.rightCornerBtn = rightCornerBtn;
     
 
     
+}
+- (UIButton *)rightCornerBtn{
+    if (_rightCornerBtn == nil) {
+        _rightCornerBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.bounds.size.width - 18-5, 5, 18, 18)];
+        
+        [_rightCornerBtn addTarget:self action:@selector(clickBtnInCell:) forControlEvents:UIControlEventTouchUpInside];
+        
+        [self.contentView addSubview:_rightCornerBtn];
+    }
+    return _rightCornerBtn;
 }
 - (UIImageView *)bottomBackView{
     if (_bottomBackView == nil) {
@@ -159,8 +169,8 @@
     [self.rightCornerBtn setImage:image_p forState:UIControlStateSelected];
     
     self.imgView.frame = self.bounds;
-    CGFloat w = self.bounds.size.width / 2.6f;
-    self.rightCornerBtn.frame = CGRectMake(self.bounds.size.width - w, 0, w, w);
+//    CGFloat w = self.bounds.size.width / 2.6f;
+//    self.rightCornerBtn.frame = CGRectMake(self.bounds.size.width - w, 0, w, w);
     
     [self.bottomBackView setFrame:CGRectMake(0, self.bounds.size.height - 20, self.bounds.size.width, 20)];
     self.videoImgView.frame = CGRectMake(10, 0, 24, 20);

@@ -41,9 +41,6 @@
     fromVC.indexPath = [[fromVC.mainView indexPathsForSelectedItems]firstObject];
     
     __block CGSize size = CGSizeMake(fromVC.view.bounds.size.width, fromVC.view.bounds.size.height);
-    if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
-        size = CGSizeMake(fromVC.view.bounds.size.height, fromVC.view.bounds.size.width);
-    }
     
     [fromVC getHighQualityImageWithAsset:cell.model photoWidth:size completion:^(UIImage *photo, NSDictionary *info) {
         CGSize photosize = photo.size;
@@ -55,6 +52,8 @@
         UIImageView *snapShotView = [[UIImageView alloc]initWithImage:photo];
         
         backGroundView.frame = [containerView convertRect:cell.imgView.frame fromView:cell.imgView.superview];
+//         backGroundView.frame = [containerView convertRect:CGRectMake(-10, -10, toVC.view.bounds.size.width + 20, toVC.view.bounds.size.height + 20) fromView:toVC.view];
+//        backGroundView.transform = CGAffineTransformScale(backGroundView.transform, 0.1, 0.1);
         
         cell.imgView.hidden = YES;
         snapShotView.frame = [containerView convertRect:cell.imgView.frame fromView:cell.imgView.superview];
@@ -80,11 +79,13 @@
         //动起来。第二个控制器的透明度0~1；让截图SnapShotView的位置更新到最新；
         
 //        [UIView animateWithDuration:0.1 animations:^{
-//            backGroundView.alpha = 1.0f;
+//            backGroundView.transform = CGAffineTransformIdentity;
 //        } completion:^(BOOL finished) {
             [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.1f usingSpringWithDamping:0.6f initialSpringVelocity:1.0f options:UIViewAnimationOptionCurveLinear animations:^{
                 [containerView layoutIfNeeded];
                 backGroundView.frame = [containerView convertRect:CGRectMake(-10, -10, toVC.view.bounds.size.width + 20, toVC.view.bounds.size.height + 20) fromView:toVC.view];
+
+                
                 CGRect rect = [containerView convertRect:photoImageViewFrame fromView:toVC.view];
                 snapShotView.frame = rect;
                 
