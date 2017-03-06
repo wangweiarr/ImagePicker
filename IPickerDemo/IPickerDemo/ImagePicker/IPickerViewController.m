@@ -1024,8 +1024,16 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
                                                   toViewController:(UIViewController *)toVC{
     
     if ([toVC isKindOfClass:[IPImageReaderViewController class]]) {
-        IPAnimationTranstion *transition = [[IPAnimationTranstion alloc]init];
-        return transition;
+        if (operation == UINavigationControllerOperationPush) {
+            IPAnimationTranstion *transition = [[IPAnimationTranstion alloc]init];
+            return transition;
+        }else if (operation == UINavigationControllerOperationPop) {
+            IPAnimationInverseTransition *transition = [[IPAnimationInverseTransition alloc]init];
+            return transition;
+        }else {
+            return nil;
+        }
+        
     }else{
         return nil;
     }

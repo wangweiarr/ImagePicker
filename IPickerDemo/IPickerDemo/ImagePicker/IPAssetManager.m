@@ -448,6 +448,7 @@ static IPAssetManager *manager;
             
             self.currentAlbumModel = model;
         }
+        self.albumArr = [NSMutableArray arrayWithArray:[self.albumArr sortedArrayUsingSelector:@selector(compareImageCount:)]];
     }
     
     //获取普通相册

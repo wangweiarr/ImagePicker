@@ -29,4 +29,6 @@
 /**相册的唯一标识*/
 @property (nonatomic, copy)NSString *albumIdentifier;
 
+-(NSComparisonResult)compareImageCount:(IPAlbumModel *)albumModel;
+
 @end
