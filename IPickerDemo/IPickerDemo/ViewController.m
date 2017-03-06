@@ -101,6 +101,7 @@ static UIViewController *vc;
     ip.delegate = self;
     ip.maxCount = 9;
     ip.popStyle = IPickerViewControllerPopStylePush;
+    ip.canTakeVideo = YES;
     [self.navigationController pushViewController:ip animated:YES];
 }
 
@@ -109,6 +110,7 @@ static UIViewController *vc;
     ip.delegate = self;
     ip.maxCount = 9;
     ip.popStyle = IPickerViewControllerPopStylePush;
+    ip.canTakePhoto = YES;
     [self.navigationController pushViewController:ip animated:YES];
 //    [self presentViewController:ip animated:YES completion:nil];
     vc = nil;

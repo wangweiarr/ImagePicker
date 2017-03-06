@@ -144,7 +144,7 @@ static IPMediaCenter *defaultManager = nil;
 
 /**单例模式对外的唯一接口，用到的dispatch_once函数在一个应用程序内只会执行一次，且dispatch_once能确保线程安全
  */
-+(IPMediaCenter *)defaultManager
++(IPMediaCenter *)defaultCenter
 {
     static dispatch_once_t token;
     dispatch_once(&token, ^{

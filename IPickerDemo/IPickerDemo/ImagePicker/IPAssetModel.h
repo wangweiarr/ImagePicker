@@ -8,16 +8,22 @@
 
 #import <UIKit/UIKit.h>
 
-typedef enum : NSUInteger {
+/**类型*/
+typedef NS_ENUM(NSUInteger,  IPAssetModelMediaType) {
     IPAssetModelMediaTypePhoto = 0,
     IPAssetModelMediaTypeLivePhoto,
     IPAssetModelMediaTypeVideo,
     IPAssetModelMediaTypeAudio,
     IPAssetModelMediaTypeTakeVideo,
     IPAssetModelMediaTypeTakePhoto
-} IPAssetModelMediaType;
+};
+
 @class AVPlayerItem,CLLocation;
 typedef void(^functionBlock)(AVPlayerItem *);
+
+
+typedef void(^CellClickActionBlock)(id);
+
 
 @interface IPAssetModel : NSObject
 
@@ -60,5 +66,11 @@ typedef void(^functionBlock)(AVPlayerItem *);
 
 /**视频缩略图*/
 @property (nonatomic, copy)UIImage *VideoThumbail;
+
+/**cell点击block*/
+@property (nonatomic, copy)CellClickActionBlock cellClickBlock;
+
+/**layer*/
+@property (nonatomic, weak)CALayer *previewLayer;
 
 @end

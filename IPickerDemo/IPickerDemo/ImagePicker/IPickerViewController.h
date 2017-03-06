@@ -78,6 +78,12 @@ typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
  */
 @property (nonatomic, assign) NSInteger navViewControllers;
 
+/**是否包含拍摄照片功能*/
+@property (nonatomic, assign)BOOL canTakePhoto;
+
+/**是否包含拍摄视频功能*/
+@property (nonatomic, assign)BOOL canTakeVideo;
+
 /**
  *  创建对象
  *

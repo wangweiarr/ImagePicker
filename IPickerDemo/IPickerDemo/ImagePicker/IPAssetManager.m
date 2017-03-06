@@ -10,7 +10,7 @@
 
 #import<AssetsLibrary/AssetsLibrary.h>
 #import <Photos/Photos.h>
-
+#import "IPImageReaderViewController.h"
 #import "IPAlbumModel.h"
 #import "IPAlbumView.h"
 #import "IPImageCell.h"
@@ -248,7 +248,6 @@ static IPAssetManager *manager;
                         imgModel.location = [result valueForProperty:ALAssetPropertyLocation];
                         imgModel.assetType = IPAssetModelMediaTypePhoto;
                         imgModel.asset = result;
-                        
                         imgModel.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
                         
                         [weakSelf.reverserArray addObject:imgModel];
@@ -268,9 +267,6 @@ static IPAssetManager *manager;
                     [weakSelf.defaultLibrary groupForURL:weakSelf.currentAlbumModel.groupURL resultBlock:^(ALAssetsGroup *group) {
                         [group enumerateAssetsUsingBlock:groupEnumerAtion];
                         
-                        IPAssetModel *model = [[IPAssetModel alloc]init];
-                        model.assetType = IPAssetModelMediaTypeTakePhoto;
-                        [weakSelf.reverserArray addObject:model];
                         
                         weakSelf.currentPhotosArr = [NSMutableArray arrayWithArray:[[weakSelf.reverserArray reverseObjectEnumerator] allObjects]];
                         [weakSelf.reverserArray removeAllObjects];
@@ -351,9 +347,7 @@ static IPAssetManager *manager;
                     }
                 }else {
                     [weakSelf.reverserArray addObjectsFromArray:weakSelf.tempArray];
-                    IPAssetModel *model = [[IPAssetModel alloc]init];
-                    model.assetType = IPAssetModelMediaTypeTakePhoto;
-                    [self.reverserArray addObject:model];
+                    
                     weakSelf.currentPhotosArr = [NSMutableArray arrayWithArray:[[weakSelf.reverserArray reverseObjectEnumerator] allObjects]];
                     
                     [weakSelf.reverserArray removeAllObjects];
@@ -575,9 +569,6 @@ static IPAssetManager *manager;
         }
         
     }];
-    IPAssetModel *model = [[IPAssetModel alloc]init];
-    model.assetType = IPAssetModelMediaTypeTakePhoto;
-    [self.currentPhotosArr addObject:model];
     [self.currentPhotosArr addObjectsFromArray:self.tempArray];
     [self performDelegateWithSuccess:YES];
 }
@@ -837,15 +828,7 @@ static IPAssetManager *manager;
 #pragma mark 视频
 - (void)reloadVideosFromLibrary{
     
-     [self clearAssetManagerData];
-    
-    if (self.currentPhotosArr.count == 0) {
-        IPAssetModel *imgModel = [[IPAssetModel alloc]init];
-        imgModel.assetType = IPAssetModelMediaTypeTakeVideo;
-        
-        [self.currentPhotosArr addObject:imgModel];
-    }
-    
+    [self clearAssetManagerData];
     
     if (iOS8Later) {
         [self getAllVideosIOS8];

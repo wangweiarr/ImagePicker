@@ -44,14 +44,19 @@
     _bottomBackView.hidden = YES;
     _timeLabel.hidden = YES;
     
-    [_videoImgView removeFromSuperview];
-    _videoImgView = nil;
+    _videoImgView.hidden = YES;
     
-    [_actionImageView removeFromSuperview];
-    _actionImageView = nil;
+    _actionImageView.hidden = YES;
     
-    [_cameraView removeFromSuperview];
-    _cameraView = nil;
+    _cameraView.hidden = YES;
+}
+- (void)setUpCameraPreviewLayer{
+    
+    if (_model.previewLayer.superlayer) {
+        [_model.previewLayer removeFromSuperlayer];
+    }
+    _model.previewLayer.frame = _cameraView.bounds;
+    [_cameraView.layer addSublayer:_model.previewLayer];
 }
 - (instancetype)initWithFrame:(CGRect)frame
 {
@@ -72,7 +77,7 @@
         self.bottomBackView.hidden = YES;
         self.timeLabel.hidden = YES;
         self.videoImgView.hidden = YES;
-        self.actionImageView.hidden = YES;
+//        self.actionImageView.hidden = YES;
     }
 }
 - (void)creatSubViews{
@@ -137,10 +142,7 @@
 - (UIView *)cameraView{
     if (_cameraView == nil) {
         _cameraView = [[UIView alloc]initWithFrame:self.bounds];
-        AVCaptureVideoPreviewLayer *previewLayer = [IPMediaCenter defaultManager].previewLayer;
-        previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-        previewLayer.frame = _cameraView.bounds;
-        [_cameraView.layer addSublayer:previewLayer];
+        
         _cameraView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
     }
     return _cameraView;
@@ -150,7 +152,6 @@
         _actionImageView = [[UIImageView alloc]initWithFrame:self.bounds];
         _actionImageView.contentMode = UIViewContentModeCenter;
         _actionImageView.hidden = YES;
-        [self.contentView addSubview:_actionImageView];
     }
     return _actionImageView;
 }
@@ -198,23 +199,23 @@
         self.actionImageView.hidden = NO;
         
         self.backgroundColor = [UIColor blackColor];
+        [self.contentView addSubview:self.actionImageView];
         
         self.rightCornerBtn.hidden = YES;
-//        [[IPMediaCenter defaultManager] setCameraOrientation:AVCaptureVideoOrientationPortrait];
 
-        [[IPMediaCenter defaultManager] startPreview];
     }
     else if ( _model.assetType ==IPAssetModelMediaTypeTakePhoto){
         
         [self.contentView addSubview:self.cameraView];
+        _model.previewLayer.frame = self.cameraView.layer.bounds;
+        [self.cameraView.layer addSublayer:_model.previewLayer];
         
         self.actionImageView.image = [UIImage imageNamed:@"photo"];
         self.actionImageView.hidden = NO;
         self.backgroundColor = [UIColor blackColor];
         
+        [self.contentView addSubview:self.actionImageView];
         self.rightCornerBtn.hidden = YES;
-//        [[IPMediaCenter defaultManager] setCameraOrientation:AVCaptureVideoOrientationPortrait];
-        [[IPMediaCenter defaultManager] startPreview];
         
     }else {
         
@@ -237,7 +238,6 @@
         btn.selected = NO;
         self.model.isSelect = NO;
     }
-    
     
 }
 @end

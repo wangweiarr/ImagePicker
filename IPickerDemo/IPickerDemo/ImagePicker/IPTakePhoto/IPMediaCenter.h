@@ -84,7 +84,7 @@ typedef NS_ENUM(NSInteger, IPAuthorizationStatus) {
 @property(nonatomic,assign) AVCaptureVideoOrientation cameraOrientation;
 @property(nonatomic,assign) AVCaptureVideoOrientation previewOrientation;
 
-+(IPMediaCenter *)defaultManager;
++(IPMediaCenter *)defaultCenter;
 - (void)startPreview;
 - (void)stopPreview;
 

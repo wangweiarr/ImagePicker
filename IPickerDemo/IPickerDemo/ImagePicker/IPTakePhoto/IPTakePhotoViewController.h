@@ -8,6 +8,15 @@
 
 #import <UIKit/UIKit.h>
 
-@interface IPTakePhotoViewController : UIViewController
+@class IPTakePhotoViewController;
 
+@protocol IPTakePhotoViewControllerDelegate <NSObject>
+
+- (void)didClickCancelBtnInTakePhotoViewController:(IPTakePhotoViewController *)takePhotoViewController;
+
+@end
+
+@interface IPTakePhotoViewController : UIViewController
+/**代理*/
+@property (nonatomic, weak)id<IPTakePhotoViewControllerDelegate> delegate;
 @end

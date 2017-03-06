@@ -27,4 +27,5 @@
 @property (nonatomic, strong)IPAssetModel *model;
 - (void)endDisplay;
 - (void)prepareForReuse;
+- (void)setUpCameraPreviewLayer;
 @end

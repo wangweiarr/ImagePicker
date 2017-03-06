@@ -15,3 +15,7 @@
 @interface IPAnimationInverseTransition : NSObject<UIViewControllerAnimatedTransitioning>
 
 @end
+
+@interface IPAnimationTakePhotoTransition : NSObject<UIViewControllerAnimatedTransitioning>
+
+@end
