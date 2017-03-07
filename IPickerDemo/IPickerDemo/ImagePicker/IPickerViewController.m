@@ -148,6 +148,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (void)dealloc{
     NSLog(@"IPickerViewController--dealloc");
     [self freeAllData];
+    [IPMediaCenter realeaseCenter];
     
 }
 - (BOOL)prefersStatusBarHidden{
@@ -1055,7 +1056,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     model.cellClickBlock = ^(id object){
         
         IPTakePhotoViewController *takePhotoVC =[[IPTakePhotoViewController alloc]init];
-        takePhotoVC.delegate = self;
+        takePhotoVC.delegate = weakSelf;
 //        [weakSelf presentViewController:takePhotoVC animated:YES completion:nil];
         [weakSelf.navigationController pushViewController:takePhotoVC animated:YES];
     };

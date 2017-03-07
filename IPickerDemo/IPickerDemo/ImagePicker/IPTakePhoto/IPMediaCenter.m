@@ -142,30 +142,37 @@ static NSString * const IPVisionTorchAvailabilityObserverContext = @"IPVisionTor
 //单例类的静态实例对象，因对象需要唯一性，故只能是static类型
 static IPMediaCenter *defaultManager = nil;
 
++(void)realeaseCenter{
+    if (defaultManager) {
+        defaultManager = nil;
+    }
+    
+}
+
 /**单例模式对外的唯一接口，用到的dispatch_once函数在一个应用程序内只会执行一次，且dispatch_once能确保线程安全
  */
 +(IPMediaCenter *)defaultCenter
 {
-    static dispatch_once_t token;
-    dispatch_once(&token, ^{
+//    static dispatch_once_t token;
+//    dispatch_once(&token, ^{
         if(defaultManager == nil)
         {
             defaultManager = [[IPMediaCenter alloc] init];
         }
-    });
+//    });
     return defaultManager;
 }
 /**覆盖该方法主要确保当用户通过[[Singleton alloc] init]创建对象时对象的唯一性，alloc方法会调用该方法，只不过zone参数默认为nil，因该类覆盖了allocWithZone方法，所以只能通过其父类分配内存，即[super allocWithZone:zone]
  */
 +(id)allocWithZone:(struct _NSZone *)zone
 {
-    static dispatch_once_t token;
-    dispatch_once(&token, ^{
+//    static dispatch_once_t token;
+//    dispatch_once(&token, ^{
         if(defaultManager == nil)
         {
             defaultManager = [super allocWithZone:zone];
         }
-    });
+//    });
     return defaultManager;
 }
 
@@ -211,9 +218,12 @@ static IPMediaCenter *defaultManager = nil;
         // setup queues
         _captureSessionDispatchQueue = [[NSOperationQueue alloc]init];
         _captureSessionDispatchQueue.name = @"IPVisionSession";
+        _captureSessionDispatchQueue.maxConcurrentOperationCount = 1;
         
         _captureVideoDispatchQueue = [[NSOperationQueue alloc]init];
         _captureVideoDispatchQueue.name = @"IPVisionVideo";
+        
+        _captureVideoDispatchQueue.maxConcurrentOperationCount = 1;
         
         _previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:nil];
         
@@ -238,6 +248,8 @@ static IPMediaCenter *defaultManager = nil;
     self.captureSessionPreset = nil;
     
     [self IP_destroyCamera];
+    
+    IPLog(@"IPMediaCenter dealloc");
     
 }
 #pragma mark - preview
@@ -276,11 +288,14 @@ static IPMediaCenter *defaultManager = nil;
 - (void)stopPreview
 {
     [_captureSessionDispatchQueue addOperationWithBlock:^{
+        //此时已经停止,就返回
         if (!_flags.previewRunning)
             return;
         
-        if ([_captureSession isRunning])
+        if ([_captureSession isRunning]){
             [_captureSession stopRunning];
+        }
+        
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             if ([_delegate respondsToSelector:@selector(mediaCenter:DidStopPreview:)]) {
@@ -330,7 +345,65 @@ static IPMediaCenter *defaultManager = nil;
     
     
 }
-- (void)IP_destroyCamera{}
+- (void)IP_destroyCamera{
+    if (!_captureSession)
+        return;
+    
+    // current device KVO notifications
+    @try{
+        [self removeObserver:self forKeyPath:@"currentDevice.adjustingFocus"];
+        [self removeObserver:self forKeyPath:@"currentDevice.adjustingExposure"];
+        [self removeObserver:self forKeyPath:@"currentDevice.adjustingWhiteBalance"];
+        [self removeObserver:self forKeyPath:@"currentDevice.flashMode"];
+        [self removeObserver:self forKeyPath:@"currentDevice.torchMode"];
+        [self removeObserver:self forKeyPath:@"currentDevice.flashAvailable"];
+        [self removeObserver:self forKeyPath:@"currentDevice.torchAvailable"];
+        
+        [_captureMovieFileOutput removeObserver:self forKeyPath:@"recordedDuration"];
+    }@catch(NSException *anException){
+        IPLog(@"removeObserver-->%@ %@",anException.name,anException.reason);
+    }
+    
+    // remove notification observers (we don't want to just 'remove all' because we're also observing background notifications
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    
+    // session notifications
+    [notificationCenter removeObserver:self name:AVCaptureSessionRuntimeErrorNotification object:_captureSession];
+    [notificationCenter removeObserver:self name:AVCaptureSessionDidStartRunningNotification object:_captureSession];
+    [notificationCenter removeObserver:self name:AVCaptureSessionDidStopRunningNotification object:_captureSession];
+    [notificationCenter removeObserver:self name:AVCaptureSessionWasInterruptedNotification object:_captureSession];
+    [notificationCenter removeObserver:self name:AVCaptureSessionInterruptionEndedNotification object:_captureSession];
+    
+    // capture input notifications
+    [notificationCenter removeObserver:self name:AVCaptureInputPortFormatDescriptionDidChangeNotification object:nil];
+    
+    // capture device notifications
+    [notificationCenter removeObserver:self name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
+    
+    //    AH_RELEASE_SAFELY(_captureMovieFileOutput);
+    
+    _captureDeviceAudio = nil;
+    
+    _captureDeviceInputAudio = nil;
+    
+    _captureDeviceInputFront = nil;
+    
+    _captureDeviceInputBack = nil;
+    
+    _captureDeviceFront = nil;
+    
+    _captureDeviceBack = nil;
+    
+    _captureSession = nil;
+    
+    _currentDevice = nil;
+    
+    _currentInput = nil;
+    
+    _currentOutput = nil;
+    
+    IPLog(@"camera destroyed");
+}
 /**
  暂停视频捕获
  */
@@ -691,7 +764,7 @@ static IPMediaCenter *defaultManager = nil;
         if (!_flags.previewRunning)
             return;
         
-        [[NSOperationQueue mainQueue]addOperationWithBlock:^{
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             [weakSelf startPreview];
         }];
     }];
@@ -706,7 +779,7 @@ static IPMediaCenter *defaultManager = nil;
     
     if (_flags.previewRunning) {
         [self stopPreview];
-        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        [_captureSessionDispatchQueue addOperationWithBlock:^{
             _flags.previewRunning = YES;
         }];
     }
@@ -1028,7 +1101,7 @@ static IPMediaCenter *defaultManager = nil;
     }
 }
 #pragma mark - capture image
-- (void)captureStillImage{
+- (void)captureStillImage:(void (^)(UIImage *image))block{
     AVCaptureConnection *connection = [self.imgOutput connectionWithMediaType:AVMediaTypeVideo];
     if (connection.isVideoOrientationSupported) {
         connection.videoOrientation = _cameraOrientation;
@@ -1038,7 +1111,10 @@ static IPMediaCenter *defaultManager = nil;
         if (sampleBuffer != NULL) {
             NSData *imgData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:sampleBuffer];
             UIImage *image = [[UIImage alloc]initWithData:imgData];
-            [self writImageToSavePhotosAlbum:image];
+            if (block) {
+                block(image);
+            }
+//            [self writImageToSavePhotosAlbum:image];
         }else {
             NSLog(@"NULL sampleBuffer:%@",[error localizedDescription]);
         }

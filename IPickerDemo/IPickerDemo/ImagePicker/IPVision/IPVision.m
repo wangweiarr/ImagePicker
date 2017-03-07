@@ -776,7 +776,7 @@ typedef void (^AHVisionBlock)();
     [self addObserver:self forKeyPath:@"currentDevice.torchMode" options:NSKeyValueObservingOptionNew context:(__bridge void *)AHVisionTorchModeObserverContext];
     [self addObserver:self forKeyPath:@"currentDevice.flashAvailable" options:NSKeyValueObservingOptionNew context:(__bridge void *)AHVisionFlashAvailabilityObserverContext];
     [self addObserver:self forKeyPath:@"currentDevice.torchAvailable" options:NSKeyValueObservingOptionNew context:(__bridge void *)AHVisionTorchAvailabilityObserverContext];
-
+    [self addObserver:self forKeyPath:@"currentDevice.torchAvailable" options:NSKeyValueObservingOptionNew context:(__bridge void *)AHVisionTorchAvailabilityObserverContext];
     IPLog(@"camera setup");
 }
 
@@ -787,15 +787,20 @@ typedef void (^AHVisionBlock)();
         return;
     
     // current device KVO notifications
-    [self removeObserver:self forKeyPath:@"currentDevice.adjustingFocus"];
-    [self removeObserver:self forKeyPath:@"currentDevice.adjustingExposure"];
-    [self removeObserver:self forKeyPath:@"currentDevice.adjustingWhiteBalance"];
-    [self removeObserver:self forKeyPath:@"currentDevice.flashMode"];
-    [self removeObserver:self forKeyPath:@"currentDevice.torchMode"];
-    [self removeObserver:self forKeyPath:@"currentDevice.flashAvailable"];
-    [self removeObserver:self forKeyPath:@"currentDevice.torchAvailable"];
-
-//    [_captureMovieFileOutput removeObserver:self forKeyPath:@"recordedDuration"];
+    @try{
+        [self removeObserver:self forKeyPath:@"currentDevice.adjustingFocus"];
+        [self removeObserver:self forKeyPath:@"currentDevice.adjustingExposure"];
+        [self removeObserver:self forKeyPath:@"currentDevice.adjustingWhiteBalance"];
+        [self removeObserver:self forKeyPath:@"currentDevice.flashMode"];
+        [self removeObserver:self forKeyPath:@"currentDevice.torchMode"];
+        [self removeObserver:self forKeyPath:@"currentDevice.flashAvailable"];
+        [self removeObserver:self forKeyPath:@"currentDevice.torchAvailable"];
+        
+        [_captureMovieFileOutput removeObserver:self forKeyPath:@"recordedDuration"];
+    }@catch(NSException *anException){
+        IPLog(@"%@ %@",anException.name,anException.reason);
+    }
+    
     
     // remove notification observers (we don't want to just 'remove all' because we're also observing background notifications
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
