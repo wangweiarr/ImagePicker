@@ -975,6 +975,7 @@ typedef void (^AHVisionBlock)();
 
 - (void)startPreview
 {
+    IPLog(@"%@ %@",[NSThread currentThread],NSStringFromSelector(_cmd));
     [self _enqueueBlockOnCaptureSessionQueue:^{
         if (!_captureSession) {
             [self _setupCamera];
@@ -996,27 +997,36 @@ typedef void (^AHVisionBlock)();
                     [_delegate visionSessionDidStartPreview:self];
                 }
             }];
-            IPLog(@"capture session running");
+            IPLog(@"%@ %@ [_captureSession startRunning]",NSStringFromSelector(_cmd),[NSThread currentThread]);
         }
         _flags.previewRunning = YES;
+        IPLog(@"%@ %@ _flags.previewRunning = YES",NSStringFromSelector(_cmd),[NSThread currentThread]);
     }];
 }
 
 - (void)stopPreview
 {
+    IPLog(@"%@",NSStringFromSelector(_cmd));
     [self _enqueueBlockOnCaptureSessionQueue:^{
         if (!_flags.previewRunning)
+        {
+            IPLog(@"%@ %@ _flags.previewRunning == NO",NSStringFromSelector(_cmd),[NSThread currentThread]);
             return;
+        }
         
-        if ([_captureSession isRunning])
+        
+        if ([_captureSession isRunning]){
+            IPLog(@"%@ %@ [_captureSession stopRunning]",NSStringFromSelector(_cmd),[NSThread currentThread]);
             [_captureSession stopRunning];
+        }
+        
         
         [self _executeBlockOnMainQueue:^{
             if ([_delegate respondsToSelector:@selector(visionSessionDidStopPreview:)]) {
                 [_delegate visionSessionDidStopPreview:self];
             }
         }];
-        IPLog(@"capture session stopped");
+        IPLog(@"%@ %@ capture session stopped _flags.previewRunning = NO",NSStringFromSelector(_cmd),[NSThread currentThread]);
         _flags.previewRunning = NO;
     }];
 }
@@ -1683,10 +1693,14 @@ typedef void (^AHVisionBlock)();
 
 - (void)_applicationWillEnterForeground:(NSNotification *)notification
 {
-    IPLog(@"applicationWillEnterForeground");
+    IPLog(@"%@",NSStringFromSelector(_cmd));
     [self _enqueueBlockOnCaptureSessionQueue:^{
         if (!_flags.previewRunning)
+        {
+            IPLog(@"_flags.previewRunning == NO");
             return;
+        }
+        
         
         [self _enqueueBlockOnMainQueue:^{
             [self startPreview];
@@ -1696,13 +1710,15 @@ typedef void (^AHVisionBlock)();
 
 - (void)_applicationDidEnterBackground:(NSNotification *)notification
 {
-    IPLog(@"applicationDidEnterBackground");
+    IPLog(@"%@",NSStringFromSelector(_cmd));
     if (_flags.recording)
         [self pauseVideoCapture];
     
     if (_flags.previewRunning) {
+        
         [self stopPreview];
         [self _enqueueBlockOnCaptureSessionQueue:^{
+            IPLog(@"EnterBackground previewRunning SET YES ");
             _flags.previewRunning = YES;
         }];
     }

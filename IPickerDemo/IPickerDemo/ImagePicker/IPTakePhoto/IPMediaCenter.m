@@ -259,6 +259,7 @@ static IPMediaCenter *defaultManager = nil;
  */
 - (void)startPreview
 {
+    IPLog(@"%@ %@",[NSThread currentThread],NSStringFromSelector(_cmd));
     [_captureSessionDispatchQueue addOperationWithBlock:^{
         if (!_captureSession) {
             //没有设置会话时,配置设备 会话
@@ -280,19 +281,33 @@ static IPMediaCenter *defaultManager = nil;
                     [_delegate mediaCenter:self DidStartPreview:_previewLayer];
                 }
             }];
-            IPLog(@"capture session running");
+            
+            IPLog(@"%@ %@ [_captureSession startRunning]",NSStringFromSelector(_cmd),[NSThread currentThread]);
+            
         }
         _flags.previewRunning = YES;
+        IPLog(@"%@ %@ _flags.previewRunning = YES",NSStringFromSelector(_cmd),[NSThread currentThread]);
     }];
 }
 - (void)stopPreview
 {
+    
+    IPLog(@"%@ %@",[NSThread currentThread],NSStringFromSelector(_cmd));
     [_captureSessionDispatchQueue addOperationWithBlock:^{
         //此时已经停止,就返回
         if (!_flags.previewRunning)
+        {
+            
+            IPLog(@"%@ %@ _flags.previewRunning == NO",NSStringFromSelector(_cmd),[NSThread currentThread]);
             return;
+        }
         
-        if ([_captureSession isRunning]){
+        
+        if ([_captureSession isRunning])
+        {
+            
+            IPLog(@"%@ %@ [_captureSession stopRunning]",NSStringFromSelector(_cmd),[NSThread currentThread]);
+            
             [_captureSession stopRunning];
         }
         
@@ -302,7 +317,8 @@ static IPMediaCenter *defaultManager = nil;
                 [_delegate mediaCenter:self DidStopPreview:_previewLayer];
             }
         }];
-        IPLog(@"capture session stopped");
+        
+        IPLog(@"%@ capture session stopped _flags.previewRunning = NO",[NSThread currentThread]);
         _flags.previewRunning = NO;
     }];
 }
@@ -363,7 +379,9 @@ static IPMediaCenter *defaultManager = nil;
     }@catch(NSException *anException){
         IPLog(@"removeObserver-->%@ %@",anException.name,anException.reason);
     }
-    
+    @finally {
+        IPLog(@"IP_destroyCamera");
+    }
     // remove notification observers (we don't want to just 'remove all' because we're also observing background notifications
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     
@@ -428,6 +446,7 @@ static IPMediaCenter *defaultManager = nil;
  */
 - (void)setupCamera
 {
+    IPLog(@"%@",NSStringFromSelector(_cmd));
     if (_captureSession)
         return;
     
@@ -488,6 +507,7 @@ static IPMediaCenter *defaultManager = nil;
 }
 - (void)setupSession
 {
+    IPLog(@"%@",NSStringFromSelector(_cmd));
     if (!_captureSession) {
         IPLog(@"error, no session running to setup");
         return;
@@ -758,11 +778,15 @@ static IPMediaCenter *defaultManager = nil;
 
 - (void)applicationWillEnterForeground:(NSNotification *)notification
 {
-    IPLog(@"applicationWillEnterForeground");
+    IPLog(@"%@",NSStringFromSelector(_cmd));
     __weak typeof(self)weakSelf = self;
     [_captureSessionDispatchQueue addOperationWithBlock:^{
         if (!_flags.previewRunning)
+        {
+            IPLog(@"%@ _flags.previewRunning == NO  RETURN",NSStringFromSelector(_cmd));
             return;
+        }
+        
         
         [[NSOperationQueue mainQueue] addOperationWithBlock:^{
             [weakSelf startPreview];
@@ -773,13 +797,16 @@ static IPMediaCenter *defaultManager = nil;
 
 - (void)applicationDidEnterBackground:(NSNotification *)notification
 {
-    IPLog(@"applicationDidEnterBackground");
+    IPLog(@"%@",NSStringFromSelector(_cmd));
     if (_flags.recording)
         [self pauseVideoCapture];
     
     if (_flags.previewRunning) {
         [self stopPreview];
         [_captureSessionDispatchQueue addOperationWithBlock:^{
+            
+            IPLog(@"%@ %@ _flags.previewRunning = YES",NSStringFromSelector(_cmd),[NSThread currentThread]);
+            
             _flags.previewRunning = YES;
         }];
     }
@@ -829,8 +856,7 @@ static IPMediaCenter *defaultManager = nil;
         if ([notification object] != _captureSession)
             return;
         
-        IPLog(@"session was started");
-        
+        IPLog(@"%@ %@ session was started",NSStringFromSelector(_cmd),[NSThread currentThread]);
         // ensure there is a capture device setup
         if (_currentInput) {
             AVCaptureDevice *device = [_currentInput device];
@@ -853,8 +879,7 @@ static IPMediaCenter *defaultManager = nil;
         if ([notification object] != _captureSession)
             return;
         
-        IPLog(@"session was stopped");
-        
+        IPLog(@"%@ %@ session was stopped",NSStringFromSelector(_cmd),[NSThread currentThread]);
         [NSOperationQueue.mainQueue addOperationWithBlock:^{
             if ([_delegate respondsToSelector:@selector(mediaCenter:DidStopSession:)]) {
                 [_delegate mediaCenter:self DidStopSession:_captureSession];
@@ -869,8 +894,7 @@ static IPMediaCenter *defaultManager = nil;
         if ([notification object] != _captureSession)
             return;
         
-        IPLog(@"session was interrupted");
-        
+        IPLog(@"%@ %@ session was interrupted",NSStringFromSelector(_cmd),[NSThread currentThread]);
         if (_flags.recording) {
             [NSOperationQueue.mainQueue addOperationWithBlock:^{
                 if ([_delegate respondsToSelector:@selector(mediaCenter:DidStopSession:)]) {
