@@ -78,6 +78,7 @@ static NSString * const reuseIdentifier = @"Cell";
     self.collectionView.pagingEnabled = YES;
     self.collectionView.showsHorizontalScrollIndicator = NO;
     self.collectionView.showsVerticalScrollIndicator = NO;
+    self.collectionView.bounces = NO;
     [self.collectionView registerClass:[IPImageReaderCell class] forCellWithReuseIdentifier:reuseIdentifier];
     
     [self addHeaderView];

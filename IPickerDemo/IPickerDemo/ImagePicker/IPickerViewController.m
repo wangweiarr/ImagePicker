@@ -370,7 +370,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         }
         else if (model.assetType == IPAssetModelMediaTypePhoto)
         {
-            IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.curImageModelArr TargetIndex:indexPath.item];
+            NSMutableArray *array = [NSMutableArray arrayWithArray:self.curImageModelArr];
+            NSUInteger targetIndex = 0;
+            if (self.canTakePhoto) {
+                [array removeObjectAtIndex:0];
+                targetIndex = indexPath.item - 1;
+            }
+            IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:array TargetIndex:targetIndex];
             reader.maxCount = self.maxCount;
             reader.currentCount = self.selectPhotoCount;
             reader.delegate = self;
