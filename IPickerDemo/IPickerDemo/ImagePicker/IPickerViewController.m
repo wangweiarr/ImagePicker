@@ -21,6 +21,7 @@
 #import "IPPrivateDefine.h"
 #import "IPTakePhotoViewController.h"
 #import "IPMediaCenter.h"
+#import "IPVideoPlayerViewController.h"
 
 /**获取图片样式*/
 typedef NS_ENUM(NSUInteger,  GetImageType) {
@@ -356,17 +357,25 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
         if(model.assetType == IPAssetModelMediaTypeVideo)
         {
-            __block IPAlertView *alert = [IPAlertView showAlertViewAt:self.view Text:@"视频加载中..."];
-            [self.defaultAssetManager compressVideoWithAssetModel:model CompleteBlock:^(AVPlayerItem *item) {
-                [alert dismissFromHostView];
-                if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(imgPicker:didFinishCaptureVideoItem:Videourl:videoDuration:thumbailImage:)]) {
-
-                    [weakSelf.delegate imgPicker:weakSelf didFinishCaptureVideoItem:item Videourl:nil videoDuration:(float)model.duration thumbailImage:model.VideoThumbail];
-
-                }
-                NSLog(@"%@",[NSThread currentThread]);
-                
+            
+            [[IPAssetManager defaultAssetManager] getVideoWithAsset:model Completion:^(AVPlayerItem *item, NSDictionary *info) {
+                IPVideoPlayerViewController *videoPlayer = [[IPVideoPlayerViewController alloc]init];
+                videoPlayer.playerItem = item;
+                [weakSelf.navigationController pushViewController:videoPlayer animated:YES];
             }];
+            
+            
+//            __block IPAlertView *alert = [IPAlertView showAlertViewAt:self.view Text:@"视频加载中..."];
+//            [self.defaultAssetManager compressVideoWithAssetModel:model CompleteBlock:^(AVPlayerItem *item) {
+//                [alert dismissFromHostView];
+//                if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(imgPicker:didFinishCaptureVideoItem:Videourl:videoDuration:thumbailImage:)]) {
+//
+//                    [weakSelf.delegate imgPicker:weakSelf didFinishCaptureVideoItem:item Videourl:nil videoDuration:(float)model.duration thumbailImage:model.VideoThumbail];
+//
+//                }
+//                NSLog(@"%@",[NSThread currentThread]);
+//                
+//            }];
             
         }
         else if (model.assetType == IPAssetModelMediaTypePhoto)
@@ -614,7 +623,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
     
     
-    [self.mainView layoutIfNeeded];
+    [self.mainView reloadData];
     
 }
 
@@ -925,7 +934,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self presentViewController:takeVideo animated:YES completion:nil];
 }
 
-- (void)VisionDidCaptureFinish:(IPVision *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration{
+- (void)VisionDidCaptureFinish:(IPMediaCenter *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration{
     UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:thumbnail]];
     
     __weak typeof(self) weakSelf = self;
@@ -1048,6 +1057,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 //    [takePhotoViewController dismissViewControllerAnimated:YES completion:^{}];
     [self.navigationController popViewControllerAnimated:YES];
 }
+- (void)VisionDidClickCancelBtn:(IPTakeVideoViewController *)takevideoVC
+{
+    [self dismissViewControllerAnimated:takevideoVC completion:^{
+//        IPImageCell *cell = (IPImageCell *)[self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
+//        [cell setUpCameraPreviewLayer];
+    }];
+}
 #pragma mark - 配置数据
 - (IPAssetModel *)setUpTakePhotoData
 {
@@ -1063,7 +1079,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         
         IPTakePhotoViewController *takePhotoVC =[[IPTakePhotoViewController alloc]init];
         takePhotoVC.delegate = weakSelf;
-//        [weakSelf presentViewController:takePhotoVC animated:YES completion:nil];
         [weakSelf.navigationController pushViewController:takePhotoVC animated:YES];
     };
     return model;
@@ -1073,6 +1088,11 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     __weak typeof(self) weakSelf = self;
     IPAssetModel *model = [[IPAssetModel alloc]init];
     model.assetType = IPAssetModelMediaTypeTakeVideo;
+//    AVCaptureVideoPreviewLayer *layer = [IPMediaCenter defaultCenter].previewLayer;
+//    layer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+//    model.previewLayer = layer;
+//    
+//    [[IPMediaCenter defaultCenter] startPreview];
     model.cellClickBlock = ^(id object){
         
         IPTakeVideoViewController *takeVideo = [[IPTakeVideoViewController alloc]init];

@@ -34,6 +34,7 @@
 		349EB9CD1E2E22CC00351FC4 /* IPAnimationTranstion.m in Sources */ = {isa = PBXBuildFile; fileRef = 349EB9CC1E2E22CC00351FC4 /* IPAnimationTranstion.m */; };
 		349EB9D01E2E563F00351FC4 /* IPImageReaderCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 349EB9CF1E2E563F00351FC4 /* IPImageReaderCell.m */; };
 		34E40DA31CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */; };
+		F419C0481E725088005231A4 /* IPVideoPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F419C0471E725088005231A4 /* IPVideoPlayerViewController.m */; };
 		F4B7639A1E6AB67100C31F80 /* IPMediaCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = F4B763991E6AB67100C31F80 /* IPMediaCenter.m */; };
 /* End PBXBuildFile section */
 
@@ -92,6 +93,8 @@
 		34A524281DC9E5AA0094915B /* IPPrivateDefine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPPrivateDefine.h; sourceTree = "<group>"; };
 		34E40DA11CCB5EBF00DCC366 /* IP3DTouchPreviewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IP3DTouchPreviewVC.h; sourceTree = "<group>"; };
 		34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IP3DTouchPreviewVC.m; sourceTree = "<group>"; };
+		F419C0461E725088005231A4 /* IPVideoPlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPVideoPlayerViewController.h; sourceTree = "<group>"; };
+		F419C0471E725088005231A4 /* IPVideoPlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPVideoPlayerViewController.m; sourceTree = "<group>"; };
 		F4B763981E6AB67100C31F80 /* IPMediaCenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPMediaCenter.h; sourceTree = "<group>"; };
 		F4B763991E6AB67100C31F80 /* IPMediaCenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPMediaCenter.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -116,6 +119,8 @@
 				343E26B21D28ED310015C1FD /* IPTakeMediaManager.m */,
 				F4B763981E6AB67100C31F80 /* IPMediaCenter.h */,
 				F4B763991E6AB67100C31F80 /* IPMediaCenter.m */,
+				F419C0461E725088005231A4 /* IPVideoPlayerViewController.h */,
+				F419C0471E725088005231A4 /* IPVideoPlayerViewController.m */,
 			);
 			path = IPTakePhoto;
 			sourceTree = "<group>";
@@ -302,6 +307,7 @@
 				349EB9CD1E2E22CC00351FC4 /* IPAnimationTranstion.m in Sources */,
 				3488EE101D254727002C0FA3 /* IPTakeVideoViewController.m in Sources */,
 				344F37AC1C814BC6006063B6 /* AppDelegate.m in Sources */,
+				F419C0481E725088005231A4 /* IPVideoPlayerViewController.m in Sources */,
 				3488EE0A1D254703002C0FA3 /* IPCaptureProgressBar.m in Sources */,
 				344F37C51C814BF0006063B6 /* ViewController.m in Sources */,
 				344F37E61C83D4C0006063B6 /* IPAlbumModel.m in Sources */,

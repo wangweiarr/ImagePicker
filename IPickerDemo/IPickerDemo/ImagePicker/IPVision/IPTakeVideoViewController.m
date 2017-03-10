@@ -10,7 +10,7 @@
 #import "IPCaptureProgressBar.h"
 #import "IPTooltipView.h"
 #define ScreenSize ([UIScreen mainScreen].bounds.size)
-@interface IPTakeVideoViewController ()<AHVisionDelegate,AHCaptureProgressDegelate,UIAlertViewDelegate>
+@interface IPTakeVideoViewController ()</*AHVisionDelegate*/IPMediaCenterDelegate,AHCaptureProgressDegelate,UIAlertViewDelegate>
 {
     UIView *_previewView;
     
@@ -135,14 +135,16 @@
     // iOS 6 support
     [[UIApplication sharedApplication] setStatusBarHidden:YES withAnimation:UIStatusBarAnimationSlide];
     [self _resetCapture];
-    [[IPVision sharedInstance] startPreview];
+//    [[IPVision sharedInstance] startPreview];
+    [[IPMediaCenter defaultCenter]startPreview];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
     
-    [[IPVision sharedInstance] stopPreview];
+//    [[IPVision sharedInstance] stopPreview];
+    [[IPMediaCenter defaultCenter]stopPreview];
     
     // iOS 6 support
     [[UIApplication sharedApplication] setStatusBarHidden:NO withAnimation:UIStatusBarAnimationSlide];
@@ -186,7 +188,8 @@
     
     _previewView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, ScreenSize.width,ScreenSize.width*9/16)];
     _previewView.backgroundColor = [UIColor blackColor];
-    AVCaptureVideoPreviewLayer *_previewLayer = [[IPVision sharedInstance] previewLayer];
+    AVCaptureVideoPreviewLayer *_previewLayer = [[IPMediaCenter defaultCenter] previewLayer];
+    [IPMediaCenter defaultCenter].takeMediaType = IPTakeMediaTypeVideo;
     _previewLayer.frame = _previewView.bounds;
     _previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
     [_previewView.layer addSublayer:_previewLayer];
@@ -269,8 +272,11 @@
 }
 - (void)dealloc
 {
-    [IPVision sharedInstance].delegate = nil;
+//    [IPVision sharedInstance].delegate = nil;
+    [IPMediaCenter defaultCenter].delegate = nil;
+//    [IPMediaCenter realeaseCenter];
 }
+
 
 #pragma mark - init & dealloc
 -(instancetype)init
@@ -290,7 +296,8 @@
 - (void) _handleCancelBtn:(id)sender
 {
     //是否放弃这段视频？
-    IPVision *vision = [IPVision sharedInstance];
+//    IPVision *vision = [IPVision sharedInstance];
+    IPMediaCenter *vision = [IPMediaCenter defaultCenter];
     if(vision.capturedVideoSeconds>0)
     {
         UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"提示" message:@"是否放弃这段视频？" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
@@ -299,14 +306,20 @@
     }
     else
     {
-        [[IPVision sharedInstance] cancelVideoCapture];
-        [self dismissViewControllerAnimated:YES completion:nil];
+//        [[IPVision sharedInstance] cancelVideoCapture];
+        [[IPMediaCenter defaultCenter] cancelVideoCapture];
+        if ([_delegate respondsToSelector:@selector(VisionDidClickCancelBtn:)]) {
+            [_delegate VisionDidClickCancelBtn:self];
+        }
+        
     }
 }
 - (void) _handleDoneBtn:(UIButton *)sender
 {
     if (!sender.selected) {
-        if ([[IPVision sharedInstance] endVideoCapture]) {
+//        if ([[IPVision sharedInstance] endVideoCapture])
+        if ([[IPMediaCenter defaultCenter] endVideoCapture])
+        {
             [self dismissViewControllerAnimated:YES completion:nil];
         }
     }
@@ -341,15 +354,15 @@
     //    PLog(@"isDel = %i",isDel);
     [_progressBar delete: isDel ];
     if (isDel) {
-        [[IPVision sharedInstance] backspaceVideoCapture];
+        [[IPMediaCenter defaultCenter] backspaceVideoCapture];
     }
     sender.selected = !isDel;
     [_tipLabel setHidden:YES];
 }
 -(void) _handleFlipBtn:(UIButton *) sender
 {
-    IPVision *vision = [IPVision sharedInstance];
-    vision.cameraDevice = vision.cameraDevice == AHCameraDeviceBack ? AHCameraDeviceFront : AHCameraDeviceBack;
+    IPMediaCenter *vision = [IPMediaCenter defaultCenter];
+    vision.cameraDevice = vision.cameraDevice == UIImagePickerControllerCameraDeviceRear ? UIImagePickerControllerCameraDeviceFront : UIImagePickerControllerCameraDeviceRear;
     
     sender.selected = ! sender.selected;
     //按钮翻转效果处理
@@ -390,7 +403,7 @@
     }
     else if (alertView.tag==101){
         if (buttonIndex==1) {
-            [[IPVision sharedInstance] cancelVideoCapture];
+            [[IPMediaCenter defaultCenter] cancelVideoCapture];
             [self dismissViewControllerAnimated:YES completion:nil];
         }
     }
@@ -399,7 +412,8 @@
 
 - (void)_startCapture
 {
-    IPVision * vision = [IPVision sharedInstance];
+    IPMediaCenter * vision = [IPMediaCenter defaultCenter];
+
     
     if(!vision.isRecording)
     {
@@ -413,7 +427,7 @@
 
 - (void)_pauseCapture
 {
-    [[IPVision sharedInstance] pauseVideoCapture];
+    [[IPMediaCenter defaultCenter] pauseVideoCapture];
 }
 
 - (void)_resumeCapture
@@ -424,21 +438,21 @@
 - (void)_endCapture
 {
     [UIApplication sharedApplication].idleTimerDisabled = NO;
-    [[IPVision sharedInstance] endVideoCapture];
+    [[IPMediaCenter defaultCenter] endVideoCapture];
 }
 
 - (void)_resetCapture
 {
     _longPressGestureRecognizer.enabled = YES;
     
-    IPVision *vision = [IPVision sharedInstance];
+    IPMediaCenter *vision = [IPMediaCenter defaultCenter];
     vision.delegate = self;
     
-    if ([vision isCameraDeviceAvailable:AHCameraDeviceBack]) {
-        vision.cameraDevice = AHCameraDeviceBack;
+    if ([UIImagePickerController isCameraDeviceAvailable:UIImagePickerControllerCameraDeviceRear]) {
+        vision.cameraDevice = UIImagePickerControllerCameraDeviceRear;
         _flipBtn.hidden = NO;
     } else {
-        vision.cameraDevice = AHCameraDeviceFront;
+        vision.cameraDevice = UIImagePickerControllerCameraDeviceFront;
         _flipBtn.hidden = YES;
     }
     
@@ -446,15 +460,15 @@
     vision.exportPresetQuality = self.exportPresetQuality;
     vision.exportVideoWidth = self.exportVideoWidth;
     vision.exportVideoHeight = self.exportVideoHeight;
-    vision.cameraOrientation = AHCameraOrientationPortrait;
-    vision.focusMode = AHFocusModeContinuousAutoFocus;
+    vision.cameraOrientation = AVCaptureVideoOrientationPortrait;
+//    vision.focusMode = AHFocusModeContinuousAutoFocus;
     
     [vision resetVideoCapture];
 }
 
 #pragma mark AHVisionDelegate
-- (void)visionSessionDidStartPreview:(IPVision *)vision
-{
+
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter DidStartPreview:(AVCaptureVideoPreviewLayer *)preViewLayer{
     [_recordBtn setEnabled:YES];
 }
 
@@ -463,13 +477,13 @@
 //    [_recordBtn setEnabled:YES];
 //}
 
-- (void)visionDidStartVideoCapture:(IPVision *)vision
+- (void)visionDidStartVideoCapture:(IPMediaCenter *)vision
 {
     [_shadeView setHidden:NO];
     [_tipLabel setHidden:YES]; //隐藏“长按蓝色按钮进行拍摄“提示
 }
 
-- (void)visionDidPauseVideoCapture:(IPVision *)vision
+- (void)visionDidPauseVideoCapture:(IPMediaCenter *)vision
 {
     [_shadeView setHidden:YES];
     [_progressBar interrupt];
@@ -481,19 +495,19 @@
     }
 }
 
-- (void)visionDidResumeVideoCapture:(IPVision *)vision
+- (void)visionDidResumeVideoCapture:(IPMediaCenter *)vision
 {
     [_tipLabel setHidden:YES];
 }
 
--(void) visionDidEndVideoCapture:(IPVision *)vision
+-(void) visionDidEndVideoCapture:(IPMediaCenter *)vision
 {
-    if (self.delegate && [self.delegate respondsToSelector:@selector(VisionDidCaptureFinish:withThumbnail:withVideoDuration:)]){
-        [self.delegate VisionDidCaptureFinish:vision withThumbnail:vision.thumbnail withVideoDuration:_progressBar.currentValue];
-    }
+//    if (self.delegate && [self.delegate respondsToSelector:@selector(VisionDidCaptureFinish:withThumbnail:withVideoDuration:)]){
+//        [self.delegate VisionDidCaptureFinish:vision withThumbnail:vision.thumbnail withVideoDuration:_progressBar.currentValue];
+//    }
 }
 
-- (void)vision:(IPVision *)vision didCaptureDuration:(CMTime)duration
+- (void)mediaCenter:(IPMediaCenter *)vision didCaptureDuration:(CMTime)duration
 {
     [_progressBar setProgressValue:CMTimeGetSeconds(duration)];
 }

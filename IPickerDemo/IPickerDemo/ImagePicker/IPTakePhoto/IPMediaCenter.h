@@ -9,6 +9,8 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 
+typedef void (^CompressProgress)(float);
+
 typedef NS_ENUM(NSInteger, IPMirroringMode) {
     IPMirroringAuto,
     IPMirroringOn,
@@ -25,7 +27,13 @@ typedef NS_ENUM(NSInteger, IPAuthorizationStatus) {
     IPAuthorizationStatusAuthorized,
     IPAuthorizationStatusAudioDenied
 };
-
+typedef NS_ENUM(NSInteger, IPVisionErrorType)
+{
+    IPVisionErrorUnknown = -1,
+    IPVisionErrorCancelled = 100,
+    IPVisionErrorSessionFailed = 101,
+    IPVisionErrorBadOutputFile = 102
+};
 
 @class IPMediaCenter;
 
@@ -61,7 +69,17 @@ typedef NS_ENUM(NSInteger, IPAuthorizationStatus) {
 - (void)mediaCenter:(IPMediaCenter *)mediaCenter visionDidChangeAuthorizationStatus:(IPAuthorizationStatus)status;
 - (void)mediaCenter:(IPMediaCenter *)mediaCenter visionDidChangeFlashAvailability:(BOOL)availability; // flash or torch is available
 
+// video
 
+- (NSString *)mediaCenter:(IPMediaCenter *)mediaCenter willStartVideoCaptureToFile:(NSString *)fileName;
+- (void)visionDidStartVideoCapture:(IPMediaCenter *)mediaCenter;
+- (void)visionDidPauseVideoCapture:(IPMediaCenter *)mediaCenter; // stopped but not ended
+- (void)visionDidResumeVideoCapture:(IPMediaCenter *)mediaCenter;
+- (void)visionDidEndVideoCapture:(IPMediaCenter *)mediaCenter;
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter capturedVideo:(NSDictionary *)videoDict error:(NSError *)error;
+
+// video capture progress
+- (void)mediaCenter:(IPMediaCenter *)mediaCenter didCaptureDuration:(CMTime)duration;
 @end
 
 @interface IPMediaCenter : NSObject
@@ -78,14 +96,51 @@ typedef NS_ENUM(NSInteger, IPAuthorizationStatus) {
 
 @property (nonatomic,strong,readonly) AVCaptureVideoPreviewLayer *previewLayer;
 
+/**
+ 默认是输出照片,(video,image)
+ */
 @property(nonatomic,assign)IPTakeMediaType takeMediaType;
 
 @property(nonatomic,assign)BOOL autoUpdatePreviewOrientation;
 @property(nonatomic,assign) AVCaptureVideoOrientation cameraOrientation;
+@property (nonatomic,assign) UIImagePickerControllerCameraDevice cameraDevice;
 @property(nonatomic,assign) AVCaptureVideoOrientation previewOrientation;
+//VIDEO
+
+//缩略图 地址
+@property (nonatomic,strong) NSURL *thumbnail;
+/*
+ AVAssetExportPresetLowQuality=3
+ AVAssetExportPresetMediumQuality=2
+ AVAssetExportPresetHighestQuality=1
+ */
+@property (nonatomic,assign) NSInteger exportPresetQuality;
+@property (nonatomic,assign) CGFloat exportVideoWidth;
+@property (nonatomic,assign) CGFloat exportVideoHeight;
+
+@property(nonatomic,assign)Float64 capturedVideoSeconds;
+@property (nonatomic) CMTime maximumCaptureDuration; // automatically triggers vision:capturedVideo:error: after exceeding threshold, (kCMTimeInvalid records without threshold)
+
+// video
+// use pause/resume if a session is in progress, end finalizes that recording session
+
+@property (nonatomic, readonly) BOOL supportsVideoCapture;
+@property (nonatomic, readonly) BOOL canCaptureVideo;
+@property (nonatomic, readonly, getter=isRecording) BOOL recording;
+@property (nonatomic, readonly, getter=isPaused) BOOL paused;
 
 +(IPMediaCenter *)defaultCenter;
 +(void)realeaseCenter;
+
+- (void)resetVideoCapture;
+- (void)startVideoCapture;
+- (void)pauseVideoCapture;
+- (void)resumeVideoCapture;
+- (BOOL)endVideoCapture;
+- (void)cancelVideoCapture;
+- (void)backspaceVideoCapture;
+- (void) exportVideo:(void (^)(BOOL,NSURL *))completion withProgress:(CompressProgress) progress;
+
 - (void)startPreview;
 - (void)stopPreview;
 - (void)captureStillImage:(void (^)(UIImage *image))block;

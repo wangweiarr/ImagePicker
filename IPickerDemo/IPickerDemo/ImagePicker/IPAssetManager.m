@@ -601,6 +601,19 @@ static IPAssetManager *manager;
         }
     }];
 }
+- (void)getVideoWithAsset:(IPAssetModel *)imageModel Completion:(void (^)(AVPlayerItem *item,NSDictionary *info))completion{
+    
+    PHVideoRequestOptions *options = [[PHVideoRequestOptions alloc]init];
+    options.deliveryMode = PHVideoRequestOptionsDeliveryModeMediumQualityFormat;
+    [[PHImageManager defaultManager] requestPlayerItemForVideo:imageModel.asset options:options resultHandler:^(AVPlayerItem * _Nullable playerItem, NSDictionary * _Nullable info) {
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            if (completion) {
+                completion(playerItem,info);
+            }
+        }];
+        
+    }];
+}
 
 - (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     if (iOS8Later) {

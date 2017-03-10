@@ -7,15 +7,19 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "IPVision.h"
+//#import "IPVision.h"
+#import "IPMediaCenter.h"
 
 #pragma mark - ClubVisionViewControllerDelegate
+
+@class IPTakeVideoViewController;
 @protocol IPTakeVideoViewControllerDelegate <NSObject>
 
 @optional
--(void) VisionDidCaptureFinish:(IPVision *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration;
+//-(void) VisionDidCaptureFinish:(IPVision *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration;
 
-
+-(void) VisionDidCaptureFinish:(IPMediaCenter *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration;
+-(void) VisionDidClickCancelBtn:(IPTakeVideoViewController *)takevideoVC;
 @end
 
 

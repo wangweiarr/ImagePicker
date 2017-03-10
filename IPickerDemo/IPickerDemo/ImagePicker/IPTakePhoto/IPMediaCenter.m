@@ -42,12 +42,20 @@ static NSString * const IPVisionFlashModeObserverContext = @"IPVisionFlashModeOb
 static NSString * const IPVisionTorchModeObserverContext = @"IPVisionTorchModeObserverContext";
 static NSString * const IPVisionFlashAvailabilityObserverContext = @"IPVisionFlashAvailabilityObserverContext";
 static NSString * const IPVisionTorchAvailabilityObserverContext = @"IPVisionTorchAvailabilityObserverContext";
+static NSString * const IPVisionCaptureDurationObserverContext = @"IPVisionCaptureDurationObserverContext";
 
-@interface IPMediaCenter()
+
+//拍视频所需的硬盘最小空间
+static uint64_t const IPVisionRequiredMinimumDiskSpaceInBytes = 49999872; // ~ 47 MB
+
+
+
+@interface IPMediaCenter()<AVCaptureFileOutputRecordingDelegate>
 {
     // flags
     
     struct {
+        //当前的状态是 正在预览中...
         unsigned int previewRunning:1;
         unsigned int changingModes:1;
         unsigned int recording:1;
@@ -122,9 +130,9 @@ static NSString * const IPVisionTorchAvailabilityObserverContext = @"IPVisionTor
 
 @property(nonatomic,assign) CMTime startTimestamp;
 @property(nonatomic,assign) CMTime lastTimestamp;
-@property(nonatomic,assign) CMTime maximumCaptureDuration;
+//@property(nonatomic,assign) CMTime maximumCaptureDuration;
 
-@property(nonatomic,assign) UIImagePickerControllerCameraDevice cameraDevice;
+//@property(nonatomic,assign) UIImagePickerControllerCameraDevice cameraDevice;
 
 
 
@@ -133,6 +141,12 @@ static NSString * const IPVisionTorchAvailabilityObserverContext = @"IPVisionTor
 
 //需要清除孔径的范围
 @property(nonatomic,assign)CGRect cleanAperture;
+
+//视频集合
+@property(nonatomic,strong) NSMutableArray *videoSegments;
+
+@property(nonatomic,strong) NSTimer *reCoadingtimer;
+@property(nonatomic,strong) NSTimer *exporttimer;
 
 @end
 
@@ -342,6 +356,8 @@ static IPMediaCenter *defaultManager = nil;
         }
          //capture device ouputs
         _captureMovieFileOutput = [[AVCaptureMovieFileOutput alloc] init];
+        
+        [_captureMovieFileOutput addObserver:self forKeyPath:@"recordedDuration" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionCaptureDurationObserverContext];
         _currentOutput = _captureMovieFileOutput;
         
         if ([_captureSession canAddInput:_captureDeviceInputAudio]) {
@@ -422,24 +438,7 @@ static IPMediaCenter *defaultManager = nil;
     
     IPLog(@"camera destroyed");
 }
-/**
- 暂停视频捕获
- */
-- (void)pauseVideoCapture
-{
-    [_captureSessionDispatchQueue addOperationWithBlock:^{
-        _flags.paused = YES; //标记为暂停状态
-        
-        //这里不直接调用stopRecording；防止还没有真正开始录就执行该操作，导致的一系列怪异问题，包括一直录不停止问题
-        
-        //        if(_captureMovieFileOutput.isRecording)
-        //        {
-        //            [_captureMovieFileOutput stopRecording];
-        //        }
-        
-        IPLog(@"pausing video capture");
-    }];
-}
+
 /**
  配置相机  
  @note only call from the session queue
@@ -1156,6 +1155,541 @@ static IPMediaCenter *defaultManager = nil;
             [self postThumbnailNotification:image];
         }
     }];
+}
+#pragma mark - capture Video
+#pragma mark - AVCaptureFileOutputRecordignDelegate
+- (void) timeOutputInterval
+{
+    CMTime duration = CMTimeAdd(_lastTimestamp, _captureMovieFileOutput.recordedDuration);
+    
+    
+    if (_flags.paused || CMTimeCompare(_maximumCaptureDuration, duration)!=1) {
+        [_captureVideoDispatchQueue addOperationWithBlock:^{
+            [_captureMovieFileOutput stopRecording];
+        }];
+    }
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        if ([_delegate respondsToSelector:@selector(mediaCenter:didCaptureDuration:)])
+            [_delegate mediaCenter:self didCaptureDuration:duration];
+    }];
+}
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput didStartRecordingToOutputFileAtURL:(NSURL *)fileURL fromConnections:(NSArray *)connections
+{
+    VideoSegment *seg = [[VideoSegment alloc] init: fileURL withDuration:kCMTimeZero];
+    [_videoSegments addObject:seg];
+    
+    
+    
+    _flags.interrupted = NO;
+    
+    _reCoadingtimer = [NSTimer scheduledTimerWithTimeInterval:0.05f target:self selector:@selector(timeOutputInterval) userInfo:nil repeats:YES];
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        if ([_delegate respondsToSelector:@selector(visionDidStartVideoCapture:)])
+            [_delegate visionDidStartVideoCapture:self];
+    }];
+}
+
+- (void)captureOutput:(AVCaptureFileOutput *)captureOutput didFinishRecordingToOutputFileAtURL:(NSURL *)outputFileURL fromConnections:(NSArray *)connections error:(NSError *)error
+{
+    _flags.interrupted = YES;
+    
+    
+    if (_reCoadingtimer==nil){ return; };
+    [_reCoadingtimer invalidate];
+    _reCoadingtimer = nil;
+    
+    if (error) {
+        //        UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"" message:@"写入失败,请重新拍摄" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        //        [alertView show];
+        //        [alertView release];
+        //
+        //        [self _enqueueBlockOnMainQueue:^{
+        //            if ([_delegate respondsToSelector:@selector(vision:didCaptureDuration:)])
+        //                [_delegate vision:self didCaptureDuration:_lastTimestamp];
+        //        }];
+        
+        return;
+    };
+    
+    AVCaptureMovieFileOutput *output =(AVCaptureMovieFileOutput *)captureOutput;
+    
+    _lastTimestamp = CMTimeAdd(_lastTimestamp, output.recordedDuration);
+    
+    VideoSegment *seg = [_videoSegments lastObject];
+    seg.duration = output.recordedDuration;
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        if ([_delegate respondsToSelector:@selector(visionDidPauseVideoCapture:)])
+            [_delegate visionDidPauseVideoCapture:self];
+    }];
+}
+#pragma mark - video
+- (NSString *) getTemporayPath:(NSString *)extension
+{
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    
+    if(!self.captureDirectory)
+    {
+        formatter.dateFormat = @"yyyyMMddHHmm";
+        NSString *dir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+        dir = [[dir stringByAppendingPathComponent:@"videos"]
+               stringByAppendingPathComponent:[formatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:0]]];
+        
+        if (![IPVisionUtilities createFolderIfNotExist:dir]) {
+            [self _failVideoCaptureWithErrorCode:IPVisionErrorBadOutputFile];
+        }
+        self.captureDirectory = dir;
+    }
+    formatter.dateFormat = @"yyyyMMddHHmmsss";
+    NSString *outputPath = [self.captureDirectory stringByAppendingPathComponent:[formatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:0]]];
+    
+    return [outputPath stringByAppendingString:extension];
+}
+
+
+- (void)resetVideoCapture
+{
+    self.captureDirectory = nil;
+    
+    _flags.recording = NO;
+    _flags.paused = NO;
+    _flags.interrupted = YES;
+    
+    _startTimestamp =kCMTimeZero;
+    _lastTimestamp = kCMTimeZero;
+    
+    self.thumbnail = nil;
+    [_videoSegments removeAllObjects];
+    
+    [_captureThumbnailTimes removeAllObjects];
+    [_captureThumbnailFrames removeAllObjects];
+}
+- (BOOL)_canSessionCaptureWithOutput:(AVCaptureOutput *)captureOutput
+{
+    BOOL sessionContainsOutput = [[_captureSession outputs] containsObject:captureOutput];
+    BOOL outputHasConnection = ([captureOutput connectionWithMediaType:AVMediaTypeVideo] != nil);
+    return (sessionContainsOutput && outputHasConnection);
+}
+
+- (void)startVideoCapture
+{
+    if (![self _canSessionCaptureWithOutput:_currentOutput]) {
+        [self _failVideoCaptureWithErrorCode:IPVisionErrorSessionFailed];
+        IPLog(@"session is not setup properly for capture");
+        return;
+    }
+    
+    IPLog(@"starting video capture");
+    
+    [_captureVideoDispatchQueue addOperationWithBlock:^{
+        
+        if (_flags.recording || _flags.paused)
+            return;
+        _flags.recording = YES;
+        _flags.paused = NO;
+        
+        AVCaptureConnection *videoConnection = [_currentOutput connectionWithMediaType:AVMediaTypeVideo];
+        [self setOrientationForConnection:videoConnection];
+        
+        if (!videoConnection.active || !videoConnection.enabled) {
+            //解决拍照后  _captureSession 的Preset值被修改导致的崩溃异常
+            [_captureSession beginConfiguration];
+            if ([_captureSession canSetSessionPreset:_captureSessionPreset])
+                [_captureSession setSessionPreset:_captureSessionPreset];
+            [_captureSession commitConfiguration];
+            
+        }
+        
+        if (_flags.thumbnailEnabled && _flags.defaultVideoThumbnails) {
+            [self captureVideoThumbnailAtFrame:0];
+        }
+        
+        // start capture
+        NSURL *url = [NSURL fileURLWithPath: [self getTemporayPath:@".mov"]];
+        
+        
+        [_captureMovieFileOutput startRecordingToOutputFileURL:url recordingDelegate:self];
+    }];
+}
+
+/**
+ 暂停视频捕获
+ */
+- (void)pauseVideoCapture
+{
+    [_captureSessionDispatchQueue addOperationWithBlock:^{
+        _flags.paused = YES; //标记为暂停状态
+        
+        //这里不直接调用stopRecording；防止还没有真正开始录就执行该操作，导致的一系列怪异问题，包括一直录不停止问题
+        
+        //        if(_captureMovieFileOutput.isRecording)
+        //        {
+        //            [_captureMovieFileOutput stopRecording];
+        //        }
+        
+        IPLog(@"pausing video capture");
+    }];
+}
+
+- (void)resumeVideoCapture
+{
+    [_captureSessionDispatchQueue addOperationWithBlock:^{
+        if (!_flags.recording || !_flags.interrupted)
+            return;
+        
+        
+        if (CMTimeCompare(_maximumCaptureDuration, _lastTimestamp)!=1) {
+            return;
+        }
+        _flags.paused = NO;
+        
+        // start capture
+        NSURL *url = [NSURL fileURLWithPath: [self getTemporayPath:@".mov"]];
+        
+        [_captureMovieFileOutput startRecordingToOutputFileURL:url recordingDelegate:self];
+        
+        [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+            if ([_delegate respondsToSelector:@selector(visionDidResumeVideoCapture:)])
+                [_delegate visionDidResumeVideoCapture:self];
+        }];
+    }];
+}
+
+- (BOOL)endVideoCapture
+{
+    IPLog(@"ending video capture");
+    
+    //    [self _enqueueBlockOnCaptureVideoQueue:^{
+    if (!_flags.recording) return NO;
+    if (!_flags.interrupted) {
+        return NO;
+    }
+    
+    _flags.recording = NO;
+    _flags.paused = NO;
+    //[_captureMovieFileOutput stopRecording];
+    //    }];
+    
+    self.thumbnail = [self _generateThumbnailURL];
+    
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        if ([_delegate respondsToSelector:@selector(visionDidEndVideoCapture:)])
+            [_delegate visionDidEndVideoCapture:self];
+    }];
+    return YES;
+}
+
+- (void)cancelVideoCapture
+{
+    IPLog(@"cancel video capture");
+    
+    [_captureVideoDispatchQueue addOperationWithBlock:^{
+        if(_captureMovieFileOutput.isRecording){
+            [_captureMovieFileOutput stopRecording];
+        }
+        //删除临时文件
+        [self deleteFiles:self.captureDirectory withExtention:@"mov"];
+        
+        self.captureDirectory = nil;
+        _flags.recording = NO;
+        _flags.paused = NO;
+        _startTimestamp =kCMTimeZero;
+        _lastTimestamp = kCMTimeZero;
+        
+        self.thumbnail = nil;
+        [_videoSegments removeAllObjects];
+        
+        [_captureThumbnailTimes removeAllObjects];
+        [_captureThumbnailFrames removeAllObjects];
+    }];
+}
+
+- (void)backspaceVideoCapture
+{
+    VideoSegment *seg = [_videoSegments lastObject];
+    [[NSFileManager defaultManager] removeItemAtPath:[seg.url path] error:nil];
+    _lastTimestamp = CMTimeSubtract(_lastTimestamp, seg.duration);
+    if (!CMTIME_IS_VALID(_lastTimestamp)) {
+        _lastTimestamp = kCMTimeZero;
+    }
+    [_videoSegments removeLastObject];
+}
+
+- (NSURL *)_generateThumbnailURL
+{
+    if(_videoSegments.count==0) return nil;
+    
+    CGFloat aspecRatio= _previewLayer.bounds.size.height/_previewLayer.bounds.size.width;
+    
+    VideoSegment *first = [_videoSegments firstObject];
+    AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:first.url options:nil];
+    AVAssetImageGenerator *generate = [[AVAssetImageGenerator alloc] initWithAsset:asset];
+    
+    generate.appliesPreferredTrackTransform = YES;
+    CGImageRef imgRef = [generate copyCGImageAtTime:kCMTimeZero actualTime:NULL error:NULL];
+    
+    size_t width = CGImageGetWidth(imgRef);
+    size_t height =CGImageGetHeight(imgRef);
+    CGRect rect = CGRectMake(0, (height- width * aspecRatio)/2, width, width * aspecRatio);
+    
+    CGImageRef subImageRef = CGImageCreateWithImageInRect(imgRef, rect);
+    CGRect smallBounds = CGRectMake(0, 0, CGImageGetWidth(subImageRef), CGImageGetHeight(subImageRef));
+    CGImageRelease(imgRef);
+    UIGraphicsBeginImageContext(smallBounds.size);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextDrawImage(context, smallBounds, subImageRef);
+    UIImage* image = [UIImage imageWithCGImage:subImageRef];
+    UIGraphicsEndImageContext();
+    CGImageRelease(subImageRef);
+    
+    
+    NSString *jpgPath = [self getTemporayPath:@".jpg"];
+    
+    [UIImageJPEGRepresentation(image, 1.0) writeToFile:jpgPath atomically:YES];
+    
+    return [NSURL fileURLWithPath: jpgPath];
+}
+
+- (void) exportVideo:(void (^)(BOOL,NSURL *))completion withProgress:(CompressProgress) progress
+{
+    /*涉及自动释放的对象比较多，单独使用自动释放池来回收资源*/
+    @autoreleasepool {
+        AVMutableComposition *mixComposition = [[AVMutableComposition alloc] init];
+        
+        AVMutableCompositionTrack *audioTrackInput = [mixComposition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+        AVMutableCompositionTrack *videoTrackInput = [mixComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+        
+        //fix orientationissue
+        NSMutableArray *layerInstructionArray = [[NSMutableArray alloc] init];
+        
+        //视频高宽比
+        CGFloat videoHWRatio= self.exportVideoHeight / self.exportVideoWidth;
+        CMTime totalDuration = kCMTimeZero;
+        int i=0;
+        for (VideoSegment *seg in _videoSegments) {
+            if (seg.duration.value<=0) continue;
+            @autoreleasepool {
+                AVAsset *asset = [AVAsset assetWithURL:seg.url];
+                
+                AVAssetTrack *audioTrack = [[asset tracksWithMediaType:AVMediaTypeAudio] firstObject];
+                AVAssetTrack *videoTrack = [[asset tracksWithMediaType:AVMediaTypeVideo] firstObject];
+                
+                [audioTrackInput insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset.duration) ofTrack:audioTrack atTime:kCMTimeInvalid error:nil];
+                
+                [videoTrackInput insertTimeRange:CMTimeRangeMake(kCMTimeZero, asset.duration) ofTrack:videoTrack atTime:kCMTimeInvalid error:nil];
+                
+                totalDuration = CMTimeAdd(totalDuration, asset.duration);
+                
+                /*
+                 因为只允许竖拍，即使用户横拍，也不需要对视频做转向处理，可以只使用一个AVMutableVideoCompositionLayerInstruction
+                 来处理。尽量减少内存消耗，否则ios5系统的低端设备视频导出会失败。
+                 */
+                if (i++==0) {
+                    CGFloat rate = self.exportVideoWidth / videoTrack.naturalSize.height;//因为是纵向拍摄，视频现在的height即为实际的宽
+                    
+                    
+                    CGAffineTransform layerTransform = CGAffineTransformMake(videoTrack.preferredTransform.a, videoTrack.preferredTransform.b, videoTrack.preferredTransform.c, videoTrack.preferredTransform.d, videoTrack.preferredTransform.tx * rate, videoTrack.preferredTransform.ty * rate);
+                    layerTransform = CGAffineTransformConcat(layerTransform, CGAffineTransformMake(1, 0, 0, 1, 0, (videoTrack.naturalSize.height * videoHWRatio - videoTrack.naturalSize.width)/ 2.0)); //向上移动取中部影响
+                    layerTransform = CGAffineTransformScale(layerTransform, rate, rate); //放缩，解决实际影像和最终导出尺寸不一致问题
+                    
+                    AVMutableVideoCompositionLayerInstruction *layerInstruciton = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrackInput];
+                    [layerInstruciton setTransform:layerTransform atTime:kCMTimeZero];
+                    [layerInstructionArray addObject:layerInstruciton];
+                }
+            }
+        }
+        NSString *videoDir = [self.captureDirectory copy]; //保存当前视频目录
+        NSURL *output = [NSURL fileURLWithPath:[self getTemporayPath:@"_compress.mp4"]];
+        
+        
+        AVMutableVideoCompositionInstruction *mainInstruciton = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+        mainInstruciton.timeRange = CMTimeRangeMake(kCMTimeZero, totalDuration);
+        mainInstruciton.layerInstructions = layerInstructionArray;
+        
+        AVMutableVideoComposition *mainCompositionInst = [[AVMutableVideoComposition alloc] init];
+        mainCompositionInst.instructions = @[mainInstruciton];
+        mainCompositionInst.frameDuration = CMTimeMake(1, 24);
+        mainCompositionInst.renderSize = CGSizeMake(self.exportVideoWidth, self.exportVideoHeight);
+        
+        NSString *presetName = self.exportPresetQuality==3?AVAssetExportPresetLowQuality
+        :self.exportPresetQuality==1?AVAssetExportPresetHighestQuality
+        :AVAssetExportPresetMediumQuality;
+        
+        AVAssetExportSession *avAssetExportSession = [[AVAssetExportSession alloc] initWithAsset:mixComposition presetName:presetName];
+        
+        [avAssetExportSession setVideoComposition:mainCompositionInst];
+        [avAssetExportSession setOutputURL:output];
+        [avAssetExportSession setShouldOptimizeForNetworkUse:YES];
+        if ([avAssetExportSession.supportedFileTypes containsObject:AVFileTypeMPEG4]) {
+            [avAssetExportSession setOutputFileType:AVFileTypeMPEG4];
+        }
+        else{
+            [avAssetExportSession setOutputFileType:[avAssetExportSession.supportedFileTypes firstObject]];
+        }
+        
+        [avAssetExportSession exportAsynchronouslyWithCompletionHandler:^(void){
+            if (_exporttimer) {
+                [_exporttimer invalidate];
+                _exporttimer = nil;
+            }
+            
+            if(avAssetExportSession.status == AVAssetExportSessionStatusCompleted)
+            {
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    completion(YES,output);
+                }];
+            }
+            else
+            {
+                [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+                    
+                    completion(NO,nil);
+                }];
+            }
+            //删除临时文件
+            [self deleteFiles:videoDir withExtention:@"mov"];
+        }];
+        
+        CompressProgress progressBlock = [progress copy];
+        _exporttimer = [NSTimer scheduledTimerWithTimeInterval:0.1f
+                                                        target:self
+                                                      selector:@selector(compressProgress:)
+                                                      userInfo:@[avAssetExportSession,progressBlock]
+                                                       repeats:YES];
+    }
+    
+}
+
+-(void) compressProgress:(NSTimer *)timer
+{
+    NSArray *array = timer.userInfo;
+    AVAssetExportSession *exportSession = [array objectAtIndex:0];
+    CompressProgress block = [array objectAtIndex:1];
+    float progressValue = exportSession.progress;
+    
+    if (progressValue == 1) {
+        if (_exporttimer) {
+            [_exporttimer invalidate];
+            _exporttimer = nil;
+        }
+    }
+    [[NSOperationQueue mainQueue] addOperationWithBlock:^{
+        block(progressValue);
+    }];
+}
+
+//删除临时文件
+- (void)deleteFiles:(NSString *)dir withExtention:(NSString *)ext
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSDirectoryEnumerator *dirEnum = [fileManager enumeratorAtPath:dir];
+    NSString *fileName;
+    while (fileName= [dirEnum nextObject]) {
+        if ([[fileName pathExtension] isEqualToString:ext]) {
+        }
+    }
+}
+
+- (void)captureCurrentVideoThumbnail
+{
+    if (_flags.recording) {
+        [self captureVideoThumbnailAtTime:CMTimeGetSeconds(_lastTimestamp)];
+    }
+}
+
+- (void)captureVideoThumbnailAtTime:(Float64)seconds
+{
+    [_captureThumbnailTimes addObject:@(seconds)];
+}
+
+- (void)captureVideoThumbnailAtFrame:(int64_t)frame
+{
+    [_captureThumbnailFrames addObject:@(frame)];
+}
+
+- (void)_generateThumbnailsForVideoWithURL:(NSURL*)url inDictionary:(NSMutableDictionary*)videoDict
+{
+    if (_captureThumbnailFrames.count == 0 && _captureThumbnailTimes.count == 0)
+        return;
+    
+    AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:url options:nil];
+    AVAssetImageGenerator *generate = [[AVAssetImageGenerator alloc] initWithAsset:asset];
+    
+    generate.appliesPreferredTrackTransform = YES;
+    
+    int32_t timescale = [@([self videoFrameRate]) intValue];
+    
+    for (NSNumber *frameNumber in [_captureThumbnailFrames allObjects]) {
+        CMTime time = CMTimeMake([frameNumber longLongValue], timescale);
+        Float64 timeInSeconds = CMTimeGetSeconds(time);
+        [self captureVideoThumbnailAtTime:timeInSeconds];
+    }
+    
+    NSMutableArray *captureTimes = [NSMutableArray array];
+    NSArray *thumbnailTimes = [_captureThumbnailTimes allObjects];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wselector"
+    NSArray *sortedThumbnailTimes = [thumbnailTimes sortedArrayUsingSelector:@selector(compare:)];
+#pragma clang diagnostic pop
+    
+    for (NSNumber *seconds in sortedThumbnailTimes) {
+        CMTime time = CMTimeMakeWithSeconds([seconds doubleValue], timescale);
+        [captureTimes addObject:[NSValue valueWithCMTime:time]];
+    }
+    
+    NSMutableArray *thumbnails = [NSMutableArray array];
+    
+    for (NSValue *time in captureTimes) {
+        CGImageRef imgRef = [generate copyCGImageAtTime:[time CMTimeValue] actualTime:NULL error:NULL];
+        if (imgRef) {
+            UIImage *image = [[UIImage alloc] initWithCGImage:imgRef];
+            if (image) {
+                [thumbnails addObject:image];
+            }
+            CGImageRelease(imgRef);
+        }
+    }
+    
+    UIImage *defaultThumbnail = [thumbnails firstObject];
+    if (defaultThumbnail) {
+        [videoDict setObject:defaultThumbnail forKey:@"IPVisionVideoThumbnailKey"];
+    }
+    
+    if (thumbnails.count) {
+        [videoDict setObject:thumbnails forKey:@"IPVisionVideoThumbnailArrayKey"];
+    }
+}
+
+- (void)_failVideoCaptureWithErrorCode:(NSInteger)errorCode
+{
+    if (errorCode && [_delegate respondsToSelector:@selector(vision:capturedVideo:error:)]) {
+        NSError *error = [NSError errorWithDomain:@"IPVisionErrorDomain" code:errorCode userInfo:nil];
+        [_delegate mediaCenter:self capturedVideo:nil error:error];
+    }
+}
+- (Float64)capturedVideoSeconds{
+    return CMTimeGetSeconds(_lastTimestamp);
+}
+
+#pragma mark - status
+
+- (BOOL)supportsVideoCapture
+{
+    return ([[AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] count] > 0);
+}
+
+- (BOOL)canCaptureVideo
+{
+    BOOL isDiskSpaceAvailable = [IPVisionUtilities availableDiskSpaceInBytes] > IPVisionRequiredMinimumDiskSpaceInBytes;
+    
+    return [self supportsVideoCapture] && [_captureSession isRunning] && !_flags.changingModes && isDiskSpaceAvailable;
+}
+- (BOOL)isRecording
+{
+    return _flags.recording;
 }
 
 @end

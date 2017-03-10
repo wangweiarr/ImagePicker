@@ -195,6 +195,9 @@
         
         [self.contentView addSubview:self.cameraView];
         
+        _model.previewLayer.frame = self.cameraView.layer.bounds;
+        [self.cameraView.layer addSublayer:_model.previewLayer];
+        
         self.actionImageView.image = [UIImage imageNamed:@"icon_video_big"];
         self.actionImageView.hidden = NO;
         
