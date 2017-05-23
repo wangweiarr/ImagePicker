@@ -57,7 +57,9 @@
     
     // Image view
     _photoImageView = [[IPTapDetectImageView alloc] initWithFrame:CGRectZero];
-    _photoImageView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    _photoImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+    _photoImageView.autoresizesSubviews = YES;
+    _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
     _photoImageView.tapDelegate = self;
     _photoImageView.backgroundColor = [UIColor clearColor];
     [self addSubview:_photoImageView];
@@ -152,14 +154,14 @@
                 // Setup photo frame
                 CGRect photoImageViewFrame;
                 
-                photoImageViewFrame.origin = CGPointZero;
+                
+                
                 if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
                     CGFloat height = self.bounds.size.height;
                     
                     CGFloat width = height * img.size.width /img.size.height;
                     photoImageViewFrame.size = CGSizeMake(width, height);
                     IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
-                    _photoImageView.frame = photoImageViewFrame;
                 }else {
                     
                     CGFloat width = self.bounds.size.width;
@@ -167,8 +169,10 @@
                     CGFloat height = width * img.size.height /img.size.width;
                     photoImageViewFrame.size = CGSizeMake(width, height);
                     IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
-                    _photoImageView.frame = photoImageViewFrame;
+                    
                 }
+                photoImageViewFrame.origin = CGPointZero;
+                _photoImageView.frame = photoImageViewFrame;
                 
             }
             [self setNeedsLayout];
