@@ -50,7 +50,7 @@
     self.selectionStyle = UITableViewCellSelectionStyleNone;
     
     UIView  *spliteline = [[UIView alloc]init];
-    spliteline.backgroundColor = [UIColor lightGrayColor];
+    spliteline.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.1];
     self.spliteline = spliteline;
     [self.contentView addSubview:spliteline];
     

@@ -105,6 +105,26 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 @implementation IPickerViewController
 
+
+#pragma mark interface
++ (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style{
+    IPickerViewController *ipVC = [[IPickerViewController alloc]init];
+    
+    ipVC.displayStyle = style;
+    //    ipVC.defaultAssetManager.dataType = (IPAssetManagerDataType)style;
+    return ipVC;
+}
+
+- (void)exitIPickerWithAnimation:(BOOL)animation{
+    if (animation) {
+        [self exitIPicker];
+    }else {
+        [self freeAllData];
+    }
+}
+
+#pragma mark - init
+
 - (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil{
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.maxCount = 50;
@@ -156,7 +176,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return NO;
 }
 
-#pragma mark - UI -
+#pragma mark - UI
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -290,7 +310,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     self.rightBtn = rightBtn;
     
     UIView *spliteView = [[UIView alloc]init];
-    spliteView.backgroundColor = [UIColor lightGrayColor];
+    spliteView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.1];
     [headerView addSubview:spliteView];
     self.spliteView = spliteView;
 }
@@ -381,7 +401,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         else if (model.assetType == IPAssetModelMediaTypePhoto)
         {
             NSMutableArray *array = [NSMutableArray arrayWithArray:self.curImageModelArr];
-            NSUInteger targetIndex = 0;
+            NSUInteger targetIndex = indexPath.item;
             if (self.canTakePhoto) {
                 [array removeObjectAtIndex:0];
                 targetIndex = indexPath.item - 1;
@@ -406,14 +426,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [cell endDisplay];
 }
 
-#pragma  mark - 导航条左右按钮的处理逻辑 -
-- (void)exitIPickerWithAnimation:(BOOL)animation{
-    if (animation) {
-        [self exitIPicker];
-    }else {
-        [self freeAllData];
-    }
-}
+#pragma  mark - 导航条左右按钮的处理逻辑
+
 /**
  *  左上角的取消按钮点击
  */
@@ -727,14 +741,197 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return _imageModelDic;
 }
 
-#pragma mark interface
-+ (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style{
-    IPickerViewController *ipVC = [[IPickerViewController alloc]init];
-    
-    ipVC.displayStyle = style;
-//    ipVC.defaultAssetManager.dataType = (IPAssetManagerDataType)style;
-    return ipVC;
+
+#pragma mark - about video -
+- (void)presentTakeVideoViewController:(IPAssetManager *)manager{
+    IPTakeVideoViewController *takeVideo = [[IPTakeVideoViewController alloc]init];
+    takeVideo.delegate = self;
+    [self presentViewController:takeVideo animated:YES completion:nil];
 }
+
+- (void)VisionDidCaptureFinish:(IPMediaCenter *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration{
+    UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:thumbnail]];
+    
+    __weak typeof(self) weakSelf = self;
+    [vision exportVideo:^(BOOL success,NSURL *url){
+        
+        if (success) {
+            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(imgPicker:didFinishCaptureVideoItem:Videourl:videoDuration:thumbailImage:)]) {
+                [weakSelf.delegate imgPicker:weakSelf didFinishCaptureVideoItem:nil Videourl:url videoDuration:duration thumbailImage:image];
+            }
+        }
+        else{
+            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(imgPicker:didFinishCaptureVideoItem:Videourl:videoDuration:thumbailImage:)]) {
+                [weakSelf.delegate imgPicker:weakSelf didFinishCaptureVideoItem:nil Videourl:nil videoDuration:duration thumbailImage:image];
+            }
+        }
+        [weakSelf popViewControllerCustomAnimation];
+        
+        //        [weakSelf exitIPickerWithAnimation:YES];
+        
+    }withProgress:^(float progress){
+        
+    }];
+    
+}
+- (void)popViewControllerCustomAnimation {
+    if (self.navViewControllers != 0 && self.navViewControllers < self.navigationController.viewControllers.count) {
+        UIViewController *ctrl = self.navigationController.viewControllers[self.navViewControllers];
+        CATransition * transition=[CATransition animation];
+        transition.duration=0.3f;
+        transition.timingFunction=[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+        transition.type=kCATransitionReveal;
+        transition.subtype = kCATransitionFromBottom;
+        [self.navigationController.view.layer addAnimation:transition forKey:@""];
+        [self.navigationController popToViewController:ctrl animated:NO];
+        return;
+    }
+}
+#pragma mark 3DTouch
+- (nullable UIViewController *)previewingContext:(id <UIViewControllerPreviewing>)previewingContext viewControllerForLocation:(CGPoint)location{
+    UICollectionViewCell *cell = (UICollectionViewCell *)previewingContext.sourceView;
+    IPLog(@"%@",NSStringFromCGRect(previewingContext.sourceRect));
+    NSIndexPath *path = [self.mainView indexPathForCell:cell];
+    IPAssetModel *model = self.curImageModelArr[path.item];
+    
+    __block IP3DTouchPreviewVC *reader = [IP3DTouchPreviewVC previewViewControllerWithModel:model];
+    
+    reader.preferredContentSize = CGSizeMake(self.view.bounds.size.width, 0);
+    return reader;
+    
+}
+- (void)previewingContext:(id <UIViewControllerPreviewing>)previewingContext commitViewController:(UIViewController *)viewControllerToCommit
+{
+    
+    UICollectionViewCell *cell = (UICollectionViewCell *)previewingContext.sourceView;
+    
+    NSIndexPath *path = [self.mainView indexPathForCell:cell];
+    
+    IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.curImageModelArr TargetIndex:path.item];
+    reader.maxCount = self.maxCount;
+    reader.currentCount = self.selectPhotoCount;
+    reader.delegate = self;
+    reader.ipVc = self;
+    reader.forceTouch = YES;
+    [self showViewController:reader sender:self];
+    
+}
+
+#pragma mark 拍照
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(nullable NSDictionary<NSString *,id> *)editingInfo NS_DEPRECATED_IOS(2_0, 3_0){
+    IPLog(@"didFinishPickingImage");
+}
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
+    IPLog(@"didFinishPickingMediaWithInfo");
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
+    IPLog(@"imagePickerControllerDidCancel");
+    [picker dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark transition 
+#pragma mark <UINavigationControllerDelegate>
+- (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
+                                   animationControllerForOperation:(UINavigationControllerOperation)operation
+                                                fromViewController:(UIViewController *)fromVC
+                                                  toViewController:(UIViewController *)toVC{
+    
+    if ([toVC isKindOfClass:[IPImageReaderViewController class]]) {
+        if (operation == UINavigationControllerOperationPush) {
+            IPAnimationTranstion *transition = [[IPAnimationTranstion alloc]init];
+            return transition;
+        }else if (operation == UINavigationControllerOperationPop) {
+            IPAnimationInverseTransition *transition = [[IPAnimationInverseTransition alloc]init];
+            return transition;
+        }else {
+            return nil;
+        }
+        
+    }
+    else if ([toVC isKindOfClass:[IPTakePhotoViewController class]]) {
+        if (operation == UINavigationControllerOperationPush) {
+            IPAnimationTakePhotoTransition *transition = [[IPAnimationTakePhotoTransition alloc]init];
+            return nil;
+        }else if (operation == UINavigationControllerOperationPop) {
+            
+            return nil;
+        }else {
+            return nil;
+        }
+        
+    }else{
+        return nil;
+    }
+}
+- (void)didClickCancelBtnInTakePhotoViewController:(IPTakePhotoViewController *)takePhotoViewController
+{
+    IPImageCell *cell = (IPImageCell *)[self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
+    [cell setUpCameraPreviewLayer];
+    
+//    [takePhotoViewController dismissViewControllerAnimated:YES completion:^{}];
+    [self.navigationController popViewControllerAnimated:YES];
+}
+- (void)VisionDidClickCancelBtn:(IPTakeVideoViewController *)takevideoVC
+{
+    [self dismissViewControllerAnimated:takevideoVC completion:^{
+//        IPImageCell *cell = (IPImageCell *)[self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
+//        [cell setUpCameraPreviewLayer];
+    }];
+}
+
+
+- (UICollectionViewCell *)targetCellForIndexPath:(NSIndexPath *)indexPath
+{
+    NSInteger item = indexPath.item;
+    NSInteger section = indexPath.section;
+    if (self.canTakePhoto || self.canTakeVideo) {
+        item += 1;
+    }
+    return [self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForRow:item inSection:section]];
+}
+
+#pragma mark - 配置数据
+- (IPAssetModel *)setUpTakePhotoData
+{
+    __weak typeof(self) weakSelf = self;
+    IPAssetModel *model = [[IPAssetModel alloc]init];
+    model.assetType = IPAssetModelMediaTypeTakePhoto;
+    AVCaptureVideoPreviewLayer *layer = [IPMediaCenter defaultCenter].previewLayer;
+    layer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+    model.previewLayer = layer;
+    
+    [[IPMediaCenter defaultCenter] startPreview];
+    model.cellClickBlock = ^(id object){
+        
+        IPTakePhotoViewController *takePhotoVC =[[IPTakePhotoViewController alloc]init];
+        takePhotoVC.delegate = weakSelf;
+        [weakSelf.navigationController pushViewController:takePhotoVC animated:YES];
+    };
+    return model;
+}
+- (IPAssetModel *)setUpTakeVideoData
+{
+    __weak typeof(self) weakSelf = self;
+    IPAssetModel *model = [[IPAssetModel alloc]init];
+    model.assetType = IPAssetModelMediaTypeTakeVideo;
+//    AVCaptureVideoPreviewLayer *layer = [IPMediaCenter defaultCenter].previewLayer;
+//    layer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+//    model.previewLayer = layer;
+//    
+//    [[IPMediaCenter defaultCenter] startPreview];
+    model.cellClickBlock = ^(id object){
+        
+        IPTakeVideoViewController *takeVideo = [[IPTakeVideoViewController alloc]init];
+        takeVideo.delegate = weakSelf;
+        [weakSelf presentViewController:takeVideo animated:YES completion:nil];
+    };
+    return model;
+}
+@end
+
+@implementation IPickerViewController(GetImage)
+
 + (void)getAspectThumbailImageWithImageURL:(NSURL *)imageUrl Width:(CGFloat)width RequestBlock:(RequestImageBlock)block{
     [self getImageWithImageURL:imageUrl Width:width Type:GetImageTypeAspectThumbail RequestBlock:block];
 }
@@ -925,180 +1122,5 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
 }
 
-
-
-#pragma mark - about video -
-- (void)presentTakeVideoViewController:(IPAssetManager *)manager{
-    IPTakeVideoViewController *takeVideo = [[IPTakeVideoViewController alloc]init];
-    takeVideo.delegate = self;
-    [self presentViewController:takeVideo animated:YES completion:nil];
-}
-
-- (void)VisionDidCaptureFinish:(IPMediaCenter *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration{
-    UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:thumbnail]];
-    
-    __weak typeof(self) weakSelf = self;
-    [vision exportVideo:^(BOOL success,NSURL *url){
-        
-        if (success) {
-            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(imgPicker:didFinishCaptureVideoItem:Videourl:videoDuration:thumbailImage:)]) {
-                [weakSelf.delegate imgPicker:weakSelf didFinishCaptureVideoItem:nil Videourl:url videoDuration:duration thumbailImage:image];
-            }
-        }
-        else{
-            if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(imgPicker:didFinishCaptureVideoItem:Videourl:videoDuration:thumbailImage:)]) {
-                [weakSelf.delegate imgPicker:weakSelf didFinishCaptureVideoItem:nil Videourl:nil videoDuration:duration thumbailImage:image];
-            }
-        }
-        [weakSelf popViewControllerCustomAnimation];
-        
-        //        [weakSelf exitIPickerWithAnimation:YES];
-        
-    }withProgress:^(float progress){
-        
-    }];
-    
-}
-- (void)popViewControllerCustomAnimation {
-    if (self.navViewControllers != 0 && self.navViewControllers < self.navigationController.viewControllers.count) {
-        UIViewController *ctrl = self.navigationController.viewControllers[self.navViewControllers];
-        CATransition * transition=[CATransition animation];
-        transition.duration=0.3f;
-        transition.timingFunction=[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-        transition.type=kCATransitionReveal;
-        transition.subtype = kCATransitionFromBottom;
-        [self.navigationController.view.layer addAnimation:transition forKey:@""];
-        [self.navigationController popToViewController:ctrl animated:NO];
-        return;
-    }
-}
-#pragma mark 3DTouch
-- (nullable UIViewController *)previewingContext:(id <UIViewControllerPreviewing>)previewingContext viewControllerForLocation:(CGPoint)location{
-    UICollectionViewCell *cell = (UICollectionViewCell *)previewingContext.sourceView;
-    IPLog(@"%@",NSStringFromCGRect(previewingContext.sourceRect));
-    NSIndexPath *path = [self.mainView indexPathForCell:cell];
-    IPAssetModel *model = self.curImageModelArr[path.item];
-    
-    __block IP3DTouchPreviewVC *reader = [IP3DTouchPreviewVC previewViewControllerWithModel:model];
-    
-    reader.preferredContentSize = CGSizeMake(self.view.bounds.size.width, 0);
-    return reader;
-    
-}
-- (void)previewingContext:(id <UIViewControllerPreviewing>)previewingContext commitViewController:(UIViewController *)viewControllerToCommit
-{
-    
-    UICollectionViewCell *cell = (UICollectionViewCell *)previewingContext.sourceView;
-    
-    NSIndexPath *path = [self.mainView indexPathForCell:cell];
-    
-    IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.curImageModelArr TargetIndex:path.item];
-    reader.maxCount = self.maxCount;
-    reader.currentCount = self.selectPhotoCount;
-    reader.delegate = self;
-    reader.ipVc = self;
-    reader.forceTouch = YES;
-    [self showViewController:reader sender:self];
-    
-}
-
-#pragma mark 拍照
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(nullable NSDictionary<NSString *,id> *)editingInfo NS_DEPRECATED_IOS(2_0, 3_0){
-    IPLog(@"didFinishPickingImage");
-}
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
-    IPLog(@"didFinishPickingMediaWithInfo");
-    [picker dismissViewControllerAnimated:YES completion:nil];
-}
-- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
-    IPLog(@"imagePickerControllerDidCancel");
-    [picker dismissViewControllerAnimated:YES completion:nil];
-}
-
-#pragma mark transition 
-#pragma mark <UINavigationControllerDelegate>
-- (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
-                                   animationControllerForOperation:(UINavigationControllerOperation)operation
-                                                fromViewController:(UIViewController *)fromVC
-                                                  toViewController:(UIViewController *)toVC{
-    
-    if ([toVC isKindOfClass:[IPImageReaderViewController class]]) {
-        if (operation == UINavigationControllerOperationPush) {
-            IPAnimationTranstion *transition = [[IPAnimationTranstion alloc]init];
-            return transition;
-        }else if (operation == UINavigationControllerOperationPop) {
-            IPAnimationInverseTransition *transition = [[IPAnimationInverseTransition alloc]init];
-            return transition;
-        }else {
-            return nil;
-        }
-        
-    }
-    else if ([toVC isKindOfClass:[IPTakePhotoViewController class]]) {
-        if (operation == UINavigationControllerOperationPush) {
-            IPAnimationTakePhotoTransition *transition = [[IPAnimationTakePhotoTransition alloc]init];
-            return nil;
-        }else if (operation == UINavigationControllerOperationPop) {
-            
-            return nil;
-        }else {
-            return nil;
-        }
-        
-    }else{
-        return nil;
-    }
-}
-- (void)didClickCancelBtnInTakePhotoViewController:(IPTakePhotoViewController *)takePhotoViewController
-{
-    IPImageCell *cell = (IPImageCell *)[self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
-    [cell setUpCameraPreviewLayer];
-    
-//    [takePhotoViewController dismissViewControllerAnimated:YES completion:^{}];
-    [self.navigationController popViewControllerAnimated:YES];
-}
-- (void)VisionDidClickCancelBtn:(IPTakeVideoViewController *)takevideoVC
-{
-    [self dismissViewControllerAnimated:takevideoVC completion:^{
-//        IPImageCell *cell = (IPImageCell *)[self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
-//        [cell setUpCameraPreviewLayer];
-    }];
-}
-#pragma mark - 配置数据
-- (IPAssetModel *)setUpTakePhotoData
-{
-    __weak typeof(self) weakSelf = self;
-    IPAssetModel *model = [[IPAssetModel alloc]init];
-    model.assetType = IPAssetModelMediaTypeTakePhoto;
-    AVCaptureVideoPreviewLayer *layer = [IPMediaCenter defaultCenter].previewLayer;
-    layer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-    model.previewLayer = layer;
-    
-    [[IPMediaCenter defaultCenter] startPreview];
-    model.cellClickBlock = ^(id object){
-        
-        IPTakePhotoViewController *takePhotoVC =[[IPTakePhotoViewController alloc]init];
-        takePhotoVC.delegate = weakSelf;
-        [weakSelf.navigationController pushViewController:takePhotoVC animated:YES];
-    };
-    return model;
-}
-- (IPAssetModel *)setUpTakeVideoData
-{
-    __weak typeof(self) weakSelf = self;
-    IPAssetModel *model = [[IPAssetModel alloc]init];
-    model.assetType = IPAssetModelMediaTypeTakeVideo;
-//    AVCaptureVideoPreviewLayer *layer = [IPMediaCenter defaultCenter].previewLayer;
-//    layer.videoGravity = AVLayerVideoGravityResizeAspectFill;
-//    model.previewLayer = layer;
-//    
-//    [[IPMediaCenter defaultCenter] startPreview];
-    model.cellClickBlock = ^(id object){
-        
-        IPTakeVideoViewController *takeVideo = [[IPTakeVideoViewController alloc]init];
-        takeVideo.delegate = weakSelf;
-        [weakSelf presentViewController:takeVideo animated:YES completion:nil];
-    };
-    return model;
-}
 @end
+

@@ -261,7 +261,7 @@
 				TargetAttributes = {
 					344F37A31C814BC6006063B6 = {
 						CreatedOnToolsVersion = 7.2.1;
-						DevelopmentTeam = NVAFMDWZJC;
+						DevelopmentTeam = YDTV5X7P95;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -421,11 +421,11 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = NVAFMDWZJC;
+				DEVELOPMENT_TEAM = YDTV5X7P95;
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.JL.ipcker;
+				PRODUCT_BUNDLE_IDENTIFIER = com.JL.Ipicker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -439,11 +439,11 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = NVAFMDWZJC;
+				DEVELOPMENT_TEAM = YDTV5X7P95;
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.JL.ipcker;
+				PRODUCT_BUNDLE_IDENTIFIER = com.JL.Ipicker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

@@ -22,6 +22,9 @@
 @property(nonatomic,strong)NSIndexPath *indexPath;
 - (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 - (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+
+- (UICollectionViewCell *)targetCellForIndexPath:(NSIndexPath *)indexPath;
+
 @end
 
 
@@ -156,7 +159,7 @@
     
     __block IPImageReaderCell *cell = (IPImageReaderCell *)[fromVC.collectionView visibleCells].lastObject;
     NSIndexPath *currentIndexPath = [[fromVC.collectionView indexPathsForVisibleItems] lastObject];
-    IPImageCell *from_cell = (IPImageCell *)[toVC.mainView cellForItemAtIndexPath:currentIndexPath];
+    IPImageCell *from_cell = (IPImageCell *)[toVC targetCellForIndexPath:currentIndexPath];
     
     
     [toVC getThumibImageWithAsset:from_cell.model photoWidth:from_cell.bounds.size completion:^(UIImage *photo, NSDictionary *info) {

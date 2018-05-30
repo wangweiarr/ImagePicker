@@ -93,6 +93,18 @@ typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
  */
 + (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style;
 
+
+/**
+ *  此方法会根据animation的属性,做清除数据的处理
+ *
+ *  @param animation YES: 销毁控制器 NO:仅仅清除控制器数据
+ */
+- (void)exitIPickerWithAnimation:(BOOL)animation;
+
+@end
+
+@interface IPickerViewController(GetImage)
+
 /**
  *  通过url获取全屏高清图片
  *
@@ -114,12 +126,5 @@ typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
  *  @param block    回调
  */
 + (void)getThumbailImageWithImageURL:(NSURL *)imageUrl RequestBlock:(RequestImageBlock)block;
-
-/**
- *  此方法会根据animation的属性,做清除数据的处理
- *
- *  @param animation YES: 销毁控制器 NO:仅仅清除控制器数据
- */
-- (void)exitIPickerWithAnimation:(BOOL)animation;
 
 @end
