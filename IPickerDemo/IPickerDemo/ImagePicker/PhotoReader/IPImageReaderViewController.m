@@ -14,6 +14,7 @@
 #import "IPPrivateDefine.h"
 #import "IPAnimationTranstion.h"
 #import "IPImageReaderCell.h"
+#import "IPImageReaderLayout.h"
 
 @interface IPImageReaderViewController ()<UICollectionViewDelegateFlowLayout,UINavigationControllerDelegate>
 
@@ -58,12 +59,9 @@ static NSString * const reuseIdentifier = @"Cell";
     if (data == nil || data.count == 0 ) {
         return nil;
     }
-    UICollectionViewFlowLayout *flow = [[UICollectionViewFlowLayout alloc]init];
+    IPImageReaderLayout *layout = [IPImageReaderLayout new];
     
-    flow.scrollDirection = UICollectionViewScrollDirectionHorizontal;
-    flow.minimumInteritemSpacing = 0;
-    flow.minimumLineSpacing = 0;
-    IPImageReaderViewController *vc = [[IPImageReaderViewController alloc]initWithCollectionViewLayout:flow];
+    IPImageReaderViewController *vc = [[IPImageReaderViewController alloc]initWithCollectionViewLayout:layout];
     vc.dataArr = data;
     vc.targetIndex = index;
     vc.currentIndex = index;
