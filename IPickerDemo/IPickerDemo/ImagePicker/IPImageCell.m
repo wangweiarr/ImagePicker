@@ -11,6 +11,7 @@
 #import "IPAssetManager.h"
 #import "IPickerViewController.h"
 #import "IPMediaCenter.h"
+#import "UICollectionViewCell+PhotoReader.h"
 
 @interface IPickerViewController ()
 - (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
@@ -243,4 +244,9 @@
     }
     
 }
+
+- (UIImageView *)sourceImageView{
+    return self.imgView;
+}
+
 @end

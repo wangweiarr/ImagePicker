@@ -111,35 +111,6 @@
                     [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
                 }];
             }];
-//        }];
-        
-        
-        
-        
-        
-        
-        //        [UIView animateWithDuration:[self transitionDuration:transitionContext] delay:0.0f options:UIViewAnimationOptionCurveLinear animations:^{
-        //            [containerView layoutIfNeeded];
-        //
-        //            CGRect rect = [containerView convertRect:photoImageViewFrame fromView:toVC.view];
-        //            snapShotView.frame = rect;
-        //            backGroundView.frame = [containerView convertRect:toVC.view.frame fromView:toVC.view];
-        //        } completion:^(BOOL finished) {
-        //            //为了让回来的时候，cell上的图片显示，必须要让cell上的图片显示出来
-        //            cell.imgView.hidden = NO;
-        //            backGroundView.backgroundColor = [UIColor clearColor];
-        //            toVC.collectionView.alpha = 1.0;
-        //            [containerView sendSubviewToBack:backGroundView];
-        //            [UIView animateWithDuration:0.3 animations:^{
-        //
-        //
-        //            } completion:^(BOOL finished) {
-        //                //告诉系统动画结束
-        //                [backGroundView removeFromSuperview];
-        //                [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
-        //            }];
-        //
-        //        }];
     }];
     
 }
@@ -164,7 +135,6 @@
     
     [toVC getThumibImageWithAsset:from_cell.model photoWidth:from_cell.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
         
-        //        UIView *snapShotView = [cell.zoomScroll.photoImageView snapshotViewAfterScreenUpdates:NO];
         UIImageView *snapShotView = [[UIImageView alloc]initWithImage:photo];
         
         snapShotView.contentMode = UIViewContentModeScaleAspectFill;
@@ -228,8 +198,7 @@
         UIView *snapShotView = [[UIView alloc]init];
     [snapShotView.layer addSublayer:layer];
         snapShotView.frame = [containerView convertRect:cell.imgView.frame fromView:cell.imgView.superview];
-        
-        //        backGroundView.alpha = 0.0f;
+    
         CGRect photoImageViewFrame;
         
 
@@ -267,8 +236,6 @@
             [transitionContext completeTransition:!transitionContext.transitionWasCancelled];
             
         }];
-    
-    
 }
 
 

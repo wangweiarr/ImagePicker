@@ -12,6 +12,7 @@
 #import "IPAssetManager.h"
 #import "IPickerViewController.h"
 #import "IPPrivateDefine.h"
+#import "IPImageReaderViewController+AniamtionTranstion.h"
 
 @interface IPickerViewController ()
 
@@ -21,15 +22,35 @@
 - (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 - (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 @end
-@interface IPZoomScrollView ()<UIScrollViewDelegate,IPTapDetectViewDelegate,IPTapDetectImageViewDelegate>
 
+
+
+@interface IPZoomScrollView ()<UIScrollViewDelegate,IPTapDetectViewDelegate,IPTapDetectImageViewDelegate>
+{
+    
+    //动画相关
+    CGFloat startScaleWidthInAnimationView; //开始拖动时比例
+    CGFloat startScaleheightInAnimationView;    //开始拖动时比例
+    CGRect frameOfOriginalOfImageView;  //开始拖动时图片frame
+    CGPoint startOffsetOfScrollView;    //开始拖动时scrollview的偏移
+    CGFloat lastPointX; //上一次触摸点x值
+    CGFloat lastPointY; //上一次触摸点y值
+    CGFloat totalOffsetXOfAnimateImageView; //总共的拖动偏移x
+    CGFloat totalOffsetYOfAnimateImageView; //总共的拖动偏移y
+    BOOL animateImageViewIsStart;   //拖动动效是否第一次触发
+    BOOL isCancelAnimate;   //正在取消拖动动效
+    BOOL isZooming; //是否正在释放
+}
 /**背景view*/
-@property (nonatomic, strong)IPTapDetectView *tapView;
+@property (nonatomic, strong) IPTapDetectView *tapView;
 
 /**图像view*/
-@property (nonatomic, strong,readwrite)IPTapDetectImageView *photoImageView;
+@property (nonatomic, strong) IPTapDetectImageView *photoImageView;
 
 
+@property (nonatomic, assign) BOOL cancelDragImageViewAnimation;
+@property (nonatomic, strong) UIImageView *animateImageView;    //做动画的图片
+@property (nonatomic, assign) CGFloat outScaleOfDragImageViewAnimation;
 
 @end
 
@@ -64,10 +85,12 @@
     _photoImageView.backgroundColor = [UIColor clearColor];
     [self addSubview:_photoImageView];
     
-    self.backgroundColor = [UIColor blackColor];
+    self.backgroundColor = [UIColor clearColor];
     self.delegate = self;
     self.showsHorizontalScrollIndicator = NO;
     self.showsVerticalScrollIndicator = NO;
+    self.alwaysBounceVertical = YES;
+    self.alwaysBounceHorizontal = YES;
     self.decelerationRate = UIScrollViewDecelerationRateFast;
     self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
@@ -97,34 +120,20 @@
         size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
     }
     
-    [self.ipVc getFullScreenImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
+    [[IPAssetManager defaultAssetManager] getFullScreenImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
         if (img) {
             if (!CGSizeEqualToSize(img.size, _photoImageView.image.size)) {
                 // Set image
                 _photoImageView.image = img;
                 _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
-//                // Setup photo frame
-//                CGRect photoImageViewFrame;
-//                photoImageViewFrame.origin = CGPointZero;
-//                
-//                CGFloat width = self.bounds.size.width;
-//                
-//                CGFloat height = width *  _imageModel.thumbnailScale;
-//                
-//                photoImageViewFrame.size = CGSizeMake(width, height);
-//                
-//                _photoImageView.frame = photoImageViewFrame;
-//                
-//                self.contentSize = photoImageViewFrame.size;
-//                self.isDisplayingHighQuality = YES;
-                // Set zoom to minimum zoom
+                // Setup photo frame
+                self.contentSize = _photoImageView.frame.size;
+                
                 [self setMaxMinZoomScalesForCurrentBounds];
                 [self setNeedsLayout];
             }
             
         }
-        
-        
     }];
 }
 
@@ -138,7 +147,7 @@
         }
         // Get image from browser as it handles ordering of fetching
         
-        [self.ipVc getHighQualityImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
+        [[IPAssetManager defaultAssetManager] getHighQualityImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
             if (img) {
                 
                 // Reset
@@ -219,7 +228,7 @@
     self.maximumZoomScale = maxScale;
     
     // Disable scrolling initially until the first pinch to fix issues with swiping on an initally zoomed in photo
-    self.scrollEnabled = NO;
+//    self.scrollEnabled = NO;
     
 }
 
@@ -279,38 +288,176 @@
          IPLog(@"layoutSubviews%@",NSStringFromCGRect(frameToCenter));
         _photoImageView.frame = frameToCenter;
     }
-    
-    
 }
 
+#pragma mark - UIScrollViewDelegate
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
     return _photoImageView;
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
-     self.scrollEnabled = YES; // reset
+    self.scrollEnabled = YES; // reset
+    
+    [self dragAnimation_recordInfoWithScrollView:scrollView];
 }
 
 - (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(UIView *)view {
     self.scrollEnabled = YES; // reset
    
 }
-
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    
+    [self dragAnimation_removeAnimationImageViewWithScrollView:scrollView container:self];
+}
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
+//    [self dragAnimation_respondsToScrollViewPanGesture];
+}
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
     [self setNeedsLayout];
     [self layoutIfNeeded];
 }
++ (UIWindow *)getNormalWindow {
+    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
+    if (window.windowLevel != UIWindowLevelNormal) {
+        NSArray *windows = [[UIApplication sharedApplication] windows];
+        for(UIWindow * temp in windows) {
+            if (temp.windowLevel == UIWindowLevelNormal) {
+                window = temp;
+                break;
+            }
+        }
+    }
+    return window;
+}
+
+- (UIImageView *)animateImageView {
+    if (!_animateImageView) {
+        _animateImageView = [UIImageView new];
+        _animateImageView.contentMode = UIViewContentModeScaleAspectFill;
+        _animateImageView.layer.masksToBounds = YES;
+    }
+    return _animateImageView;
+}
+
+#pragma mark - dragAnimation
+- (void)dragAnimation_recordInfoWithScrollView:(UIScrollView *)scrollView {
+    if (self.cancelDragImageViewAnimation) return;
+    
+    CGPoint point = [scrollView.panGestureRecognizer locationInView:self];
+    startOffsetOfScrollView = scrollView.contentOffset;
+    frameOfOriginalOfImageView = [self.photoImageView convertRect:self.photoImageView.bounds toView:[IPZoomScrollView getNormalWindow]];
+    startScaleWidthInAnimationView = (point.x - frameOfOriginalOfImageView.origin.x) / frameOfOriginalOfImageView.size.width;
+    startScaleheightInAnimationView = (point.y - frameOfOriginalOfImageView.origin.y) / frameOfOriginalOfImageView.size.height;
+}
+
+- (void)dragAnimation_respondsToScrollViewPanGesture {
+    if (self.cancelDragImageViewAnimation || isZooming) return;
+    
+    UIPanGestureRecognizer *pan = self.panGestureRecognizer;
+    if (pan.numberOfTouches != 1) return;
+    
+    CGPoint point = [pan locationInView:self];
+    BOOL shouldAddAnimationView = point.y > lastPointY && self.contentOffset.y < -10 && !self.animateImageView.superview;
+    if (shouldAddAnimationView) {
+        [self dragAnimation_addAnimationImageViewWithPoint:point];
+    }
+    
+    if (pan.state == UIGestureRecognizerStateChanged) {
+        [self dragAnimation_performAnimationForAnimationImageViewWithPoint:point container:self];
+    }
+    
+    lastPointY = point.y;
+    lastPointX = point.x;
+}
+
+- (void)dragAnimation_addAnimationImageViewWithPoint:(CGPoint)point {
+    if (self.photoImageView.frame.size.width <= 0 || self.photoImageView.frame.size.height <= 0) return;
+    
+//    if (!YBImageBrowser.isControllerPreferredForStatusBar) [[UIApplication sharedApplication] setStatusBarHidden:YBImageBrowser.statusBarIsHideBefore];
+
+    [self.readerVc photoReaderHideReaderView];
+    
+    animateImageViewIsStart = YES;
+    totalOffsetYOfAnimateImageView = 0;
+    totalOffsetXOfAnimateImageView = 0;
+    self.animateImageView.image = self.photoImageView.image;
+    self.animateImageView.frame = frameOfOriginalOfImageView;
+    [[IPZoomScrollView getNormalWindow] addSubview:self.animateImageView];
+}
+
+- (void)dragAnimation_removeAnimationImageViewWithScrollView:(UIScrollView *)scrollView container:(UIView *)container {
+    if (!self.animateImageView.superview) return;
+    
+    CGFloat maxHeight = container.bounds.size.height;
+    if (maxHeight <= 0) return;
+    if (scrollView.zoomScale <= 1) {
+        scrollView.contentOffset = CGPointZero;
+    }
+    
+    if (totalOffsetYOfAnimateImageView > maxHeight * 0.15) {
+        [self.animateImageView removeFromSuperview];
+        //移除图片浏览器
+        [self.readerVc dismissViewController];
+    } else {
+        
+        //复位
+        if (isCancelAnimate) return;
+        isCancelAnimate = YES;
+        
+        CGFloat duration = 0.25;
+        [self.readerVc photoReadeWillShowWithTimeInterval:duration];
+        
+        [UIView animateWithDuration:duration animations:^{
+            self.animateImageView.frame = frameOfOriginalOfImageView;
+        } completion:^(BOOL finished) {
+
+            //电池条处理 TODO
+            self.contentOffset = self->startOffsetOfScrollView;
+            
+            [self.readerVc photoReaderShowReaderView];
+            [self.animateImageView removeFromSuperview];
+            self->isCancelAnimate = NO;
+        }];
+    }
+}
+
+- (void)dragAnimation_performAnimationForAnimationImageViewWithPoint:(CGPoint)point container:(UIView *)container {
+    if (!self.animateImageView.superview) {
+        return;
+    }
+    
+    CGFloat maxHeight = container.bounds.size.height;
+    if (maxHeight <= 0) return;
+    //偏移
+    CGFloat offsetX = point.x - lastPointX,
+    offsetY = point.y - lastPointY;
+    if (animateImageViewIsStart) {
+        offsetX = offsetY = 0;
+        animateImageViewIsStart = NO;
+    }
+    totalOffsetXOfAnimateImageView += offsetX;
+    totalOffsetYOfAnimateImageView += offsetY;
+    //缩放比例
+    CGFloat scale = (1 - totalOffsetYOfAnimateImageView / maxHeight);
+    if (scale > 1) scale = 1;
+    if (scale < 0) scale = 0;
+    //执行变换
+    CGFloat width = frameOfOriginalOfImageView.size.width * scale, height = frameOfOriginalOfImageView.size.height * scale;
+    self.animateImageView.frame = CGRectMake(point.x - width * startScaleWidthInAnimationView, point.y - height * startScaleheightInAnimationView, width, height);
+    
+    [self.readerVc photoReadeViewChangeBackgroundAlphaWithScale:scale];
+}
 
 #pragma mark - Tap Detection
 
 - (void)handleSingleTap:(CGPoint)touchPoint {
+    
 }
 
 - (void)handleDoubleTap:(CGPoint)touchPoint {
-    
-    
     
     // Zoom
     if (self.zoomScale != self.minimumZoomScale && self.zoomScale != [self initialZoomScaleWithMinScale]) {

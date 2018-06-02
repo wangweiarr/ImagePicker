@@ -181,6 +181,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 {
     [super viewDidLoad];
     self.automaticallyAdjustsScrollViewInsets = NO;
+    if (@available(iOS 11.0, *)) {
+        self.mainView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    }
     self.navigationController.delegate = self;
     [self.navigationController setNavigationBarHidden:YES animated:NO];
     
@@ -407,11 +410,12 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
                 targetIndex = indexPath.item - 1;
             }
             IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:array TargetIndex:targetIndex];
-            reader.maxCount = self.maxCount;
-            reader.currentCount = self.selectPhotoCount;
+            reader.maxSelectCount = self.maxCount;
+            reader.currentSelectCount = self.selectPhotoCount;
             reader.delegate = self;
-            reader.ipVc = self;
-            [self.navigationController pushViewController:reader animated:YES];
+            reader.modalPresentationStyle = UIModalPresentationOverCurrentContext;
+//            [self.navigationController pushViewController:reader animated:YES];
+            [self presentViewController:reader animated:YES completion:nil];
         }else
         {
             if (model.cellClickBlock)
@@ -808,10 +812,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     NSIndexPath *path = [self.mainView indexPathForCell:cell];
     
     IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.curImageModelArr TargetIndex:path.item];
-    reader.maxCount = self.maxCount;
-    reader.currentCount = self.selectPhotoCount;
+    reader.maxSelectCount = self.maxCount;
+    reader.currentSelectCount = self.selectPhotoCount;
     reader.delegate = self;
-    reader.ipVc = self;
     reader.forceTouch = YES;
     [self showViewController:reader sender:self];
     
@@ -864,6 +867,18 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         return nil;
     }
 }
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForPresentedController:(UIViewController *)presented presentingController:(UIViewController *)presenting sourceController:(UIViewController *)source {
+    IPAnimationTranstion *transition = [[IPAnimationTranstion alloc]init];
+    return transition;
+}
+
+- (id<UIViewControllerAnimatedTransitioning>)animationControllerForDismissedController:(UIViewController *)dismissed
+{
+    IPAnimationInverseTransition *transition = [[IPAnimationInverseTransition alloc]init];
+    return transition;
+}
+
 - (void)didClickCancelBtnInTakePhotoViewController:(IPTakePhotoViewController *)takePhotoViewController
 {
     IPImageCell *cell = (IPImageCell *)[self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];

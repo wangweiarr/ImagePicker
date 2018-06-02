@@ -34,6 +34,9 @@
 		34C4A5FA20BF9FBC004252BC /* IPTapDetectImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A5F520BF9FBC004252BC /* IPTapDetectImageView.m */; };
 		34C4A5FB20BF9FBC004252BC /* IPZoomScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */; };
 		34C4A5FE20BFA2E3004252BC /* IPImageReaderLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A5FD20BFA2E3004252BC /* IPImageReaderLayout.m */; };
+		34C4A60120C2462A004252BC /* IPPresentAnimationTranstion.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A60020C2462A004252BC /* IPPresentAnimationTranstion.m */; };
+		34C4A60420C2700B004252BC /* UICollectionViewCell+PhotoReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A60320C2700B004252BC /* UICollectionViewCell+PhotoReader.m */; };
+		34C4A60720C29D46004252BC /* IPImageReaderViewController+AniamtionTranstion.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A60620C29D46004252BC /* IPImageReaderViewController+AniamtionTranstion.m */; };
 		34E40DA31CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */; };
 		F419C0481E725088005231A4 /* IPVideoPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F419C0471E725088005231A4 /* IPVideoPlayerViewController.m */; };
 		F4B7639A1E6AB67100C31F80 /* IPMediaCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = F4B763991E6AB67100C31F80 /* IPMediaCenter.m */; };
@@ -94,6 +97,12 @@
 		34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPZoomScrollView.m; sourceTree = "<group>"; };
 		34C4A5FC20BFA2E3004252BC /* IPImageReaderLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPImageReaderLayout.h; sourceTree = "<group>"; };
 		34C4A5FD20BFA2E3004252BC /* IPImageReaderLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IPImageReaderLayout.m; sourceTree = "<group>"; };
+		34C4A5FF20C2462A004252BC /* IPPresentAnimationTranstion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPPresentAnimationTranstion.h; sourceTree = "<group>"; };
+		34C4A60020C2462A004252BC /* IPPresentAnimationTranstion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IPPresentAnimationTranstion.m; sourceTree = "<group>"; };
+		34C4A60220C2700B004252BC /* UICollectionViewCell+PhotoReader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UICollectionViewCell+PhotoReader.h"; sourceTree = "<group>"; };
+		34C4A60320C2700B004252BC /* UICollectionViewCell+PhotoReader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UICollectionViewCell+PhotoReader.m"; sourceTree = "<group>"; };
+		34C4A60520C29D46004252BC /* IPImageReaderViewController+AniamtionTranstion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IPImageReaderViewController+AniamtionTranstion.h"; sourceTree = "<group>"; };
+		34C4A60620C29D46004252BC /* IPImageReaderViewController+AniamtionTranstion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IPImageReaderViewController+AniamtionTranstion.m"; sourceTree = "<group>"; };
 		34E40DA11CCB5EBF00DCC366 /* IP3DTouchPreviewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IP3DTouchPreviewVC.h; sourceTree = "<group>"; };
 		34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IP3DTouchPreviewVC.m; sourceTree = "<group>"; };
 		F419C0461E725088005231A4 /* IPVideoPlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPVideoPlayerViewController.h; sourceTree = "<group>"; };
@@ -220,6 +229,8 @@
 			children = (
 				349EB9CB1E2E22CC00351FC4 /* IPAnimationTranstion.h */,
 				349EB9CC1E2E22CC00351FC4 /* IPAnimationTranstion.m */,
+				34C4A5FF20C2462A004252BC /* IPPresentAnimationTranstion.h */,
+				34C4A60020C2462A004252BC /* IPPresentAnimationTranstion.m */,
 			);
 			path = AnimationTranstion;
 			sourceTree = "<group>";
@@ -231,6 +242,8 @@
 				34C4A5EE20BF9FBB004252BC /* IPImageReaderCell.m */,
 				34C4A5F220BF9FBB004252BC /* IPImageReaderViewController.h */,
 				34C4A5F020BF9FBB004252BC /* IPImageReaderViewController.m */,
+				34C4A60520C29D46004252BC /* IPImageReaderViewController+AniamtionTranstion.h */,
+				34C4A60620C29D46004252BC /* IPImageReaderViewController+AniamtionTranstion.m */,
 				34C4A5ED20BF9FBB004252BC /* IPTapDetectImageView.h */,
 				34C4A5F520BF9FBC004252BC /* IPTapDetectImageView.m */,
 				34C4A5F320BF9FBC004252BC /* IPTapDetectView.h */,
@@ -239,6 +252,8 @@
 				34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */,
 				34C4A5FC20BFA2E3004252BC /* IPImageReaderLayout.h */,
 				34C4A5FD20BFA2E3004252BC /* IPImageReaderLayout.m */,
+				34C4A60220C2700B004252BC /* UICollectionViewCell+PhotoReader.h */,
+				34C4A60320C2700B004252BC /* UICollectionViewCell+PhotoReader.m */,
 			);
 			path = PhotoReader;
 			sourceTree = "<group>";
@@ -328,6 +343,7 @@
 				344F37E51C83D4C0006063B6 /* IPAlbumCell.m in Sources */,
 				344F37E91C83D4C0006063B6 /* IPImageCell.m in Sources */,
 				3488EE0D1D254703002C0FA3 /* IPVisionUtilities.m in Sources */,
+				34C4A60420C2700B004252BC /* UICollectionViewCell+PhotoReader.m in Sources */,
 				344F37A91C814BC6006063B6 /* main.m in Sources */,
 				3488EE0C1D254703002C0FA3 /* IPVision.m in Sources */,
 				344F37F61C83DD47006063B6 /* IPAssetManager.m in Sources */,
@@ -338,6 +354,8 @@
 				343E26B01D28E9050015C1FD /* IPTakePhotoViewController.m in Sources */,
 				F4B7639A1E6AB67100C31F80 /* IPMediaCenter.m in Sources */,
 				34C4A5F720BF9FBC004252BC /* IPImageReaderCell.m in Sources */,
+				34C4A60720C29D46004252BC /* IPImageReaderViewController+AniamtionTranstion.m in Sources */,
+				34C4A60120C2462A004252BC /* IPPresentAnimationTranstion.m in Sources */,
 				343E26B31D28ED310015C1FD /* IPTakeMediaManager.m in Sources */,
 				344F37E71C83D4C0006063B6 /* IPAlbumView.m in Sources */,
 				34C4A5F920BF9FBC004252BC /* IPImageReaderViewController.m in Sources */,

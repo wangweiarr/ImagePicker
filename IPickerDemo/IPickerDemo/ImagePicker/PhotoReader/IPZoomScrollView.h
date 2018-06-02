@@ -9,16 +9,16 @@
 #import <UIKit/UIKit.h>
 #import "IPTapDetectImageView.h"
 
-@class IPAssetModel,IPickerViewController;
+@class IPAssetModel,IPickerViewController,IPImageReaderViewController;
 
 @interface IPZoomScrollView : UIScrollView
 
-/**核心*/
-@property (nonatomic, weak)IPickerViewController *ipVc;
+@property (nonatomic, weak)IPImageReaderViewController *readerVc;
 
-@property (nonatomic) IPAssetModel * imageModel;
+@property (nonatomic, strong) IPAssetModel * imageModel;
 
-@property (nonatomic, strong,readonly)IPTapDetectImageView *photoImageView;
+@property (nonatomic, readonly)IPTapDetectImageView *photoImageView;
+@property (nonatomic, readonly) UIImageView *animateImageView;    //做动画的图片
 
 /**是否显示高清 */
 //@property (nonatomic, assign)BOOL isDisplayingHighQuality;

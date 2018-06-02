@@ -46,7 +46,7 @@ static IPAssetManager *manager;
     if (manager == nil) {
         manager = [[IPAssetManager alloc]init];
         if (iOS8Later) {
-            [[PHPhotoLibrary sharedPhotoLibrary]registerChangeObserver:manager];
+            [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:manager];
         }else {
 //            [[NSNotificationCenter defaultCenter]addObserver:manager selector:@selector(text) name:ALAssetsLibraryChangedNotification object:nil];
         }
@@ -62,7 +62,7 @@ static IPAssetManager *manager;
     self.currentAlbumModel = nil;
 }
 - (void)dealloc{
-    [[PHPhotoLibrary sharedPhotoLibrary]unregisterChangeObserver:self];
+    [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
     IPLog(@"IPAssetManager--dealloc");
 }
 

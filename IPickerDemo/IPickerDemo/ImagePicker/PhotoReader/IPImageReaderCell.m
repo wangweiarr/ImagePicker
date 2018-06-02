@@ -7,6 +7,7 @@
 //
 
 #import "IPImageReaderCell.h"
+#import "UICollectionViewCell+PhotoReader.h"
 
 @implementation IPImageReaderCell
 
@@ -14,11 +15,12 @@
     if (self = [super initWithFrame:frame]) {
         
         // Configure the cell
-        self.backgroundColor = [UIColor blackColor];
+        self.backgroundColor = [UIColor clearColor];
         self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         _zoomScroll  = [[IPZoomScrollView alloc]init];
         _zoomScroll.frame = self.bounds;
-        [self addSubview:_zoomScroll];
+        [self.contentView addSubview:_zoomScroll];
+        
     }
     return self;
 }
@@ -29,6 +31,16 @@
 - (void)layoutSubviews{
     [super layoutSubviews];
     _zoomScroll.frame = self.bounds;
+}
+
+- (UIImageView *)animateImageView
+{
+    return _zoomScroll.animateImageView;
+}
+
+- (UIImageView *)sourceImageView
+{
+    return _zoomScroll.photoImageView;
 }
 
 @end
