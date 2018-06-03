@@ -10,18 +10,9 @@
 #import "IPAssetModel.h"
 #import "IPTapDetectView.h"
 #import "IPAssetManager.h"
-#import "IPickerViewController.h"
 #import "IPPrivateDefine.h"
 #import "IPImageReaderViewController+AniamtionTranstion.h"
 
-@interface IPickerViewController ()
-
-- (void)getImagesForAlbumModel:(IPAlbumModel *)albumModel;
-- (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-- (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-@end
 
 
 
@@ -39,7 +30,6 @@
     CGFloat totalOffsetYOfAnimateImageView; //总共的拖动偏移y
     BOOL animateImageViewIsStart;   //拖动动效是否第一次触发
     BOOL isCancelAnimate;   //正在取消拖动动效
-    BOOL isZooming; //是否正在释放
 }
 /**背景view*/
 @property (nonatomic, strong) IPTapDetectView *tapView;
@@ -354,7 +344,7 @@
 }
 
 - (void)dragAnimation_respondsToScrollViewPanGesture {
-    if (self.cancelDragImageViewAnimation || isZooming) return;
+    if (self.cancelDragImageViewAnimation || self.isZooming) return;
     
     UIPanGestureRecognizer *pan = self.panGestureRecognizer;
     if (pan.numberOfTouches != 1) return;

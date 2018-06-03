@@ -10,7 +10,6 @@
 
 #import<AssetsLibrary/AssetsLibrary.h>
 #import <Photos/Photos.h>
-#import "IPImageReaderViewController.h"
 #import "IPAlbumModel.h"
 #import "IPAlbumView.h"
 #import "IPImageCell.h"

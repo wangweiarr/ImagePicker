@@ -36,8 +36,6 @@ typedef NS_ENUM(NSUInteger,  GetImageType) {
 NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION";
 
 @interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate,IPTakeVideoViewControllerDelegate,UIViewControllerPreviewingDelegate,CAAnimationDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate,IPTakePhotoViewControllerDelegate>
-/**图库*/
-@property (nonatomic, strong)IPAssetManager *defaultAssetManager;
 
 
 /**头部视图*/
@@ -107,31 +105,33 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 
 #pragma mark interface
-+ (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style{
++ (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style
+{
     IPickerViewController *ipVC = [[IPickerViewController alloc]init];
     
     ipVC.displayStyle = style;
-    //    ipVC.defaultAssetManager.dataType = (IPAssetManagerDataType)style;
     return ipVC;
 }
 
-- (void)exitIPickerWithAnimation:(BOOL)animation{
+- (void)exitIPickerWithAnimation:(BOOL)animation
+{
     if (animation) {
         [self exitIPicker];
-    }else {
-        [self freeAllData];
     }
 }
 
 #pragma mark - init
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil{
-    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
+    if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil])
+    {
         self.maxCount = 50;
         
     }
     return self;
 }
+
 - (instancetype)init{
     if (self = [super init]) {
         self.maxCount = 50;
@@ -139,40 +139,22 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     return self;
 }
-- (void)getDataFromManager{
-//    if (self.refreshData == YES) return;
-//    
-//    self.refreshData = YES;
+
+- (void)getDataFromManager
+{
+    
     [self.defaultAssetManager requestUserpermission];
-//    if (self.displayStyle == IPickerViewControllerDisplayStyleVideo) {
-//        self.arrowImge.hidden = YES;
-//        self.centerBtn.userInteractionEnabled = NO;
-//        [self.centerBtn setTitle:@"选择视频" forState:UIControlStateNormal];
-//        
-//        [self.defaultAssetManager reloadVideosFromLibrary];
-//        self.rightBtn.hidden = YES;
-//    }else {
-//        [self.defaultAssetManager reloadImagesFromLibrary];
-//    }
-}
-- (void)freeAllData{
-//    _refreshData = NO;
-//    _defaultAssetManager = nil;
-//    [_imageModelDic removeAllObjects];
-//    [_curImageModelArr removeAllObjects];
-//    _selectPhotoCount = 0;
-//    [_priCurrentSelArr removeAllObjects];
-//    [IPAssetManager freeAssetManger];
 }
 
-
-- (void)dealloc{
-    NSLog(@"IPickerViewController--dealloc");
-    [self freeAllData];
+- (void)dealloc
+{
+    IPLog(@"IPickerViewController--dealloc");
     [IPMediaCenter realeaseCenter];
     
 }
-- (BOOL)prefersStatusBarHidden{
+
+- (BOOL)prefersStatusBarHidden
+{
     return NO;
 }
 
@@ -192,15 +174,19 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self getDataFromManager];
 }
 
-- (void)didReceiveMemoryWarning {
+- (void)didReceiveMemoryWarning
+{
     [super didReceiveMemoryWarning];
 }
-- (void)viewDidAppear:(BOOL)animated{
+
+- (void)viewDidAppear:(BOOL)animated
+{
     [super viewDidAppear:animated];
     self.navigationController.delegate = self;
 }
 
-- (void)viewDidLayoutSubviews{
+- (void)viewDidLayoutSubviews
+{
     [super viewDidLayoutSubviews];
     CGFloat viewW = self.view.bounds.size.width;
     CGFloat viewH = self.view.bounds.size.height;
@@ -248,7 +234,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     self.mainView.frame = CGRectMake(0, headerH, viewW, viewH - headerH);
 }
-- (void)addHeaderView{
+
+- (void)addHeaderView
+{
     
     UIView *headerView = [[UIView alloc]init];
     [headerView setBackgroundColor:[UIColor whiteColor]];
@@ -287,7 +275,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     self.arrowImge = arrowImge;
     
     UILabel    *rightLabel = [[UILabel alloc]init];
-//    rightLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewContentModeBottom | UIViewContentModeBottomRight;
     rightLabel.font = [UIFont systemFontOfSize:12];
     rightLabel.textAlignment = NSTextAlignmentCenter;
     rightLabel.clipsToBounds = YES;
@@ -318,7 +305,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     self.spliteView = spliteView;
 }
 
-- (void)addMainView{
+- (void)addMainView
+{
     _flowOut = [[UICollectionViewFlowLayout alloc]init];
     _flowOut.sectionInset = UIEdgeInsetsMake(5, 0, 0, 0);
     UICollectionView *mainView = [[UICollectionView alloc]initWithFrame:CGRectZero collectionViewLayout:_flowOut];
@@ -332,12 +320,15 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self.view addSubview:mainView];
 }
 
-#pragma mark - collectionview-
+#pragma mark - collectionview
 
-- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+{
     return self.curImageModelArr.count;
 }
-- (IPImageCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
+
+- (IPImageCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+{
     IPImageCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:IPicker_CollectionID forIndexPath:indexPath];
     cell.ipVc = self;
     if (self.curImageModelArr.count > indexPath.item) {
@@ -356,19 +347,25 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return cell;
 }
 
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath{
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
+{
     
     NSUInteger rowCount = 4;
     NSUInteger margin = 5;
     CGFloat itemWidth = (collectionView.frame.size.width - (rowCount-1)*margin)/rowCount;
     return CGSizeMake(itemWidth, itemWidth);
 }
-- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section{
+
+- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section
+{
     return 5;
 }
-- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section{
+
+- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section
+{
     return 5;
 }
+
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     if (indexPath.item < self.curImageModelArr.count)
@@ -426,7 +423,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     
 }
-- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
+
+- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
+{
     [cell endDisplay];
 }
 
@@ -435,7 +434,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 /**
  *  左上角的取消按钮点击
  */
-- (void)exitIPicker{
+- (void)exitIPicker
+{
     
     CATransition * transition=[CATransition animation];
     transition.duration=0.3f;
@@ -458,20 +458,24 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         [self dismissViewControllerAnimated:YES completion:nil];
     }
 }
+
 /**
  *  右上角 完成 按钮点击
  */
-- (void)completeBtnClick{
+- (void)completeBtnClick
+{
     if (self.delegate && [self.delegate respondsToSelector:@selector(didClickCompleteBtn:)]) {
         [self.delegate didClickCompleteBtn:[self.priCurrentSelArr copy]];
     }
     [self exitIPicker];
 }
+
 #pragma mark 点击右上角的"对勾"对应的逻辑
 /**
  *  点击cell右上角的选中按钮
  */
-- (BOOL)clickRightCornerBtnForView:(IPAssetModel *)model{
+- (BOOL)clickRightCornerBtnForView:(IPAssetModel *)model
+{
     if (model.isSelect) {
         if (self.selectPhotoCount >= self.maxCount) {
             [IPAlertView showAlertViewAt:self.view MaxCount:self.maxCount];
@@ -483,19 +487,23 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     return YES;
 }
+
 /**
  *  点击大图浏览时的选中按钮的代理回调方法
  *
  *  @param assetModel 对应的imageModel对象
  */
-- (void)clickSelectBtnForReaderView:(IPAssetModel *)assetModel{
+- (void)clickSelectBtnForReaderView:(IPAssetModel *)assetModel
+{
     if (assetModel.isSelect) {
         [self addImageModel:assetModel WithIsAdd:YES];
     }else {
         [self addImageModel:assetModel WithIsAdd:NO];
     }
 }
-- (void)addImageModel:(IPAssetModel *)model WithIsAdd:(BOOL)isAdd{
+
+- (void)addImageModel:(IPAssetModel *)model WithIsAdd:(BOOL)isAdd
+{
     if (isAdd) {
         self.selectPhotoCount++;
         if (![self.priCurrentSelArr containsObject:model]) {
@@ -509,7 +517,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         
     }
 }
-- (void)setSelectPhotoCount:(NSUInteger)selectPhotoCount{
+
+- (void)setSelectPhotoCount:(NSUInteger)selectPhotoCount
+{
     if (_selectPhotoCount != selectPhotoCount) {
         _selectPhotoCount = selectPhotoCount;
         if (_selectPhotoCount <= 0) {
@@ -535,11 +545,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         [self.rightLabel setText:[NSString stringWithFormat:@"%tu",_selectPhotoCount]];
     }
 }
+
 #pragma mark 点击中心按钮对应的逻辑
 /**
  *  点击中部相册名称,展示相册列表
  */
-- (void)displayAlbumView:(UIButton *)btn{
+- (void)displayAlbumView:(UIButton *)btn
+{
     
     [self.centerBtn setTitle:@"选择相册" forState:UIControlStateNormal];
     if (_albumView == nil) {
@@ -573,13 +585,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         } completion:^(BOOL finished) {
         }];
     }];
-    
-    
 }
+
 /**
  *  将专辑列表移除
  */
-- (void)shouldRemoveFrom:(IPAlbumView *)view{
+- (void)shouldRemoveFrom:(IPAlbumView *)albumView
+{
     
     [self.centerBtn setTitle:self.defaultAssetManager.currentAlbumModel.albumName forState:UIControlStateNormal];
     
@@ -601,13 +613,15 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }];
     
 }
+
 /**
  *  选中专辑列表的某个cell时的回调方法
  *
  *  @param indexPath 点击对应的索引
  *  @param View      专辑列表 view
  */
-- (void)clickCellForIndex:(NSIndexPath *)indexPath ForView:(IPAlbumView *)View{
+- (void)clickCellForIndex:(NSIndexPath *)indexPath ForView:(IPAlbumView *)View
+{
     IPAlbumModel *model = [self.defaultAssetManager.albumArr objectAtIndex:indexPath.item];
     if (model == self.defaultAssetManager.currentAlbumModel) {
         [self shouldRemoveFrom:View];
@@ -626,9 +640,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         [self.defaultAssetManager getImagesForAlbumModel:model];
     }
     
-    
-    
-    
 }
 #pragma mark - Rotation
 //- (BOOL)shouldAutorotate{
@@ -638,16 +649,15 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 //    return UIInterfaceOrientationMaskPortrait;
 //}
 
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    
-    
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
     [self.mainView reloadData];
-    
 }
 
 
-#pragma mark 获取相册的所有图片
-- (void)loadImageUserDeny:(IPAssetManager *)manager{
+#pragma mark -IPAssetManager Delegate
+- (void)loadImageUserDeny:(IPAssetManager *)manager
+{
     NSString *message = @"请在设置->通用->访问限制->照片 启用访问图片的权限!";
     if ([[[UIDevice currentDevice]systemVersion]floatValue]<6.0) {
         message = @"请在设置->通用->访问限制->位置 启用定位服务!";
@@ -659,7 +669,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self.centerBtn sizeToFit];
     [self.view setNeedsLayout];
 }
-- (void)loadImageOccurError:(IPAssetManager *)manager{
+
+- (void)loadImageOccurError:(IPAssetManager *)manager
+{
     NSString *message = @"访问相册失败,请重试";
     
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片访问失败" message:message delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil];
@@ -669,7 +681,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self.centerBtn sizeToFit];
     [self.view setNeedsLayout];
 }
-- (void)loadImageDataFinish:(IPAssetManager *)manager{
+
+- (void)loadImageDataFinish:(IPAssetManager *)manager
+{
     
     self.curImageModelArr = [NSMutableArray arrayWithArray:self.defaultAssetManager.currentPhotosArr];
     if (self.defaultAssetManager.currentAlbumModel.albumIdentifier) {
@@ -698,30 +712,38 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 }
 
 #pragma mark - alert框的处理
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
     [self exitIPicker];
 }
+
 #pragma mark -private
-- (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+- (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion
+{
     [self.defaultAssetManager getAspectPhotoWithAsset:imageModel photoWidth:photoSize completion:completion];
 }
-- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+
+- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion
+{
     [self.defaultAssetManager getFullScreenImageWithAsset:imageModel photoWidth:photoSize completion:completion];
 }
-- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+
+- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion
+{
     [self.defaultAssetManager getThumibImageWithAsset:imageModel photoWidth:photoSize completion:completion];
 }
-- (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+
+- (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion
+{
     [self.defaultAssetManager getHighQualityImageWithAsset:imageModel photoWidth:photoSize completion:completion];
 }
+
 #pragma mark - lazy -
 - (IPAssetManager *)defaultAssetManager{
-    if (_defaultAssetManager == nil) {
-        _defaultAssetManager = [IPAssetManager defaultAssetManager];
-        _defaultAssetManager.dataType = (IPAssetManagerDataType)self.displayStyle;
-        _defaultAssetManager.delegate = self;
-    }
-    return _defaultAssetManager;
+    IPAssetManager *defaultAssetManager = [IPAssetManager defaultAssetManager];
+    defaultAssetManager.dataType = (IPAssetManagerDataType)self.displayStyle;
+    defaultAssetManager.delegate = self;
+    return defaultAssetManager;
 }
 
 - (void)setMaxCount:(NSUInteger)maxCount{

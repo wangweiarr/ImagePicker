@@ -10,9 +10,7 @@
 #import "IPImageReaderViewController.h"
 #import "UICollectionViewCell+PhotoReader.h"
 
-@interface IPPresentAnimationTranstion () {
-//    __weak YBImageBrowser *browser;
-}
+@interface IPPresentAnimationTranstion () 
 
 @property (nonatomic, strong) UIImageView *animateImageView;
 
