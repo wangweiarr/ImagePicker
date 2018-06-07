@@ -11,26 +11,55 @@
 
 typedef void(^FunctionBlock)();
 
-@class IPAssetModel,IPickerViewController;
+typedef NS_ENUM(NSInteger, IPImageSourceType) {
+    //网络图片
+    IPImageSourceTypeNet = 0,
+    //相册
+    IPImageSourceTypeAlbum,
+    //本地图片
+    IPImageSourceTypeLocal
+};
+
+@class ALAsset,PHAsset,IPImageReaderViewController;
+
+
 @protocol IPImageReaderViewControllerDelegate<NSObject>
 
-- (void)clickSelectBtnForReaderView:(IPAssetModel *)assetModel;
+- (void)imageReader:(IPImageReaderViewController *)reader currentAssetIsSelect:(BOOL)unselect;
 
 @end
 
-@interface IPImageReaderViewController : UICollectionViewController
+@protocol IPImageReaderViewControllerDatasource<NSObject>
 
-/**代理*/
-@property (nonatomic, weak)id <IPImageReaderViewControllerDelegate> delegate;
+- (NSUInteger)numberOfAssetsInImageReader:(IPImageReaderViewController *)imageReader;
+- (IPImageSourceType)imageReader:(IPImageReaderViewController *)imageReader soureTypeWithIndex:(NSUInteger)index;
+
+@optional
+//ALAsset ios8Later PHAsset
+- (id)imageReader:(IPImageReaderViewController *)imageReader albumAssetWithIndex:(NSUInteger)index;
+
+- (NSString *)imageReader:(IPImageReaderViewController *)imageReader simpleQualityAssetUrlWithIndex:(NSUInteger)index;
+- (NSString *)imageReader:(IPImageReaderViewController *)imageReader highQualityAssetUrlWithIndex:(NSUInteger)index;
+
+- (UIImage *)imageReader:(IPImageReaderViewController *)imageReader simpleQualityAssetImgWithIndex:(NSUInteger)index;
+- (UIImage *)imageReader:(IPImageReaderViewController *)imageReader highQualityAssetImgWithIndex:(NSUInteger)index;
+
+
+- (BOOL)imageReader:(IPImageReaderViewController *)imageReader currentAssetIsSelected:(NSUInteger)index;
+
+@end
+
+@interface IPImageReaderViewController : UIViewController
+
+@property (nonatomic, readonly) UICollectionView *collectionView;
+@property (nonatomic, weak) id <IPImageReaderViewControllerDelegate> delegate;
+@property (nonatomic, weak) id <IPImageReaderViewControllerDatasource> dataSource;
 
 /**当前选择的图片数量*/
 @property (nonatomic, assign)NSUInteger currentSelectCount;
 
 /**最大可选择的图片数量*/
 @property (nonatomic, assign)NSUInteger maxSelectCount;
-
-/**图库管理*/
-@property (nonatomic, weak)IPAssetManager *manger;
 
 /**3DTouch*/
 @property (nonatomic, assign)BOOL forceTouch;
@@ -42,8 +71,8 @@ typedef void(^FunctionBlock)();
 
 @property (nonatomic, readonly)NSArray *dataArr;
 
-+ (instancetype)imageReaderViewControllerWithData:(NSArray<IPAssetModel *> *)data TargetIndex:(NSUInteger)index;
-
 - (void)setUpCurrentSelectPage:(NSUInteger)page;
 
 @end
+
+

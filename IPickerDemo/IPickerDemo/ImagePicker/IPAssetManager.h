@@ -21,6 +21,8 @@ typedef NS_ENUM(NSUInteger,  IPAssetManagerDataType) {
     IPAssetManagerDataTypeVideo
 };
 
+typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
+
 @protocol IPAssetManagerDelegate <NSObject>
 
 
@@ -64,10 +66,31 @@ typedef NS_ENUM(NSUInteger,  IPAssetManagerDataType) {
 - (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 - (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 - (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+- (void)getHighQualityImageWithMutipleAsset:(id)asset photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
+- (void)getFullScreenImageWithMutipleAsset:(id)asset photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 
 - (void)getVideoWithAsset:(IPAssetModel *)imageModel Completion:(void (^)(AVPlayerItem *item,NSDictionary *info))completion;
 
+/**
+ *  通过url获取全屏高清图片
+ *
+ *  @param url   图片资源的唯一标识
+ */
++ (void)getImageWithImageURL:(NSString *)imageUrl RequestBlock:(RequestImageBlock)block;
++ (void)getImageWithImageURL:(NSString *)imageUrl width:(CGFloat)width RequestBlock:(RequestImageBlock)block;
+/**
+ *  通过url获取等比缩略图
+ *
+ *  @param imageUrl 图片url
+ *  @param width    图片宽度
+ *  @param block    回调
+ */
++ (void)getThumbailImageWithImageURL:(NSString *)imageUrl Width:(CGFloat)width RequestBlock:(RequestImageBlock)block;
 
++ (void)getThumbailImageWithImageURL:(NSString *)imageUrl RequestBlock:(RequestImageBlock)block;
+
+
+#pragma mark - video
 - (void)compressVideoWithAssetModel:(IPAssetModel *)assetModel CompleteBlock:(functionBlock)block;
 - (void)getAspectThumbailWithModel:(IPAssetModel *)model completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 @end

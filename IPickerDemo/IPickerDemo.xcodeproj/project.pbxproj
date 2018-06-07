@@ -28,10 +28,9 @@
 		3488EE0D1D254703002C0FA3 /* IPVisionUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 3488EE091D254703002C0FA3 /* IPVisionUtilities.m */; };
 		3488EE101D254727002C0FA3 /* IPTakeVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3488EE0F1D254727002C0FA3 /* IPTakeVideoViewController.m */; };
 		349EB9CD1E2E22CC00351FC4 /* IPAnimationTranstion.m in Sources */ = {isa = PBXBuildFile; fileRef = 349EB9CC1E2E22CC00351FC4 /* IPAnimationTranstion.m */; };
+		34A190E220C91EBF00856B93 /* IPickerViewController+AnimationTranstion.m in Sources */ = {isa = PBXBuildFile; fileRef = 34A190E120C91EBF00856B93 /* IPickerViewController+AnimationTranstion.m */; };
 		34C4A5F720BF9FBC004252BC /* IPImageReaderCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A5EE20BF9FBB004252BC /* IPImageReaderCell.m */; };
-		34C4A5F820BF9FBC004252BC /* IPTapDetectView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A5EF20BF9FBB004252BC /* IPTapDetectView.m */; };
 		34C4A5F920BF9FBC004252BC /* IPImageReaderViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A5F020BF9FBB004252BC /* IPImageReaderViewController.m */; };
-		34C4A5FA20BF9FBC004252BC /* IPTapDetectImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A5F520BF9FBC004252BC /* IPTapDetectImageView.m */; };
 		34C4A5FB20BF9FBC004252BC /* IPZoomScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */; };
 		34C4A5FE20BFA2E3004252BC /* IPImageReaderLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A5FD20BFA2E3004252BC /* IPImageReaderLayout.m */; };
 		34C4A60120C2462A004252BC /* IPPresentAnimationTranstion.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A60020C2462A004252BC /* IPPresentAnimationTranstion.m */; };
@@ -84,16 +83,14 @@
 		3488EE0F1D254727002C0FA3 /* IPTakeVideoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPTakeVideoViewController.m; sourceTree = "<group>"; };
 		349EB9CB1E2E22CC00351FC4 /* IPAnimationTranstion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPAnimationTranstion.h; sourceTree = "<group>"; };
 		349EB9CC1E2E22CC00351FC4 /* IPAnimationTranstion.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPAnimationTranstion.m; sourceTree = "<group>"; };
+		34A190E020C91EBF00856B93 /* IPickerViewController+AnimationTranstion.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "IPickerViewController+AnimationTranstion.h"; sourceTree = "<group>"; };
+		34A190E120C91EBF00856B93 /* IPickerViewController+AnimationTranstion.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "IPickerViewController+AnimationTranstion.m"; sourceTree = "<group>"; };
 		34A524281DC9E5AA0094915B /* IPPrivateDefine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPPrivateDefine.h; sourceTree = "<group>"; };
-		34C4A5ED20BF9FBB004252BC /* IPTapDetectImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPTapDetectImageView.h; sourceTree = "<group>"; };
 		34C4A5EE20BF9FBB004252BC /* IPImageReaderCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPImageReaderCell.m; sourceTree = "<group>"; };
-		34C4A5EF20BF9FBB004252BC /* IPTapDetectView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPTapDetectView.m; sourceTree = "<group>"; };
 		34C4A5F020BF9FBB004252BC /* IPImageReaderViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPImageReaderViewController.m; sourceTree = "<group>"; };
 		34C4A5F120BF9FBB004252BC /* IPZoomScrollView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPZoomScrollView.h; sourceTree = "<group>"; };
 		34C4A5F220BF9FBB004252BC /* IPImageReaderViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPImageReaderViewController.h; sourceTree = "<group>"; };
-		34C4A5F320BF9FBC004252BC /* IPTapDetectView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPTapDetectView.h; sourceTree = "<group>"; };
 		34C4A5F420BF9FBC004252BC /* IPImageReaderCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPImageReaderCell.h; sourceTree = "<group>"; };
-		34C4A5F520BF9FBC004252BC /* IPTapDetectImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPTapDetectImageView.m; sourceTree = "<group>"; };
 		34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPZoomScrollView.m; sourceTree = "<group>"; };
 		34C4A5FC20BFA2E3004252BC /* IPImageReaderLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPImageReaderLayout.h; sourceTree = "<group>"; };
 		34C4A5FD20BFA2E3004252BC /* IPImageReaderLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IPImageReaderLayout.m; sourceTree = "<group>"; };
@@ -193,6 +190,8 @@
 				344F37DE1C83D4C0006063B6 /* IPAlbumView.m */,
 				344F37DF1C83D4C0006063B6 /* IPickerViewController.h */,
 				344F37E01C83D4C0006063B6 /* IPickerViewController.m */,
+				34A190E020C91EBF00856B93 /* IPickerViewController+AnimationTranstion.h */,
+				34A190E120C91EBF00856B93 /* IPickerViewController+AnimationTranstion.m */,
 				34E40DA11CCB5EBF00DCC366 /* IP3DTouchPreviewVC.h */,
 				34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */,
 				3461FC9C1C86B99100FF3015 /* IPAlertView.h */,
@@ -244,10 +243,6 @@
 				34C4A5F020BF9FBB004252BC /* IPImageReaderViewController.m */,
 				34C4A60520C29D46004252BC /* IPImageReaderViewController+AniamtionTranstion.h */,
 				34C4A60620C29D46004252BC /* IPImageReaderViewController+AniamtionTranstion.m */,
-				34C4A5ED20BF9FBB004252BC /* IPTapDetectImageView.h */,
-				34C4A5F520BF9FBC004252BC /* IPTapDetectImageView.m */,
-				34C4A5F320BF9FBC004252BC /* IPTapDetectView.h */,
-				34C4A5EF20BF9FBB004252BC /* IPTapDetectView.m */,
 				34C4A5F120BF9FBB004252BC /* IPZoomScrollView.h */,
 				34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */,
 				34C4A5FC20BFA2E3004252BC /* IPImageReaderLayout.h */,
@@ -289,7 +284,7 @@
 				TargetAttributes = {
 					344F37A31C814BC6006063B6 = {
 						CreatedOnToolsVersion = 7.2.1;
-						DevelopmentTeam = 8DZNQGC828;
+						DevelopmentTeam = YDTV5X7P95;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -333,10 +328,10 @@
 				349EB9CD1E2E22CC00351FC4 /* IPAnimationTranstion.m in Sources */,
 				3488EE101D254727002C0FA3 /* IPTakeVideoViewController.m in Sources */,
 				344F37AC1C814BC6006063B6 /* AppDelegate.m in Sources */,
+				34A190E220C91EBF00856B93 /* IPickerViewController+AnimationTranstion.m in Sources */,
 				F419C0481E725088005231A4 /* IPVideoPlayerViewController.m in Sources */,
 				34C4A5FE20BFA2E3004252BC /* IPImageReaderLayout.m in Sources */,
 				3488EE0A1D254703002C0FA3 /* IPCaptureProgressBar.m in Sources */,
-				34C4A5FA20BF9FBC004252BC /* IPTapDetectImageView.m in Sources */,
 				344F37C51C814BF0006063B6 /* ViewController.m in Sources */,
 				344F37E61C83D4C0006063B6 /* IPAlbumModel.m in Sources */,
 				34C4A5FB20BF9FBC004252BC /* IPZoomScrollView.m in Sources */,
@@ -347,7 +342,6 @@
 				344F37A91C814BC6006063B6 /* main.m in Sources */,
 				3488EE0C1D254703002C0FA3 /* IPVision.m in Sources */,
 				344F37F61C83DD47006063B6 /* IPAssetManager.m in Sources */,
-				34C4A5F820BF9FBC004252BC /* IPTapDetectView.m in Sources */,
 				344F37E81C83D4C0006063B6 /* IPickerViewController.m in Sources */,
 				3453E6251CC8D99F004DAFDA /* IPAssetModel.m in Sources */,
 				3488EE0B1D254703002C0FA3 /* IPTooltipView.m in Sources */,
@@ -453,11 +447,11 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = 8DZNQGC828;
+				DEVELOPMENT_TEAM = YDTV5X7P95;
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.JL.Impicker;
+				PRODUCT_BUNDLE_IDENTIFIER = com.JL.Imagepicke;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -471,11 +465,11 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = 8DZNQGC828;
+				DEVELOPMENT_TEAM = YDTV5X7P95;
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.JL.Impicker;
+				PRODUCT_BUNDLE_IDENTIFIER = com.JL.Imagepicke;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

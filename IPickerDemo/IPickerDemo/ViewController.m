@@ -133,14 +133,7 @@ static UIViewController *vc;
 - (void)didClickCompleteBtn:(NSArray *)datas{
    [datas enumerateObjectsUsingBlock:^(IPAssetModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
        NSLog(@"%@--%@",obj.localIdentiy,obj.assetUrl.absoluteString);
-       if (idx == 0) {
-                   }else if (idx == 1){
-                       
-                   }else if (idx == 2){
-                       
-                   }else if (idx == 3){
-                       
-                   }
+       
    }];
     
 }

@@ -15,6 +15,17 @@
 #import "IPImageCell.h"
 #import "IPPrivateDefine.h"
 
+
+/**获取图片样式*/
+typedef NS_ENUM(NSUInteger,  GetImageType) {
+    
+    GetImageTypeThumbail,
+    
+    GetImageTypeAspectThumbail,
+    
+    GetImageTypeFullScreen
+};
+
 @interface IPAssetManager ()<PHPhotoLibraryChangeObserver>
 
 /**数据模型暂存数组*/
@@ -41,7 +52,8 @@
 
 static IPAssetManager *manager;
 
-+ (instancetype)defaultAssetManager{
++ (instancetype)defaultAssetManager
+{
     if (manager == nil) {
         manager = [[IPAssetManager alloc]init];
         if (iOS8Later) {
@@ -53,19 +65,23 @@ static IPAssetManager *manager;
     return manager;
 }
 
-- (void)clearAssetManagerData{
+- (void)clearAssetManagerData
+{
     [self.tempArray removeAllObjects];
     [self.allImageModel removeAllObjects];
     [self.albumArr removeAllObjects];
     [self.currentPhotosArr removeAllObjects];
     self.currentAlbumModel = nil;
 }
-- (void)dealloc{
+
+- (void)dealloc
+{
     [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
     IPLog(@"IPAssetManager--dealloc");
 }
 
-- (void)photoLibraryDidChange:(PHChange *)changeInstance{
+- (void)photoLibraryDidChange:(PHChange *)changeInstance
+{
     dispatch_async(dispatch_get_main_queue(), ^{
         
         PHObjectChangeDetails *details = [changeInstance changeDetailsForObject:self.currentAlbumModel.assetCollection];
@@ -123,7 +139,8 @@ static IPAssetManager *manager;
     
 }
 
-- (void)requestUserpermission{
+- (void)requestUserpermission
+{
     if(iOS8Later){
         [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -148,7 +165,6 @@ static IPAssetManager *manager;
             [self reloadImagesFromLibrary];
         }
     }
-    
 }
 
 #pragma mark 获取相册的所有图片
@@ -161,9 +177,10 @@ static IPAssetManager *manager;
         [self getAllAlbumsIOS7];
         
     }
-    
 }
-- (void)performDelegateWithSuccess:(BOOL)success{
+
+- (void)performDelegateWithSuccess:(BOOL)success
+{
     
     dispatch_async(dispatch_get_main_queue(), ^{
         if (iOS8Later) {
@@ -211,7 +228,9 @@ static IPAssetManager *manager;
         
     });
 }
-- (void)getImagesForAlbumModel:(IPAlbumModel *)albumModel{
+
+- (void)getImagesForAlbumModel:(IPAlbumModel *)albumModel
+{
     if (iOS8Later) {
         if (self.allImageModel.count == 0) {
             [self.allImageModel addObjectsFromArray:self.currentPhotosArr];
@@ -224,8 +243,10 @@ static IPAssetManager *manager;
     }
     
 }
+
 #pragma mark - ios6_ios7 -
-- (void)getAllAlbumsIOS7{
+- (void)getAllAlbumsIOS7
+{
     //关闭监听共享照片流产生的频繁通知信息
     [ALAssetsLibrary disableSharedPhotoStreamsSupport];
     __weak typeof(self) weakSelf = self;
@@ -318,6 +339,7 @@ static IPAssetManager *manager;
         
     });
 }
+
 - (void)getImagesWithGroupModel:(IPAlbumModel *)groupModel{
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -370,6 +392,7 @@ static IPAssetManager *manager;
         
     });
 }
+
 #pragma mark - lazy -
 - (ALAssetsLibrary *)defaultLibrary{
     if (_defaultLibrary == nil) {
@@ -408,6 +431,7 @@ static IPAssetManager *manager;
     }
     return _reverserArray;
 }
+
 #pragma mark - iOS8 -
 /**
  *  遍历图库,获得所有相册数据
@@ -468,6 +492,7 @@ static IPAssetManager *manager;
     
     
 }
+
 /**
  *  生成相册模型数据
  *
@@ -494,6 +519,7 @@ static IPAssetManager *manager;
     }
     return model;
 }
+
 /**
  *  将英文相册名称转换为中文名称
  *
@@ -501,7 +527,8 @@ static IPAssetManager *manager;
  *
  *  @return 中文名
  */
-- (NSString *)getNewAlbumName:(NSString *)name {
+- (NSString *)getNewAlbumName:(NSString *)name
+{
     if (iOS8Later) {
         NSString *newName;
         if ([name containsString:@"Roll"])         newName = @"相机胶卷";
@@ -525,7 +552,6 @@ static IPAssetManager *manager;
  *  @param result 相册集合
  */
 
-//- (void)getImageAssetsFromFetchResult:(PHFetchResult *)result{
 - (void)getImageAssetsFromAssetCollection:(PHAssetCollection *)collection{
     PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
     imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
@@ -544,11 +570,8 @@ static IPAssetManager *manager;
         imgModel.assetUrl = [NSURL URLWithString:asset.localIdentifier];
         imgModel.asset = asset;
         imgModel.priexScale = asset.pixelWidth/asset.pixelHeight;
-        IPLog(@"ImageAssets->%ld--%ld",(unsigned long)asset.pixelWidth,(unsigned long)asset.pixelHeight);
-//        NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
-//        [outputFormatter setLocale:[NSLocale currentLocale]];
-//        [outputFormatter setDateFormat:@"yyyy年MM月dd日 HH时mm分ss秒"];
-//        NSString *creatDateStr = [outputFormatter stringFromDate:asset.creationDate];
+        IPLog(@"ImageAssets index%ld->%ld--%ld",idx,(unsigned long)asset.pixelWidth,(unsigned long)asset.pixelHeight);
+
         imgModel.creatDate = asset.creationDate;
         
         imgModel.modityDate = asset.modificationDate;
@@ -600,6 +623,7 @@ static IPAssetManager *manager;
         }
     }];
 }
+
 - (void)getVideoWithAsset:(IPAssetModel *)imageModel Completion:(void (^)(AVPlayerItem *item,NSDictionary *info))completion{
     
     PHVideoRequestOptions *options = [[PHVideoRequestOptions alloc]init];
@@ -632,15 +656,58 @@ static IPAssetManager *manager;
         }
     }
 }
-- (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
-    
+
+- (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion
+{
+    [self getHighQualityImageWithMutipleAsset:imageModel.asset photoWidth:photoSize completion:completion];
+}
+
+- (void)getHighQualityImageWithMutipleAsset:(id)asset photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion
+{
     if (iOS8Later) {
-        [self ios8_AsyncLoadHighQualityImageWithSize:photoSize asset:imageModel completion:completion];
+        [self ios8_AsyncLoadHighQualityImageWithSize:photoSize phasset:(PHAsset *)asset completion:completion];
+    } else {
+        [self getHighQualityImageWithALAsset:(ALAsset *)asset photoWidth:photoSize completion:completion];
+    }
+}
+
+- (void)getHighQualityImageWithALAsset:(ALAsset *)asset photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion
+{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        
+        @try {
+            ALAsset *asset = asset;
+            ALAssetRepresentation *rep = [asset defaultRepresentation];
+            CGImageRef iref = [rep fullScreenImage];
+            UIImage *fullScreenImage;
+            if (iref) {
+                fullScreenImage = [UIImage imageWithCGImage:iref];
+                
+            }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completion) {
+                    completion(fullScreenImage,nil);
+                }
+                
+            });
+        } @catch (NSException *e) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(nil,nil);
+            });
+        }
+        
+    });
+}
+
+- (void)getFullScreenImageWithMutipleAsset:(id)asset photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion
+{
+    if (iOS8Later) {
+        [self ios8_AsyncLoadFullScreenImageWithSize:photoSize asset:asset completion:completion];
     }else {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             
             @try {
-                ALAsset *asset = (ALAsset *)imageModel.asset;
+                ALAsset *asset = (ALAsset *)asset;
                 ALAssetRepresentation *rep = [asset defaultRepresentation];
                 CGImageRef iref = [rep fullScreenImage];
                 UIImage *fullScreenImage;
@@ -662,40 +729,13 @@ static IPAssetManager *manager;
             
         });
     }
-    
     
 }
-- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+
+- (void) getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion
+{
     
-    if (iOS8Later) {
-        [self ios8_AsyncLoadFullScreenImageWithSize:photoSize asset:imageModel completion:completion];
-    }else {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            
-            @try {
-                ALAsset *asset = (ALAsset *)imageModel.asset;
-                ALAssetRepresentation *rep = [asset defaultRepresentation];
-                CGImageRef iref = [rep fullScreenImage];
-                UIImage *fullScreenImage;
-                if (iref) {
-                    fullScreenImage = [UIImage imageWithCGImage:iref];
-                    
-                }
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    if (completion) {
-                        completion(fullScreenImage,nil);
-                    }
-                    
-                });
-            } @catch (NSException *e) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completion(nil,nil);
-                });
-            }
-            
-        });
-    }
-    
+    [self getFullScreenImageWithMutipleAsset:imageModel.asset photoWidth:photoSize completion:completion];
     
 }
 - (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
@@ -764,15 +804,12 @@ static IPAssetManager *manager;
     
     
 }
-/**
- *  加载高清图
- */
-- (void)ios8_AsyncLoadHighQualityImageWithSize:(CGSize)imageSize asset:(IPAssetModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+- (void)ios8_AsyncLoadHighQualityImageWithSize:(CGSize)imageSize phasset:(PHAsset *)asset completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
     options.networkAccessAllowed = YES;
     options.resizeMode = PHImageRequestOptionsResizeModeExact;
     options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
-    PHAsset *phAsset = (PHAsset *)imagModel.asset;
+    PHAsset *phAsset = asset;
     options.synchronous = YES;
     //    PHImageManagerMaximumSize
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:imageSize contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
@@ -784,6 +821,12 @@ static IPAssetManager *manager;
             completion(nil,nil);
         }
     }];
+}
+/**
+ *  加载高清图
+ */
+- (void)ios8_AsyncLoadHighQualityImageWithSize:(CGSize)imageSize asset:(IPAssetModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+    [self ios8_AsyncLoadHighQualityImageWithSize:imageSize phasset:(PHAsset *)imagModel.asset completion:completion];
 }
 
 /**
@@ -816,13 +859,13 @@ static IPAssetManager *manager;
 /**
  *  加载全屏图
  */
-- (void)ios8_AsyncLoadFullScreenImageWithSize:(CGSize)imageSize asset:(IPAssetModel *)imagModel completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
+- (void)ios8_AsyncLoadFullScreenImageWithSize:(CGSize)imageSize asset:(PHAsset *)asset completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
     PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
     options.networkAccessAllowed = YES;
     options.resizeMode = PHImageRequestOptionsResizeModeExact;
     options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
     options.synchronous = YES;
-    PHAsset *phAsset = (PHAsset *)imagModel.asset;
+    PHAsset *phAsset = asset;
     //    PHImageManagerMaximumSize
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
         //                IPLog(@"高清图--%@",info);
@@ -1277,5 +1320,208 @@ static IPAssetManager *manager;
 //    }];
 //    
 //}
+
+#pragma mark - interface
++ (void)getThumbailImageWithImageURL:(NSString *)imageUrl Width:(CGFloat)width RequestBlock:(RequestImageBlock)block
+{
+    [self getImageWithImageURL:imageUrl Width:width Type:GetImageTypeAspectThumbail RequestBlock:block];
+}
+
++ (void)getThumbailImageWithImageURL:(NSString *)imageUrl RequestBlock:(RequestImageBlock)block
+{
+    [self getImageWithImageURL:imageUrl Width:80 Type:GetImageTypeThumbail RequestBlock:block];
+}
+
++ (void)getImageWithImageURL:(NSString *)imageUrl RequestBlock:(RequestImageBlock)block
+{
+    [self getImageWithImageURL:imageUrl Width:[UIScreen mainScreen].bounds.size.width Type:GetImageTypeFullScreen RequestBlock:block];
+}
+
++ (void)getImageWithImageURL:(NSString *)imageUrl width:(CGFloat)width RequestBlock:(RequestImageBlock)block
+{
+    [self getImageWithImageURL:imageUrl Width:width Type:GetImageTypeFullScreen RequestBlock:block];
+}
+
++ (void)getImageWithImageURL:(NSString *)imageUrl Width:(CGFloat)width Type:(GetImageType)type RequestBlock:(RequestImageBlock)block
+{
+    //ios8之前AssetsLibrary 产生的字符串是以library: 开头的
+    if ([imageUrl rangeOfString:@"library:"].location == NSNotFound) {
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            PHFetchResult *results = nil;
+            
+            results = [PHAsset fetchAssetsWithLocalIdentifiers:@[imageUrl] options:nil];
+            
+            if (results.count == 0) {
+                PHAssetCollectionSubtype PhotoStreamSubtype = PHAssetCollectionSubtypeAlbumMyPhotoStream;
+                
+                //获取智能相册
+                PHFetchOptions *imageOption = [[PHFetchOptions alloc] init];
+                imageOption.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+                imageOption.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:NO]];
+                
+                PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum  subtype:PhotoStreamSubtype options:nil];
+                for (PHAssetCollection *collection in smartAlbums) {
+                    results = [PHAsset fetchAssetsInAssetCollection:collection options:imageOption];
+                    break;
+                }
+                
+            }
+            if (![self checkResultIsUseful:results]) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (block) {
+                        block(nil,[NSError errorWithDomain:@"没找到图片" code:404 userInfo:nil]);
+                    }
+                });
+            }
+            __block BOOL isFind = NO;
+            [results enumerateObjectsUsingBlock:^(PHAsset *asset, NSUInteger idx, BOOL *stop) {
+                if ([asset.localIdentifier isEqualToString:imageUrl]) {
+                    isFind = YES;
+                    PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+                    CGFloat aspectRatio = asset.pixelWidth / (CGFloat)asset.pixelHeight;
+                    CGFloat multiple = [UIScreen mainScreen].scale;
+                    CGFloat pixelWidth = width * multiple;
+                    CGFloat pixelHeight = pixelWidth / aspectRatio;
+                    if (type == GetImageTypeThumbail) {
+                        options.resizeMode = PHImageRequestOptionsResizeModeExact;
+                        options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+                    }else if (type == GetImageTypeAspectThumbail){
+                        options.resizeMode = PHImageRequestOptionsResizeModeExact;
+                        options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+                    }else {
+                        options.resizeMode = PHImageRequestOptionsResizeModeExact;
+                        options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+                    }
+                    
+                    [[PHImageManager defaultManager] requestImageForAsset:asset targetSize:CGSizeMake(pixelWidth, pixelHeight) contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info) {
+                        if (result) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                if (block) {
+                                    block(result,nil);
+                                }
+                            });
+                        }else {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                if (block) {
+                                    block(nil,[NSError errorWithDomain:@"没找到图片" code:404 userInfo:nil]);
+                                }
+                            });
+                        }
+                        
+                    }];
+                    
+                }
+                
+            }];
+            
+            if (isFind == NO) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (block) {
+                        block(nil,[NSError errorWithDomain:@"没找到图片" code:404 userInfo:nil]);
+                    }
+                });
+            }
+        });
+    }else {
+        
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+            ALAssetsLibrary *lib = [[ALAssetsLibrary alloc] init];
+            [lib assetForURL:[NSURL URLWithString:imageUrl] resultBlock:^(ALAsset *asset) {
+                if (asset) {
+                    UIImage *image;
+                    if (type == GetImageTypeThumbail) {
+                        image = [UIImage imageWithCGImage:asset.thumbnail];
+                    }else if (type == GetImageTypeAspectThumbail){
+                        image = [UIImage imageWithCGImage:asset.aspectRatioThumbnail];
+                    }else {
+                        ALAssetRepresentation *representation = asset.defaultRepresentation;
+                        image = [UIImage imageWithCGImage:representation.fullScreenImage];
+                    }
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        if (block) {
+                            block(image,nil);
+                        }
+                    });
+                    
+                }else {
+                    [lib enumerateGroupsWithTypes:ALAssetsGroupPhotoStream
+                                       usingBlock:^(ALAssetsGroup *group, BOOL *stop)
+                     {
+                         if(group)
+                         {
+                             __block BOOL isFind = NO;
+                             [group enumerateAssetsWithOptions:NSEnumerationReverse usingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
+                                 if([result.defaultRepresentation.url isEqual:imageUrl])
+                                 {
+                                     isFind = YES;
+                                     UIImage *image;
+                                     if (type == GetImageTypeThumbail) {
+                                         image = [UIImage imageWithCGImage:result.thumbnail];
+                                     }else if (type == GetImageTypeAspectThumbail){
+                                         image = [UIImage imageWithCGImage:result.aspectRatioThumbnail];
+                                     }else {
+                                         ALAssetRepresentation *representation = result.defaultRepresentation;
+                                         image = [UIImage imageWithCGImage:representation.fullScreenImage];
+                                     }
+                                     dispatch_async(dispatch_get_main_queue(), ^{
+                                         if (block) {
+                                             block(image,nil);
+                                         }
+                                     });
+                                     *stop = YES;
+                                     
+                                 }
+                             }];
+                             if (isFind == NO) {
+                                 dispatch_async(dispatch_get_main_queue(), ^{
+                                     if (block) {
+                                         block(nil,[NSError errorWithDomain:@"没找到图片" code:404 userInfo:nil]);
+                                     }
+                                 });
+                             }
+                         }
+                         else
+                         {
+                             dispatch_async(dispatch_get_main_queue(), ^{
+                                 if (block) {
+                                     block(nil,[NSError errorWithDomain:@"没找到图片" code:404 userInfo:nil]);
+                                 }
+                             });
+                         }
+                     }
+                                     failureBlock:^(NSError *error)
+                     {
+                         dispatch_async(dispatch_get_main_queue(), ^{
+                             if (block) {
+                                 block(nil,error);
+                             }
+                         });
+                     }];
+                }
+                
+            } failureBlock:^(NSError *error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (block) {
+                        block(nil,error);
+                    }
+                });
+            }];
+        });
+    }
+}
+
++ (BOOL)checkResultIsUseful:(PHFetchResult *)result{
+    if (result) {
+        if (result.count > 0) {
+            return YES;
+        }else {
+            return NO;
+        }
+    }else {
+        return NO;
+    }
+}
 
 @end

@@ -7,7 +7,6 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "IPTapDetectImageView.h"
 
 @class IPAssetModel,IPickerViewController,IPImageReaderViewController;
 
@@ -15,9 +14,11 @@
 
 @property (nonatomic, weak)IPImageReaderViewController *readerVc;
 
-@property (nonatomic, strong) IPAssetModel * imageModel;
+@property (nonatomic, readonly) NSString *imgSourceUrl;
+@property (nonatomic, readonly) id asset;
+@property (nonatomic, readonly) UIImage *image;
+@property (nonatomic, readonly) UIImageView *photoImageView;
 
-@property (nonatomic, readonly)IPTapDetectImageView *photoImageView;
 @property (nonatomic, readonly) UIImageView *animateImageView;    //做动画的图片
 
 /**是否显示高清 */
@@ -28,5 +29,8 @@
 - (void)displayImage;
 
 - (void)displayImageWithFullScreenImage;
+- (void)displayImageWithImage:(UIImage *)image;
+- (void)displayImageWithImageUrl:(NSString *)imageURL;
+- (void)displayImageWithAlbumAsset:(id)asset;
 
 @end

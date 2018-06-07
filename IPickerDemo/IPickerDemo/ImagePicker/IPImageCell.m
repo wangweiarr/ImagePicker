@@ -20,7 +20,7 @@
 
 @interface IPImageCell ()
 /**缩略图*/
-@property (nonatomic, weak,readwrite) UIImageView *imgView;
+@property (nonatomic, weak) UIImageView *imgView;
 /**右上角按钮*/
 @property (nonatomic, strong) UIButton *rightCornerBtn;
 
@@ -89,22 +89,13 @@
     imgView.image = [UIImage imageNamed:@"default_8_120"];
     self.imgView = imgView;
     
-//    UIButton *rightCornerBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.bounds.size.width - 18-5, 5, 18, 18)];
-//   
-//    [rightCornerBtn addTarget:self action:@selector(clickBtnInCell:) forControlEvents:UIControlEventTouchUpInside];
-//    [self.contentView addSubview:rightCornerBtn];
-//    self.rightCornerBtn = rightCornerBtn;
-    
-
-    
+    [self.contentView addSubview:self.rightCornerBtn];
 }
 - (UIButton *)rightCornerBtn{
     if (_rightCornerBtn == nil) {
         _rightCornerBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.bounds.size.width - 18-5, 5, 18, 18)];
         
         [_rightCornerBtn addTarget:self action:@selector(clickBtnInCell:) forControlEvents:UIControlEventTouchUpInside];
-        
-        [self.contentView addSubview:_rightCornerBtn];
     }
     return _rightCornerBtn;
 }
@@ -181,7 +172,7 @@
 - (void)setModel:(IPAssetModel *)model{
     _model = model;
     __weak typeof(self) weakSelf = self;
-    
+    self.rightCornerBtn.hidden = NO;
     if (_model.assetType == IPAssetModelMediaTypeVideo ) {
 
         [self.ipVc getFullScreenImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {

@@ -16,13 +16,12 @@
 #import "IPImageReaderCell.h"
 #import "IPImageReaderLayout.h"
 
-@interface IPImageReaderViewController ()<UICollectionViewDelegateFlowLayout,UINavigationControllerDelegate>
+@interface IPImageReaderViewController ()<UICollectionViewDelegateFlowLayout,UINavigationControllerDelegate,UICollectionViewDataSource,UICollectionViewDelegate>
+
+@property (nonatomic, strong) UICollectionView *collectionView;
 
 /**图片数组*/
 @property (nonatomic, strong)NSArray *dataArr;
-
-/**第一次出现时,要滚动到指定位置*/
-@property (nonatomic, assign)BOOL isFirst;
 
 /**发生转屏时,要滚动到指定位置*/
 @property (nonatomic, assign)BOOL isRoration;
@@ -46,32 +45,29 @@
 
 @implementation IPImageReaderViewController
 
-static NSString * const reuseIdentifier = @"Cell";
-+ (instancetype)imageReaderViewControllerWithData:(NSArray<IPAssetModel *> *)data TargetIndex:(NSUInteger)index{
-    if (data == nil || data.count == 0 ) {
-        return nil;
+static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
+
+- (UICollectionView *)collectionView
+{
+    if (_collectionView == nil) {
+        _collectionView = [[UICollectionView alloc]initWithFrame:self.view.bounds collectionViewLayout:[IPImageReaderLayout new]];
+        _collectionView.dataSource = self;
+        _collectionView.delegate = self;
+        _collectionView.backgroundColor = [UIColor clearColor];
+        _collectionView.pagingEnabled = YES;
+        _collectionView.showsVerticalScrollIndicator = NO;
+        _collectionView.showsHorizontalScrollIndicator = NO;
+        _collectionView.bounces = NO;
+        [_collectionView registerClass:[IPImageReaderCell class] forCellWithReuseIdentifier:reuseIdentifier];
     }
-    IPImageReaderLayout *layout = [IPImageReaderLayout new];
-    
-    IPImageReaderViewController *vc = [[IPImageReaderViewController alloc]initWithCollectionViewLayout:layout];
-    vc.dataArr = data;
-    vc.currentPage = index;
-    return vc;
-    
-    
+    return _collectionView;
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self.view addSubview:self.collectionView];
     _animationTranstionBgColor = [UIColor blackColor];
     self.view.backgroundColor = _animationTranstionBgColor;
-    self.collectionView.backgroundColor = [UIColor clearColor];
-    self.navigationController.delegate = self;
-    self.collectionView.pagingEnabled = YES;
-    self.collectionView.showsHorizontalScrollIndicator = NO;
-    self.collectionView.showsVerticalScrollIndicator = NO;
-    self.collectionView.bounces = NO;
-    [self.collectionView registerClass:[IPImageReaderCell class] forCellWithReuseIdentifier:reuseIdentifier];
     self.automaticallyAdjustsScrollViewInsets = NO;
     if (@available(iOS 11.0, *)) {
         self.collectionView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
@@ -79,9 +75,7 @@ static NSString * const reuseIdentifier = @"Cell";
     [self addHeaderView];
     
 }
-- (BOOL)prefersStatusBarHidden{
-    return YES;
-}
+
 - (void)addHeaderView{
     
     //添加背景图
@@ -130,32 +124,19 @@ static NSString * const reuseIdentifier = @"Cell";
     } else if (self.currentPage > maxIndex) {
         self.currentPage = maxIndex;
     }
-    if (self.isFirst == NO) {
-        
-        if (self.currentPage == 0) {//当滚动到0的位置时,默认是不调用scrolldidscroll方法的
-            IPAssetModel *model = self.dataArr[0];
-            self.rightButton.selected = model.isSelect;
-        }
-        
-        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
-        [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
-        
-        self.isFirst = YES;
-    }
+    
     if (self.isRoration) {
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
         self.isRoration = NO;
-        IPAssetModel *model = self.dataArr[_currentPage];
-        IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
+        IPZoomScrollView *thePage = [self pageDisplayingPhoto:nil];
         [thePage displayImageWithFullScreenImage];
     }
     if (self.forceTouch) {
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
         
-        IPAssetModel *model = self.dataArr[_currentPage];
-        IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
+        IPZoomScrollView *thePage = [self pageDisplayingPhoto:nil];
         if (thePage) {
             self.forceTouch = NO;
             [thePage displayImageWithFullScreenImage];
@@ -166,11 +147,14 @@ static NSString * const reuseIdentifier = @"Cell";
 
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
-    IPAssetModel *model = self.dataArr[_currentPage];
-    IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
+    [self.collectionView setContentOffset:CGPointMake(self.view.bounds.size.width * _currentPage, self.collectionView.contentOffset.y)];
+
+    IPZoomScrollView *thePage = [self pageDisplayingPhoto:nil];
     [thePage displayImageWithFullScreenImage];
-    self.navigationController.delegate = self;
     
+    if ([self.dataSource respondsToSelector:@selector(imageReader:currentAssetIsSelect:)]) {
+        self.rightButton.selected = [self.dataSource imageReader:self currentAssetIsSelected:_currentPage];
+    }
 }
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -203,114 +187,77 @@ static NSString * const reuseIdentifier = @"Cell";
     }else {
         self.currentSelectCount --;
     }
-//    NSLog(@"%tu",_currentPage);
-    IPAssetModel *model = self.dataArr[_currentPage];
-    model.isSelect = btn.selected;
-    if (self.delegate && [self.delegate respondsToSelector:@selector(clickSelectBtnForReaderView:)]) {
-        [self.delegate clickSelectBtnForReaderView:model];
+    if ([self.delegate respondsToSelector:@selector(imageReader:currentAssetIsSelect:)]) {
+        [self.delegate imageReader:self currentAssetIsSelect:btn.selected];
     }
-    
 }
 
-- (BOOL)shouldAutorotate{
-    return YES;
-}
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations{
-    return UIInterfaceOrientationMaskPortrait|UIInterfaceOrientationMaskLandscapeLeft|UIInterfaceOrientationMaskLandscapeRight;
-}
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    
-    // Remember page index before rotation
-    _pageIndexBeforeRotation = _currentPage;
-    
-    
-}
-
-//#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
-//- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator{
-//    // Perform layout
-//    _currentPage = _pageIndexBeforeRotation;
-//    self.isRoration = YES;
-//    
-//    IPAssetModel *model = self.dataArr[_currentPage];
-//    self.rightButton.selected = model.isSelect;
-//    
-//    [self.collectionView reloadData];
-//}
-//#else
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    
-    // Perform layout
-    _currentPage = _pageIndexBeforeRotation;
-    self.isRoration = YES;
-    
-    IPAssetModel *model = self.dataArr[_currentPage];
-    self.rightButton.selected = model.isSelect;
-    
-    [self.collectionView reloadData];
-    
-}
-//#endif
-
-
-
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation{
-    self.isRoration = NO;
-    IPAssetModel *model = self.dataArr[_currentPage];
-    IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-    [thePage displayImageWithFullScreenImage];
-    
-}
 #pragma mark <UICollectionViewDataSource>
 
-- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
+{
     return 1;
 }
 
-
-- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
-    return self.dataArr.count;
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+{
+    return [self.dataSource numberOfAssetsInImageReader:self];
 }
 
-- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+{
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
-    IPAssetModel *model = [self.dataArr objectAtIndex:indexPath.item];
     
     cell.zoomScroll.readerVc = self;
     IPLog(@"cellForItemAtIndexPath--%tu",indexPath.item);
-    cell.zoomScroll.imageModel = model;
+    IPImageSourceType type = [self.dataSource imageReader:self soureTypeWithIndex:indexPath.item];
+    if (type == IPImageSourceTypeAlbum) {
+        id asset = [self.dataSource imageReader:self albumAssetWithIndex:indexPath.item];
+        [cell.zoomScroll displayImageWithAlbumAsset:asset];
+    } else if (type == IPImageSourceTypeNet) {
+        [cell.zoomScroll displayImageWithImageUrl:[self.dataSource imageReader:self simpleQualityAssetUrlWithIndex:indexPath.item]];
+    } else {
+        [cell.zoomScroll displayImageWithImage:[self.dataSource imageReader:self simpleQualityAssetImgWithIndex:indexPath.item]];
+    }
+    
+    
+
     return cell;
 }
 
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath{
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
+{
     
     return self.view.bounds.size;
 }
-- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageReaderCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
+
+- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageReaderCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
+{
     IPLog(@"didEndDisplayingCell--%tu",indexPath.item);
 //    [cell.zoomScroll prepareForReuse];
     
 }
 
 #pragma mark <UICollectionViewDelegate>
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView{
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+{
     if (self.isRoration) {
         return;
     }
     CGRect visibleBounds = scrollView.bounds;
     NSInteger index = (NSInteger)(floorf(CGRectGetMidX(visibleBounds) / CGRectGetWidth(visibleBounds)));
     if (index < 0) index = 0;
-    if (index > [self.dataArr count] - 1) index = [self.dataArr count] - 1;
+    if (index > [self.dataSource numberOfAssetsInImageReader:self] - 1) index = [self.dataSource numberOfAssetsInImageReader:self] - 1;
     NSUInteger previousCurrentPage = _currentPage;
     _currentPage = index;
     if (_currentPage != previousCurrentPage) {
-        IPAssetModel *model = self.dataArr[_currentPage];
-        self.rightButton.selected = model.isSelect;
+        if ([self.dataSource respondsToSelector:@selector(imageReader:currentAssetIsSelect:)]) {
+            self.rightButton.selected = [self.dataSource imageReader:self currentAssetIsSelected:_currentPage];
+        }
     }
-   
 }
+
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView{
    
     [UIView animateWithDuration:0.3
@@ -319,6 +266,7 @@ static NSString * const reuseIdentifier = @"Cell";
                          self.headerView.alpha = 0.0f;
                      }completion:nil];
 }
+
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
     [UIView animateWithDuration:0.3
                      animations:^{
@@ -327,23 +275,20 @@ static NSString * const reuseIdentifier = @"Cell";
                      }completion:nil];
     
 }
+
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
     IPAssetModel *model = self.dataArr[_currentPage];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
     [thePage displayImageWithFullScreenImage];
     
-    NSLog(@"scrollViewDidEndDecelerating");
 }
 
 - (IPZoomScrollView *)pageDisplayingPhoto:(IPAssetModel *)model {
-    IPZoomScrollView *thePage = nil;
-    for (IPImageReaderCell *cell in self.collectionView.visibleCells) {
-        if (cell.zoomScroll.imageModel == model) {
-            thePage = cell.zoomScroll; break;
-        }
-    }
-    return thePage;
+    IPImageReaderCell *cell = self.collectionView.visibleCells.firstObject;
+    
+    return cell.zoomScroll;
 }
+
 #pragma mark <UINavigationControllerDelegate>
 - (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController
                                    animationControllerForOperation:(UINavigationControllerOperation)operation
@@ -357,11 +302,73 @@ static NSString * const reuseIdentifier = @"Cell";
     }
 }
 
+#pragma mark - statusBar
+
+- (BOOL)prefersStatusBarHidden
+{
+    return YES;
+}
+
+#pragma mark - rorate
+
+- (BOOL)shouldAutorotate
+{
+    return YES;
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskPortrait|UIInterfaceOrientationMaskLandscapeLeft|UIInterfaceOrientationMaskLandscapeRight;
+}
+
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator{
+    // Perform layout
+    _currentPage = _pageIndexBeforeRotation;
+    self.isRoration = YES;
+
+    IPAssetModel *model = self.dataArr[_currentPage];
+    self.rightButton.selected = model.isSelect;
+
+    [self.collectionView reloadData];
+}
+#else
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+    
+    // Perform layout
+    _currentPage = _pageIndexBeforeRotation;
+    self.isRoration = YES;
+    
+    IPAssetModel *model = self.dataArr[_currentPage];
+    self.rightButton.selected = model.isSelect;
+    
+    [self.collectionView reloadData];
+    
+}
+#endif
+
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    // Remember page index before rotation
+    _pageIndexBeforeRotation = _currentPage;
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation{
+    self.isRoration = NO;
+    IPAssetModel *model = self.dataArr[_currentPage];
+    IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
+    [thePage displayImageWithFullScreenImage];
+    
+}
 
 #pragma mark - interface
 - (void)setUpCurrentSelectPage:(NSUInteger)page
 {
-    
+    if (page >= [self.dataSource numberOfAssetsInImageReader:self]) {
+        page = [self.dataSource numberOfAssetsInImageReader:self] - 1;
+    }
+    _currentPage = page;
 }
 
 @end

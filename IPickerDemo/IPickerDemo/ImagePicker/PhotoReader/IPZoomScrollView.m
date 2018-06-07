@@ -8,7 +8,6 @@
 
 #import "IPZoomScrollView.h"
 #import "IPAssetModel.h"
-#import "IPTapDetectView.h"
 #import "IPAssetManager.h"
 #import "IPPrivateDefine.h"
 #import "IPImageReaderViewController+AniamtionTranstion.h"
@@ -16,7 +15,7 @@
 
 
 
-@interface IPZoomScrollView ()<UIScrollViewDelegate,IPTapDetectViewDelegate,IPTapDetectImageViewDelegate>
+@interface IPZoomScrollView ()<UIScrollViewDelegate>
 {
     
     //动画相关
@@ -31,12 +30,13 @@
     BOOL animateImageViewIsStart;   //拖动动效是否第一次触发
     BOOL isCancelAnimate;   //正在取消拖动动效
 }
-/**背景view*/
-@property (nonatomic, strong) IPTapDetectView *tapView;
 
 /**图像view*/
-@property (nonatomic, strong) IPTapDetectImageView *photoImageView;
+@property (nonatomic, strong) UIImageView *photoImageView;
 
+@property (nonatomic, strong) NSString *imgSourceUrl;
+@property (nonatomic, strong) id asset;
+@property (nonatomic, strong) UIImage *image;
 
 @property (nonatomic, assign) BOOL cancelDragImageViewAnimation;
 @property (nonatomic, strong) UIImageView *animateImageView;    //做动画的图片
@@ -46,32 +46,30 @@
 
 @implementation IPZoomScrollView
 
-- (instancetype)initWithFrame:(CGRect)frame{
+- (instancetype)initWithFrame:(CGRect)frame
+{
     if (self = [super initWithFrame:frame]) {
         [self initilization];
     }
     return self;
 }
-- (instancetype)initWithCoder:(NSCoder *)aDecoder{
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
+{
     if (self = [super initWithCoder:aDecoder]) {
         [self initilization];
     }
     return self;
 }
-- (void)initilization{
-    // Tap view for background
-    _tapView = [[IPTapDetectView alloc] initWithFrame:self.bounds];
-    _tapView.tapDelegate = self;
-    _tapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    _tapView.backgroundColor = [UIColor clearColor];
-    [self addSubview:_tapView];
-    
+
+- (void)initilization
+{
+    [self addGesture];
     // Image view
-    _photoImageView = [[IPTapDetectImageView alloc] initWithFrame:CGRectZero];
+    _photoImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     _photoImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     _photoImageView.autoresizesSubviews = YES;
     _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
-    _photoImageView.tapDelegate = self;
     _photoImageView.backgroundColor = [UIColor clearColor];
     [self addSubview:_photoImageView];
     
@@ -85,32 +83,37 @@
     self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
 }
-- (void)prepareForReuse {
-    _imageModel = nil;
-    _photoImageView.hidden = YES;
-    _photoImageView.image = nil;
-//    _isDisplayingHighQuality = NO;
+
+- (void)addGesture
+{
+    UITapGestureRecognizer *tapSingle = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleSingleTap:)];
+    tapSingle.numberOfTapsRequired = 1;
+    UITapGestureRecognizer *tapDouble = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
+    tapDouble.numberOfTapsRequired = 2;
+    [tapSingle requireGestureRecognizerToFail:tapDouble];
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+    [self addGestureRecognizer:tapSingle];
+    [self addGestureRecognizer:tapDouble];
+    [self addGestureRecognizer:longPress];
 }
 
-- (void)setImageModel:(IPAssetModel *)imageModel{
-    
-    if (_imageModel != imageModel && imageModel != nil) {
-        _imageModel = imageModel;
-//        if (self.isDisplayingHighQuality) {
-//            [self displayImageWithFullScreenImage];
-//        }else {
-            [self displayImage];
-//        }
-        
-    }
+- (void)prepareForReuse
+{
+    [self setZoomScale:1.0 animated:NO];
+    self.photoImageView.image = nil;
+    _photoImageView.hidden = YES;
+    _photoImageView.image = nil;
 }
-- (void)displayImageWithFullScreenImage{
+
+
+- (void)displayImageWithFullScreenImage
+{
     CGSize size = CGSizeMake(self.bounds.size.width, self.bounds.size.height);
     if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
         size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
     }
     
-    [[IPAssetManager defaultAssetManager] getFullScreenImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
+    [[IPAssetManager defaultAssetManager] getFullScreenImageWithMutipleAsset:_asset photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
         if (img) {
             if (!CGSizeEqualToSize(img.size, _photoImageView.image.size)) {
                 // Set image
@@ -118,67 +121,80 @@
                 _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
                 // Setup photo frame
                 self.contentSize = _photoImageView.frame.size;
-                
+
                 [self setMaxMinZoomScalesForCurrentBounds];
                 [self setNeedsLayout];
             }
-            
+
         }
     }];
 }
 
-// Get and display image
-- (void)displayImage {
-    if (_imageModel && _photoImageView.image == nil) {
-        
-        CGSize size = CGSizeMake(self.bounds.size.width, self.bounds.size.height);
-        if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
-            size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
-        }
-        // Get image from browser as it handles ordering of fetching
-        
-        [[IPAssetManager defaultAssetManager] getHighQualityImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
-            if (img) {
-                
-                // Reset
-                self.maximumZoomScale = 1;
-                self.minimumZoomScale = 1;
-                self.zoomScale = 1;
-                
-                 _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
-                // Set image
-                _photoImageView.image = img;
-                _photoImageView.hidden = NO;
-                IPLog(@"displayImage imageSize %@",NSStringFromCGSize(img.size));
-                // Setup photo frame
-                CGRect photoImageViewFrame;
-                
-                
-                
-                if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
-                    CGFloat height = self.bounds.size.height;
-                    
-                    CGFloat width = height * img.size.width /img.size.height;
-                    photoImageViewFrame.size = CGSizeMake(width, height);
-                    IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
-                }else {
-                    
-                    CGFloat width = self.bounds.size.width;
-                    
-                    CGFloat height = width * img.size.height /img.size.width;
-                    photoImageViewFrame.size = CGSizeMake(width, height);
-                    IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
-                    
-                }
-                photoImageViewFrame.origin = CGPointZero;
-                _photoImageView.frame = photoImageViewFrame;
-                
-            }
-            [self setNeedsLayout];
-        }];
-    
+- (void)displayImageWithImageUrl:(NSString *)imageURL
+{
+    _imgSourceUrl = imageURL;
+    CGSize size = CGSizeMake(self.bounds.size.width, self.bounds.size.height);
+    if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
+        size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
     }
+    [IPAssetManager getImageWithImageURL:imageURL width:size.width RequestBlock:^(UIImage *image, NSError *error) {
+        if (!error && image) {
+            [self displayImageWithImage:image];
+        }
+    }];
 }
+
+- (void)displayImageWithImage:(UIImage *)image
+{
+    // Reset
+    self.maximumZoomScale = 1;
+    self.minimumZoomScale = 1;
+    self.zoomScale = 1;
+    
+    _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
+    // Set image
+    _photoImageView.image = image;
+    _photoImageView.hidden = NO;
+    IPLog(@"displayImage imageSize %@",NSStringFromCGSize(image.size));
+    // Setup photo frame
+    CGRect photoImageViewFrame;
+    
+    
+    
+    if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
+        CGFloat height = self.bounds.size.height;
+        
+        CGFloat width = height * image.size.width /image.size.height;
+        photoImageViewFrame.size = CGSizeMake(width, height);
+        IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
+    }else {
+        
+        CGFloat width = self.bounds.size.width;
+        
+        CGFloat height = width * image.size.height /image.size.width;
+        photoImageViewFrame.size = CGSizeMake(width, height);
+        IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
+        
+    }
+    photoImageViewFrame.origin = CGPointZero;
+    _photoImageView.frame = photoImageViewFrame;
+    [self setNeedsLayout];
+}
+
+- (void)displayImageWithAlbumAsset:(id)asset
+{
+    CGSize size = CGSizeMake(self.bounds.size.width, self.bounds.size.height);
+    if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
+        size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
+    }
+    _asset = asset;
+    [[IPAssetManager defaultAssetManager] getHighQualityImageWithMutipleAsset:asset photoWidth:size completion:^(UIImage *photo, NSDictionary *info) {
+        if (photo) {
+            [self displayImageWithImage:photo];
+        }
+    }];
+}
+
 //设置当前情况下,最大和最小伸缩比
 - (void)setMaxMinZoomScalesForCurrentBounds {
     
@@ -248,10 +264,6 @@
 
 - (void)layoutSubviews {
    
-    // Update tap view frame
-    _tapView.frame = self.bounds;
-   
-    
     // Super
     [super layoutSubviews];
     
@@ -289,7 +301,7 @@
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
     self.scrollEnabled = YES; // reset
     
-    [self dragAnimation_recordInfoWithScrollView:scrollView];
+    [self panDismissRecordInfoWithScrollView:scrollView];
 }
 
 - (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(UIView *)view {
@@ -298,30 +310,18 @@
 }
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
     
-    [self dragAnimation_removeAnimationImageViewWithScrollView:scrollView container:self];
+    [self panDismissRemoveAnimationImageViewWithScrollView:scrollView container:self];
 }
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-//    [self dragAnimation_respondsToScrollViewPanGesture];
+    [self panDismissRespondsToScrollViewPanGesture];
 }
 
 - (void)scrollViewDidZoom:(UIScrollView *)scrollView {
     [self setNeedsLayout];
     [self layoutIfNeeded];
 }
-+ (UIWindow *)getNormalWindow {
-    UIWindow *window = [[UIApplication sharedApplication] keyWindow];
-    if (window.windowLevel != UIWindowLevelNormal) {
-        NSArray *windows = [[UIApplication sharedApplication] windows];
-        for(UIWindow * temp in windows) {
-            if (temp.windowLevel == UIWindowLevelNormal) {
-                window = temp;
-                break;
-            }
-        }
-    }
-    return window;
-}
+
 
 - (UIImageView *)animateImageView {
     if (!_animateImageView) {
@@ -333,17 +333,17 @@
 }
 
 #pragma mark - dragAnimation
-- (void)dragAnimation_recordInfoWithScrollView:(UIScrollView *)scrollView {
+- (void)panDismissRecordInfoWithScrollView:(UIScrollView *)scrollView {
     if (self.cancelDragImageViewAnimation) return;
     
     CGPoint point = [scrollView.panGestureRecognizer locationInView:self];
     startOffsetOfScrollView = scrollView.contentOffset;
-    frameOfOriginalOfImageView = [self.photoImageView convertRect:self.photoImageView.bounds toView:[IPZoomScrollView getNormalWindow]];
+    frameOfOriginalOfImageView = [self.photoImageView convertRect:self.photoImageView.bounds toView:self.window];
     startScaleWidthInAnimationView = (point.x - frameOfOriginalOfImageView.origin.x) / frameOfOriginalOfImageView.size.width;
     startScaleheightInAnimationView = (point.y - frameOfOriginalOfImageView.origin.y) / frameOfOriginalOfImageView.size.height;
 }
 
-- (void)dragAnimation_respondsToScrollViewPanGesture {
+- (void)panDismissRespondsToScrollViewPanGesture {
     if (self.cancelDragImageViewAnimation || self.isZooming) return;
     
     UIPanGestureRecognizer *pan = self.panGestureRecognizer;
@@ -352,18 +352,18 @@
     CGPoint point = [pan locationInView:self];
     BOOL shouldAddAnimationView = point.y > lastPointY && self.contentOffset.y < -10 && !self.animateImageView.superview;
     if (shouldAddAnimationView) {
-        [self dragAnimation_addAnimationImageViewWithPoint:point];
+        [self panDismissAddAnimationImageViewWithPoint:point];
     }
     
     if (pan.state == UIGestureRecognizerStateChanged) {
-        [self dragAnimation_performAnimationForAnimationImageViewWithPoint:point container:self];
+        [self panDismissPerformAnimationForAnimationImageViewWithPoint:point container:self];
     }
     
     lastPointY = point.y;
     lastPointX = point.x;
 }
 
-- (void)dragAnimation_addAnimationImageViewWithPoint:(CGPoint)point {
+- (void)panDismissAddAnimationImageViewWithPoint:(CGPoint)point {
     if (self.photoImageView.frame.size.width <= 0 || self.photoImageView.frame.size.height <= 0) return;
     
 //    if (!YBImageBrowser.isControllerPreferredForStatusBar) [[UIApplication sharedApplication] setStatusBarHidden:YBImageBrowser.statusBarIsHideBefore];
@@ -375,10 +375,10 @@
     totalOffsetXOfAnimateImageView = 0;
     self.animateImageView.image = self.photoImageView.image;
     self.animateImageView.frame = frameOfOriginalOfImageView;
-    [[IPZoomScrollView getNormalWindow] addSubview:self.animateImageView];
+    [self.window addSubview:self.animateImageView];
 }
 
-- (void)dragAnimation_removeAnimationImageViewWithScrollView:(UIScrollView *)scrollView container:(UIView *)container {
+- (void)panDismissRemoveAnimationImageViewWithScrollView:(UIScrollView *)scrollView container:(UIView *)container {
     if (!self.animateImageView.superview) return;
     
     CGFloat maxHeight = container.bounds.size.height;
@@ -388,7 +388,6 @@
     }
     
     if (totalOffsetYOfAnimateImageView > maxHeight * 0.15) {
-        [self.animateImageView removeFromSuperview];
         //移除图片浏览器
         [self.readerVc dismissViewController];
     } else {
@@ -414,7 +413,7 @@
     }
 }
 
-- (void)dragAnimation_performAnimationForAnimationImageViewWithPoint:(CGPoint)point container:(UIView *)container {
+- (void)panDismissPerformAnimationForAnimationImageViewWithPoint:(CGPoint)point container:(UIView *)container {
     if (!self.animateImageView.superview) {
         return;
     }
@@ -467,34 +466,9 @@
     
 }
 
-// Image View
-- (void)imageView:(UIImageView *)imageView singleTapDetected:(UITouch *)touch {
-    [self handleSingleTap:[touch locationInView:imageView]];
-}
-- (void)imageView:(UIImageView *)imageView doubleTapDetected:(UITouch *)touch {
-    [self handleDoubleTap:[touch locationInView:imageView]];
-}
-
-// Background View
-- (void)view:(UIView *)view singleTapDetected:(UITouch *)touch {
-    // Translate touch location to image view location
-    CGFloat touchX = [touch locationInView:view].x;
-    CGFloat touchY = [touch locationInView:view].y;
-    touchX *= 1/self.zoomScale;
-    touchY *= 1/self.zoomScale;
-    touchX += self.contentOffset.x;
-    touchY += self.contentOffset.y;
-    [self handleSingleTap:CGPointMake(touchX, touchY)];
-}
-- (void)view:(UIView *)view doubleTapDetected:(UITouch *)touch {
-    // Translate touch location to image view location
-    CGFloat touchX = [touch locationInView:view].x;
-    CGFloat touchY = [touch locationInView:view].y;
-    touchX *= 1/self.zoomScale;
-    touchY *= 1/self.zoomScale;
-    touchX += self.contentOffset.x;
-    touchY += self.contentOffset.y;
-    [self handleDoubleTap:CGPointMake(touchX, touchY)];
+- (void)handleLongPress:(UILongPressGestureRecognizer *)recognizer
+{
+    
 }
 
 @end

@@ -15,16 +15,16 @@
 
 @end
 @interface IPImageCell : UICollectionViewCell
-
+@property (nonatomic, readonly) UIButton *rightCornerBtn;
 /**缩略图*/
-@property (nonatomic, weak,readonly) UIImageView *imgView;
+@property (nonatomic, readonly) UIImageView *imgView;
 
 /**ipvc*/
-@property (nonatomic, weak)IPickerViewController *ipVc;
+@property (nonatomic, weak) IPickerViewController *ipVc;
 /**代理*/
-@property (nonatomic, weak)id <IPImageCellDelegate> delegate;
+@property (nonatomic, weak) id <IPImageCellDelegate> delegate;
 /**数据模型*/
-@property (nonatomic, strong)IPAssetModel *model;
+@property (nonatomic, strong) IPAssetModel *model;
 - (void)endDisplay;
 - (void)prepareForReuse;
 - (void)setUpCameraPreviewLayer;

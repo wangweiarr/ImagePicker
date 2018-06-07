@@ -20,6 +20,9 @@
         _zoomScroll  = [[IPZoomScrollView alloc]init];
         _zoomScroll.frame = self.bounds;
         [self.contentView addSubview:_zoomScroll];
+        if (@available(iOS 11.0, *)) {
+            _zoomScroll.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        }
         
     }
     return self;

@@ -67,6 +67,7 @@ typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
  *  Note:请传入 "> 0" 的数
  */
 @property (nonatomic, assign)NSUInteger maxCount;
+@property (nonatomic, readonly)NSUInteger selectIndex;
 
 
 /**代理*/
@@ -100,31 +101,5 @@ typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
  *  @param animation YES: 销毁控制器 NO:仅仅清除控制器数据
  */
 - (void)exitIPickerWithAnimation:(BOOL)animation;
-
-@end
-
-@interface IPickerViewController(GetImage)
-
-/**
- *  通过url获取全屏高清图片
- *
- *  @param url   图片资源的唯一标识
- */
-+ (void)getImageWithImageURL:(NSURL *)imageUrl RequestBlock:(RequestImageBlock)block;
-/**
- *  通过url获取等比缩略图
- *
- *  @param imageUrl 图片url
- *  @param width    图片宽度
- *  @param block    回调
- */
-+ (void)getAspectThumbailImageWithImageURL:(NSURL *)imageUrl Width:(CGFloat)width RequestBlock:(RequestImageBlock)block;
-/**
- *  通过url获取缩略图
- *
- *  @param imageUrl 图片url
- *  @param block    回调
- */
-+ (void)getThumbailImageWithImageURL:(NSURL *)imageUrl RequestBlock:(RequestImageBlock)block;
 
 @end
