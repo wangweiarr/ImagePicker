@@ -58,6 +58,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
         _collectionView.showsVerticalScrollIndicator = NO;
         _collectionView.showsHorizontalScrollIndicator = NO;
         _collectionView.bounces = NO;
+        _collectionView.hidden = YES;
         [_collectionView registerClass:[IPImageReaderCell class] forCellWithReuseIdentifier:reuseIdentifier];
     }
     return _collectionView;
@@ -148,7 +149,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
     [self.collectionView setContentOffset:CGPointMake(self.view.bounds.size.width * _currentPage, self.collectionView.contentOffset.y)];
-
+    self.collectionView.hidden = NO;
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:nil];
     [thePage displayImageWithFullScreenImage];
     

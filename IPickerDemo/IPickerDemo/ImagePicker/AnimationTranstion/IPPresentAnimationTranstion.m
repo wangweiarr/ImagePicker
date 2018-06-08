@@ -93,8 +93,11 @@
             CGFloat height = width * image.size.height /image.size.width;
             toFrame.size = CGSizeMake(width, height);
         }
-        toFrame.origin = CGPointZero;
         
+        toFrame.origin = CGPointZero;
+        if (toFrame.size.height < [IPPresentAnimationTranstion currentDisplayWindow].bounds.size.height) {
+            toFrame.origin = CGPointMake(0, (CGRectGetHeight([IPPresentAnimationTranstion currentDisplayWindow].bounds) - toFrame.size.height)/2);
+        }
         [containerView addSubview:toView];
         self.animateImageView.image = image;
         self.animateImageView.frame = fromFrame;
