@@ -7,7 +7,6 @@
 //
 
 #import "IPImageReaderViewController.h"
-#import "IPZoomScrollView.h"
 #import "IPAssetModel.h"
 #import "IPAlertView.h"
 #import<AssetsLibrary/AssetsLibrary.h>
@@ -130,17 +129,16 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
         self.isRoration = NO;
-        IPZoomScrollView *thePage = [self pageDisplayingPhoto:nil];
-        [thePage displayImageWithFullScreenImage];
+        IPImageReaderCell *cell = self.collectionView.visibleCells.firstObject;
+        [cell displayImageWithFullScreenImage];
     }
     if (self.forceTouch) {
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
-        
-        IPZoomScrollView *thePage = [self pageDisplayingPhoto:nil];
-        if (thePage) {
+        IPImageReaderCell *cell = self.collectionView.visibleCells.firstObject;
+        if (cell) {
             self.forceTouch = NO;
-            [thePage displayImageWithFullScreenImage];
+            [cell displayImageWithFullScreenImage];
         }
         
     }
@@ -150,8 +148,8 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
     [super viewDidAppear:animated];
     [self.collectionView setContentOffset:CGPointMake(self.view.bounds.size.width * _currentPage, self.collectionView.contentOffset.y)];
     self.collectionView.hidden = NO;
-    IPZoomScrollView *thePage = [self pageDisplayingPhoto:nil];
-    [thePage displayImageWithFullScreenImage];
+    IPImageReaderCell *cell = self.collectionView.visibleCells.firstObject;
+    [cell displayImageWithFullScreenImage];
     
     if ([self.dataSource respondsToSelector:@selector(imageReader:currentAssetIsSelect:)]) {
         self.rightButton.selected = [self.dataSource imageReader:self currentAssetIsSelected:_currentPage];
@@ -210,16 +208,16 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
 {
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     
-    cell.zoomScroll.readerVc = self;
+    cell.readerVc = self;
     IPLog(@"cellForItemAtIndexPath--%tu",indexPath.item);
     IPImageSourceType type = [self.dataSource imageReader:self soureTypeWithIndex:indexPath.item];
     if (type == IPImageSourceTypeAlbum) {
         id asset = [self.dataSource imageReader:self albumAssetWithIndex:indexPath.item];
-        [cell.zoomScroll displayImageWithAlbumAsset:asset];
+        [cell displayImageWithAlbumAsset:asset];
     } else if (type == IPImageSourceTypeNet) {
-        [cell.zoomScroll displayImageWithImageUrl:[self.dataSource imageReader:self simpleQualityAssetUrlWithIndex:indexPath.item]];
+        [cell displayImageWithImageUrl:[self.dataSource imageReader:self simpleQualityAssetUrlWithIndex:indexPath.item]];
     } else {
-        [cell.zoomScroll displayImageWithImage:[self.dataSource imageReader:self simpleQualityAssetImgWithIndex:indexPath.item]];
+        [cell displayImageWithImage:[self.dataSource imageReader:self simpleQualityAssetImgWithIndex:indexPath.item]];
     }
     
     
@@ -278,16 +276,9 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
 }
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
-    IPAssetModel *model = self.dataArr[_currentPage];
-    IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-    [thePage displayImageWithFullScreenImage];
     
-}
-
-- (IPZoomScrollView *)pageDisplayingPhoto:(IPAssetModel *)model {
     IPImageReaderCell *cell = self.collectionView.visibleCells.firstObject;
-    
-    return cell.zoomScroll;
+    [cell displayImageWithFullScreenImage];
 }
 
 #pragma mark <UINavigationControllerDelegate>
@@ -357,9 +348,8 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation{
     self.isRoration = NO;
-    IPAssetModel *model = self.dataArr[_currentPage];
-    IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-    [thePage displayImageWithFullScreenImage];
+    IPImageReaderCell *cell = self.collectionView.visibleCells.firstObject;
+    [cell displayImageWithFullScreenImage];
     
 }
 

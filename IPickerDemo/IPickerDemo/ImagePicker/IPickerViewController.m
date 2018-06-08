@@ -417,7 +417,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
             IPImageReaderViewController *reader = [[IPImageReaderViewController alloc]init];
             reader.dataSource = self;
             reader.transitioningDelegate = self;
-            reader.modalPresentationStyle = UIModalPresentationCustom;
+            reader.modalPresentationStyle = UIModalPresentationOverCurrentContext;
             [reader setUpCurrentSelectPage:targetIndex];
             reader.maxSelectCount = self.maxCount;
             reader.currentSelectCount = self.selectPhotoCount;

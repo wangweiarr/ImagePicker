@@ -12,7 +12,6 @@
 #import "IPImageCell.h"
 #import "IPAssetManager.h"
 #import "IPImageReaderCell.h"
-#import "IPZoomScrollView.h"
 #import "IPTakePhotoViewController.h"
 #import "IPMediaCenter.h"
 
@@ -139,7 +138,7 @@
         
         snapShotView.contentMode = UIViewContentModeScaleAspectFill;
         
-        snapShotView.frame = [containerView convertRect:cell.zoomScroll.photoImageView.frame fromView:cell.zoomScroll.superview];
+        snapShotView.frame = [containerView convertRect:cell.photoImageView.frame fromView:cell.zoomScroll.superview];
         cell.hidden = YES;
         
         //设置第二个控制器的位置、透明度
