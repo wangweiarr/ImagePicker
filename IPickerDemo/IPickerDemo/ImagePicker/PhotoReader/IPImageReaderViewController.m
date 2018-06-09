@@ -58,6 +58,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
         _collectionView.showsHorizontalScrollIndicator = NO;
         _collectionView.bounces = NO;
         _collectionView.hidden = YES;
+        _collectionView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
         [_collectionView registerClass:[IPImageReaderCell class] forCellWithReuseIdentifier:reuseIdentifier];
     }
     return _collectionView;
@@ -107,12 +108,11 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
     
     
 }
-- (void)viewWillLayoutSubviews{
-    [super viewWillLayoutSubviews];
-    
-}
+
 - (void)viewDidLayoutSubviews{
     [super viewDidLayoutSubviews];
+    
+    IPLog(@"wjl == %s",__func__);
     self.headerView.frame = CGRectMake(0, 0, self.view.bounds.size.width, IOS7_STATUS_BAR_HEGHT + 44);
     self.leftButton.frame = CGRectMake(-5, IOS7_STATUS_BAR_HEGHT, 44, 44);
     self.rightButton.frame = CGRectMake(self.view.bounds.size.width - 44, IOS7_STATUS_BAR_HEGHT, 44, 44);
@@ -125,13 +125,13 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
         self.currentPage = maxIndex;
     }
     
-    if (self.isRoration) {
-        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
-        [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
-        self.isRoration = NO;
-        IPImageReaderCell *cell = self.collectionView.visibleCells.firstObject;
-        [cell displayImageWithFullScreenImage];
-    }
+//    if (self.isRoration) {
+//        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
+//        [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
+//        self.isRoration = NO;
+//        IPImageReaderCell *cell = self.collectionView.visibleCells.firstObject;
+//        [cell displayImageWithFullScreenImage];
+//    }
     if (self.forceTouch) {
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
@@ -241,9 +241,12 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
 #pragma mark <UICollectionViewDelegate>
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
+    
+    IPLog(@"wjl == %s",__func__);
     if (self.isRoration) {
         return;
     }
+    
     CGRect visibleBounds = scrollView.bounds;
     NSInteger index = (NSInteger)(floorf(CGRectGetMidX(visibleBounds) / CGRectGetWidth(visibleBounds)));
     if (index < 0) index = 0;
@@ -310,48 +313,56 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewCell";
 
 - (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
-    return UIInterfaceOrientationMaskPortrait|UIInterfaceOrientationMaskLandscapeLeft|UIInterfaceOrientationMaskLandscapeRight;
+    return UIInterfaceOrientationMaskAll;
 }
 
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator{
-    // Perform layout
-    _currentPage = _pageIndexBeforeRotation;
-    self.isRoration = YES;
-
-    IPAssetModel *model = self.dataArr[_currentPage];
-    self.rightButton.selected = model.isSelect;
-
-    [self.collectionView reloadData];
-}
-#else
+//#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+//- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator{
+//    // Perform layout
+//    _currentPage = _pageIndexBeforeRotation;
+//    self.isRoration = YES;
+//
+//    IPAssetModel *model = self.dataArr[_currentPage];
+//    self.rightButton.selected = model.isSelect;
+//
+//    [self.collectionView reloadData];
+//}
+//#else
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+
     
+    IPLog(@"wjl == %s",__func__);
     // Perform layout
     _currentPage = _pageIndexBeforeRotation;
-    self.isRoration = YES;
-    
-    IPAssetModel *model = self.dataArr[_currentPage];
-    self.rightButton.selected = model.isSelect;
-    
-    [self.collectionView reloadData];
-    
-}
-#endif
 
+//    IPAssetModel *model = self.dataArr[_currentPage];
+    self.rightButton.selected = [self.dataSource imageReader:self currentAssetIsSelected:_currentPage];
+    
+    [self.collectionView setContentOffset:CGPointMake(_currentPage*CGRectGetWidth(self.collectionView.frame), self.collectionView.contentOffset.y) animated:NO];
+//    [self.collectionView reloadData];
+//    [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:_currentPage inSection:0] atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
+
+}
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
+    
+    IPLog(@"wjl == %s",__func__);
     // Remember page index before rotation
     _pageIndexBeforeRotation = _currentPage;
+    self.isRoration = YES;
+    [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation{
     self.isRoration = NO;
-    IPImageReaderCell *cell = self.collectionView.visibleCells.firstObject;
-    [cell displayImageWithFullScreenImage];
+//    IPImageReaderCell *cell = self.collectionView.visibleCells.firstObject;
+//    [cell displayImageWithFullScreenImage];
     
+    IPLog(@"wjl == %s",__func__);
 }
+//#endif
+
 
 #pragma mark - interface
 - (void)setUpCurrentSelectPage:(NSUInteger)page

@@ -11,7 +11,7 @@
 #import "IPAssetManager.h"
 #import "IPImageReaderViewController.h"
 #import "IPImageReaderViewController+AniamtionTranstion.h"
-
+#import "IPPrivateDefine.h"
 
 @interface IPImageReaderCell ()<
     UIScrollViewDelegate
@@ -131,9 +131,7 @@
 {
     if (_photoImageView == nil) {
         _photoImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-        _photoImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-        _photoImageView.autoresizesSubviews = YES;
-        _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
+        _photoImageView.contentMode = UIViewContentModeScaleAspectFill;
         _photoImageView.backgroundColor = [UIColor clearColor];
     }
     return _photoImageView;

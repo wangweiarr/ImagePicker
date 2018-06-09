@@ -7,6 +7,7 @@
 //
 
 #import "IPImageReaderLayout.h"
+#import "IPPrivateDefine.h"
 
 @implementation IPImageReaderLayout
 
@@ -22,6 +23,8 @@
 
 - (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
     NSArray<UICollectionViewLayoutAttributes *> *layoutAttsArray = [[NSArray alloc] initWithArray:[super layoutAttributesForElementsInRect:rect] copyItems:YES];
+ 
+    IPLog(@"wjl == %s %@",__func__,NSStringFromCGRect(self.collectionView.bounds));
     CGFloat centerX = self.collectionView.contentOffset.x + self.collectionView.bounds.size.width/2.0;
     __block CGFloat min = CGFLOAT_MAX;
     __block NSUInteger minIdx;

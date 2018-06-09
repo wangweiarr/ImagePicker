@@ -84,20 +84,34 @@
     IPAssetModel *model = picker.curImageModelArr[picker.selectIndex];
     [[IPAssetManager defaultAssetManager] getFullScreenImageWithMutipleAsset:model.asset photoWidth:[IPPresentAnimationTranstion currentDisplayWindow].bounds.size completion:^(UIImage *image, NSDictionary *info) {
         
-        if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
-            CGFloat height = [IPPresentAnimationTranstion currentDisplayWindow].bounds.size.height;
-            CGFloat width = height * image.size.width /image.size.height;
+        CGSize boundsSize = [IPPresentAnimationTranstion currentDisplayWindow].bounds.size;
+        CGFloat width,height,x,y;
+        if (boundsSize.width > boundsSize.height) {
+            height = boundsSize.height;
+            width = height * image.size.width /image.size.height;
             toFrame.size = CGSizeMake(width, height);
         }else {
-            CGFloat width = [IPPresentAnimationTranstion currentDisplayWindow].bounds.size.width;
-            CGFloat height = width * image.size.height /image.size.width;
+            width = boundsSize.width;
+            height = width * image.size.height /image.size.width;
             toFrame.size = CGSizeMake(width, height);
         }
         
-        toFrame.origin = CGPointZero;
-        if (toFrame.size.height < [IPPresentAnimationTranstion currentDisplayWindow].bounds.size.height) {
-            toFrame.origin = CGPointMake(0, (CGRectGetHeight([IPPresentAnimationTranstion currentDisplayWindow].bounds) - toFrame.size.height)/2);
+        
+        // Horizontally
+        if (width < boundsSize.width) {
+            x = floorf((boundsSize.width - width) / 2.0);
+        } else {
+            x = 0;
         }
+        
+        // Vertically
+        if (height < boundsSize.height) {
+            y = floorf((boundsSize.height - height) / 2.0);
+        } else {
+            y = 0;
+        }
+        
+        toFrame = CGRectMake(x, y, width, height);
         [containerView addSubview:toView];
         self.animateImageView.image = image;
         self.animateImageView.frame = fromFrame;
