@@ -224,15 +224,15 @@
 		34C4A5EC20BF9FBB004252BC /* PhotoReader */ = {
 			isa = PBXGroup;
 			children = (
-				34C4A5ED20BF9FBB004252BC /* IPTapDetectImageView.h */,
-				34C4A5EE20BF9FBB004252BC /* IPImageReaderCell.m */,
-				34C4A5EF20BF9FBB004252BC /* IPTapDetectView.m */,
-				34C4A5F020BF9FBB004252BC /* IPImageReaderViewController.m */,
-				34C4A5F120BF9FBB004252BC /* IPZoomScrollView.h */,
-				34C4A5F220BF9FBB004252BC /* IPImageReaderViewController.h */,
-				34C4A5F320BF9FBC004252BC /* IPTapDetectView.h */,
 				34C4A5F420BF9FBC004252BC /* IPImageReaderCell.h */,
+				34C4A5EE20BF9FBB004252BC /* IPImageReaderCell.m */,
+				34C4A5F220BF9FBB004252BC /* IPImageReaderViewController.h */,
+				34C4A5F020BF9FBB004252BC /* IPImageReaderViewController.m */,
+				34C4A5ED20BF9FBB004252BC /* IPTapDetectImageView.h */,
 				34C4A5F520BF9FBC004252BC /* IPTapDetectImageView.m */,
+				34C4A5F320BF9FBC004252BC /* IPTapDetectView.h */,
+				34C4A5EF20BF9FBB004252BC /* IPTapDetectView.m */,
+				34C4A5F120BF9FBB004252BC /* IPZoomScrollView.h */,
 				34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */,
 			);
 			path = PhotoReader;
@@ -269,7 +269,7 @@
 				TargetAttributes = {
 					344F37A31C814BC6006063B6 = {
 						CreatedOnToolsVersion = 7.2.1;
-						DevelopmentTeam = YDTV5X7P95;
+						DevelopmentTeam = 8DZNQGC828;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -429,7 +429,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = YDTV5X7P95;
+				DEVELOPMENT_TEAM = 8DZNQGC828;
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -447,7 +447,7 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = YDTV5X7P95;
+				DEVELOPMENT_TEAM = 8DZNQGC828;
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

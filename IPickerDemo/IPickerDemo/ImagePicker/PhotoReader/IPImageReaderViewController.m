@@ -217,20 +217,18 @@ static NSString * const reuseIdentifier = @"Cell";
     
 }
 
-- (BOOL)shouldAutorotate{
+#pragma mark - rorate
+
+- (BOOL)shouldAutorotate
+{
     return YES;
 }
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations{
-    return UIInterfaceOrientationMaskPortrait|UIInterfaceOrientationMaskLandscapeLeft|UIInterfaceOrientationMaskLandscapeRight;
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
+{
+    return UIInterfaceOrientationMaskAll;
 }
 
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
-    
-    // Remember page index before rotation
-    _pageIndexBeforeRotation = _currentIndex;
-    
-    
-}
 
 //#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
 //- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator{
@@ -244,7 +242,8 @@ static NSString * const reuseIdentifier = @"Cell";
 //    [self.collectionView reloadData];
 //}
 //#else
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
     
     // Perform layout
     _currentIndex = _pageIndexBeforeRotation;
@@ -256,18 +255,30 @@ static NSString * const reuseIdentifier = @"Cell";
     [self.collectionView reloadData];
     
 }
-//#endif
 
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+    
+    // Remember page index before rotation
+    _pageIndexBeforeRotation = _currentIndex;
+    
+    
+}
 
-
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation{
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
     self.isRoration = NO;
     IPAssetModel *model = self.dataArr[_currentIndex];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
     [thePage displayImageWithFullScreenImage];
     
 }
+//#endif
+
+
+
+
+
 #pragma mark <UICollectionViewDataSource>
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
