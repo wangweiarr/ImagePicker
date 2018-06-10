@@ -35,6 +35,7 @@
 		34C4A5FB20BF9FBC004252BC /* IPZoomScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = 34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */; };
 		34E40DA31CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */; };
 		F419C0481E725088005231A4 /* IPVideoPlayerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F419C0471E725088005231A4 /* IPVideoPlayerViewController.m */; };
+		F48EF8F720CD89F1009CBC10 /* IPImageReaderCellLayout.m in Sources */ = {isa = PBXBuildFile; fileRef = F48EF8F620CD89F1009CBC10 /* IPImageReaderCellLayout.m */; };
 		F4B7639A1E6AB67100C31F80 /* IPMediaCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = F4B763991E6AB67100C31F80 /* IPMediaCenter.m */; };
 /* End PBXBuildFile section */
 
@@ -95,6 +96,8 @@
 		34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IP3DTouchPreviewVC.m; sourceTree = "<group>"; };
 		F419C0461E725088005231A4 /* IPVideoPlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPVideoPlayerViewController.h; sourceTree = "<group>"; };
 		F419C0471E725088005231A4 /* IPVideoPlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPVideoPlayerViewController.m; sourceTree = "<group>"; };
+		F48EF8F520CD89F1009CBC10 /* IPImageReaderCellLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPImageReaderCellLayout.h; sourceTree = "<group>"; };
+		F48EF8F620CD89F1009CBC10 /* IPImageReaderCellLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IPImageReaderCellLayout.m; sourceTree = "<group>"; };
 		F4B763981E6AB67100C31F80 /* IPMediaCenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPMediaCenter.h; sourceTree = "<group>"; };
 		F4B763991E6AB67100C31F80 /* IPMediaCenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPMediaCenter.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -234,6 +237,8 @@
 				34C4A5EF20BF9FBB004252BC /* IPTapDetectView.m */,
 				34C4A5F120BF9FBB004252BC /* IPZoomScrollView.h */,
 				34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */,
+				F48EF8F520CD89F1009CBC10 /* IPImageReaderCellLayout.h */,
+				F48EF8F620CD89F1009CBC10 /* IPImageReaderCellLayout.m */,
 			);
 			path = PhotoReader;
 			sourceTree = "<group>";
@@ -322,6 +327,7 @@
 				344F37E51C83D4C0006063B6 /* IPAlbumCell.m in Sources */,
 				344F37E91C83D4C0006063B6 /* IPImageCell.m in Sources */,
 				3488EE0D1D254703002C0FA3 /* IPVisionUtilities.m in Sources */,
+				F48EF8F720CD89F1009CBC10 /* IPImageReaderCellLayout.m in Sources */,
 				344F37A91C814BC6006063B6 /* main.m in Sources */,
 				3488EE0C1D254703002C0FA3 /* IPVision.m in Sources */,
 				344F37F61C83DD47006063B6 /* IPAssetManager.m in Sources */,

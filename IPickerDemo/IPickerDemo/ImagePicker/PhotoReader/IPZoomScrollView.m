@@ -10,17 +10,9 @@
 #import "IPAssetModel.h"
 #import "IPTapDetectView.h"
 #import "IPAssetManager.h"
-#import "IPickerViewController.h"
 #import "IPPrivateDefine.h"
 
-@interface IPickerViewController ()
 
-- (void)getImagesForAlbumModel:(IPAlbumModel *)albumModel;
-- (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-- (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-@end
 @interface IPZoomScrollView ()<UIScrollViewDelegate,IPTapDetectViewDelegate,IPTapDetectImageViewDelegate>
 
 /**背景view*/
@@ -82,7 +74,7 @@
     
     if (_imageModel != imageModel && imageModel != nil) {
         _imageModel = imageModel;
-            [self displayImage];
+        [self displayImage];
         
     }
 }
@@ -92,7 +84,7 @@
         size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
     }
     
-    [self.ipVc getFullScreenImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
+    [[IPAssetManager defaultAssetManager] getFullScreenImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
         if (img) {
             if (!CGSizeEqualToSize(img.size, _photoImageView.image.size)) {
                 // Set image
@@ -119,7 +111,7 @@
         }
         // Get image from browser as it handles ordering of fetching
         
-        [self.ipVc getHighQualityImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
+        [[IPAssetManager defaultAssetManager] getHighQualityImageWithAsset:_imageModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
             if (img) {
                 
                 // Reset

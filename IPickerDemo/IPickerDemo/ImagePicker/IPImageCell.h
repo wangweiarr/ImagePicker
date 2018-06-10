@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@class IPAssetModel,IPickerViewController;
+@class IPAssetModel;
 @protocol IPImageCellDelegate<NSObject>
 
 - (BOOL)clickRightCornerBtnForView:(IPAssetModel *)assetModel;
@@ -19,8 +19,6 @@
 /**缩略图*/
 @property (nonatomic, weak,readonly) UIImageView *imgView;
 
-/**ipvc*/
-@property (nonatomic, weak)IPickerViewController *ipVc;
 /**代理*/
 @property (nonatomic, weak)id <IPImageCellDelegate> delegate;
 /**数据模型*/

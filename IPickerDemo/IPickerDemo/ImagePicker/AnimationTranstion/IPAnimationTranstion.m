@@ -20,8 +20,6 @@
 /**collectionview*/
 @property (nonatomic, strong)UICollectionView *mainView;
 @property(nonatomic,strong)NSIndexPath *indexPath;
-- (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
 
 - (UICollectionViewCell *)targetCellForIndexPath:(NSIndexPath *)indexPath;
 
@@ -47,7 +45,7 @@
     
     __block CGSize size = CGSizeMake(fromVC.view.bounds.size.width, fromVC.view.bounds.size.height);
     
-    [fromVC getHighQualityImageWithAsset:cell.model photoWidth:size completion:^(UIImage *photo, NSDictionary *info) {
+    [[IPAssetManager defaultAssetManager] getHighQualityImageWithAsset:cell.model photoWidth:size completion:^(UIImage *photo, NSDictionary *info) {
         CGSize photosize = photo.size;
         CGSize realPhotoSize = CGSizeMake(size.width, size.width*photosize.height/photosize.width);
         
@@ -129,7 +127,7 @@
     IPImageCell *from_cell = (IPImageCell *)[toVC targetCellForIndexPath:currentIndexPath];
     
     
-    [toVC getThumibImageWithAsset:from_cell.model photoWidth:from_cell.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
+    [[IPAssetManager defaultAssetManager] getThumibImageWithAsset:from_cell.model photoWidth:from_cell.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
         
         //        UIView *snapShotView = [cell.zoomScroll.photoImageView snapshotViewAfterScreenUpdates:NO];
         UIImageView *animationImgView = [[UIImageView alloc]initWithImage:photo];

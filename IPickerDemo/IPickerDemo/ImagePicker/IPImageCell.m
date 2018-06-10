@@ -12,10 +12,6 @@
 #import "IPickerViewController.h"
 #import "IPMediaCenter.h"
 
-@interface IPickerViewController ()
-- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion;
-@end
 
 @interface IPImageCell ()
 /**缩略图*/
@@ -183,7 +179,7 @@
     
     if (_model.assetType == IPAssetModelMediaTypeVideo ) {
 
-        [self.ipVc getFullScreenImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
+        [[IPAssetManager defaultAssetManager] getFullScreenImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
             weakSelf.imgView.image = photo;
         }];
         self.bottomBackView.hidden = NO;
@@ -223,7 +219,7 @@
     }else {
         
         self.rightCornerBtn.selected = model.isSelect;
-        [self.ipVc getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
+        [[IPAssetManager defaultAssetManager] getThumibImageWithAsset:_model photoWidth:self.bounds.size completion:^(UIImage *photo, NSDictionary *info) {
             weakSelf.imgView.image = photo;
         }];
     }

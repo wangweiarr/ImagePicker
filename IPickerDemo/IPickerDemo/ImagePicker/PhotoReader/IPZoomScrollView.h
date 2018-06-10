@@ -9,12 +9,9 @@
 #import <UIKit/UIKit.h>
 #import "IPTapDetectImageView.h"
 
-@class IPAssetModel,IPickerViewController;
+@class IPAssetModel;
 
 @interface IPZoomScrollView : UIScrollView
-
-/**核心*/
-@property (nonatomic, weak)IPickerViewController *ipVc;
 
 @property (nonatomic) IPAssetModel * imageModel;
 

@@ -14,6 +14,7 @@
 #import "IPPrivateDefine.h"
 #import "IPAnimationTranstion.h"
 #import "IPImageReaderCell.h"
+#import "IPImageReaderCellLayout.h"
 
 @interface IPImageReaderViewController ()<UICollectionViewDelegateFlowLayout,UINavigationControllerDelegate>
 
@@ -59,12 +60,8 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
         IPLog(@"initlize failure because of assets is nil");
         return nil;
     }
-    UICollectionViewFlowLayout *flow = [[UICollectionViewFlowLayout alloc]init];
     
-    flow.scrollDirection = UICollectionViewScrollDirectionHorizontal;
-    flow.minimumInteritemSpacing = 0;
-    flow.minimumLineSpacing = 0;
-    IPImageReaderViewController *vc = [[IPImageReaderViewController alloc]initWithCollectionViewLayout:flow];
+    IPImageReaderViewController *vc = [[IPImageReaderViewController alloc]initWithCollectionViewLayout:[IPImageReaderCellLayout new]];
     vc.dataArr = assets;
     return vc;
 }
@@ -75,12 +72,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
         IPLog(@"initlize failure because of dataSource is nil");
         return nil;
     }
-    UICollectionViewFlowLayout *flow = [[UICollectionViewFlowLayout alloc]init];
-    
-    flow.scrollDirection = UICollectionViewScrollDirectionHorizontal;
-    flow.minimumInteritemSpacing = 0;
-    flow.minimumLineSpacing = 0;
-    IPImageReaderViewController *vc = [[IPImageReaderViewController alloc]initWithCollectionViewLayout:flow];
+    IPImageReaderViewController *vc = [[IPImageReaderViewController alloc]initWithCollectionViewLayout:[IPImageReaderCellLayout new]];
     
     return vc;
 }
@@ -343,7 +335,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 {
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
     IPAssetModel *model = [self.dataArr objectAtIndex:indexPath.item];
-    cell.zoomScroll.ipVc = self.ipVc;
+
     IPLog(@"cellForItemAtIndexPath--%tu",indexPath.item);
     cell.zoomScroll.imageModel = model;
     return cell;

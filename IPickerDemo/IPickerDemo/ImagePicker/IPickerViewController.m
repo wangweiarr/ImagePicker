@@ -37,7 +37,7 @@ NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOAD
 
 @interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate,IPTakeVideoViewControllerDelegate,UIViewControllerPreviewingDelegate,CAAnimationDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate,IPTakePhotoViewControllerDelegate>
 /**图库*/
-@property (nonatomic, strong)IPAssetManager *defaultAssetManager;
+//@property (nonatomic, strong)IPAssetManager *defaultAssetManager;
 
 
 /**头部视图*/
@@ -329,14 +329,14 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self.view addSubview:mainView];
 }
 
-#pragma mark - collectionview-
+#pragma mark - collectionview
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
     return self.curImageModelArr.count;
 }
+
 - (IPImageCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     IPImageCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:IPicker_CollectionID forIndexPath:indexPath];
-    cell.ipVc = self;
     if (self.curImageModelArr.count > indexPath.item) {
         
         IPAssetModel *model = self.curImageModelArr[indexPath.item];
@@ -698,27 +698,14 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     [self exitIPicker];
 }
-#pragma mark -private
-- (void)getAspectPhotoWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
-    [self.defaultAssetManager getAspectPhotoWithAsset:imageModel photoWidth:photoSize completion:completion];
-}
-- (void)getFullScreenImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
-    [self.defaultAssetManager getFullScreenImageWithAsset:imageModel photoWidth:photoSize completion:completion];
-}
-- (void)getThumibImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
-    [self.defaultAssetManager getThumibImageWithAsset:imageModel photoWidth:photoSize completion:completion];
-}
-- (void)getHighQualityImageWithAsset:(IPAssetModel *)imageModel photoWidth:(CGSize)photoSize completion:(void (^)(UIImage *photo,NSDictionary *info))completion{
-    [self.defaultAssetManager getHighQualityImageWithAsset:imageModel photoWidth:photoSize completion:completion];
-}
+
 #pragma mark - lazy -
 - (IPAssetManager *)defaultAssetManager{
-    if (_defaultAssetManager == nil) {
-        _defaultAssetManager = [IPAssetManager defaultAssetManager];
-        _defaultAssetManager.dataType = (IPAssetManagerDataType)self.displayStyle;
-        _defaultAssetManager.delegate = self;
-    }
-    return _defaultAssetManager;
+    IPAssetManager *defaultAssetManager =[IPAssetManager defaultAssetManager];
+    defaultAssetManager.dataType = (IPAssetManagerDataType)self.displayStyle;
+    defaultAssetManager.delegate = self;
+    
+    return defaultAssetManager;
 }
 
 - (void)setMaxCount:(NSUInteger)maxCount{
