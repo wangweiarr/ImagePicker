@@ -20,8 +20,6 @@
 
 @property (nonatomic, strong,readonly)IPTapDetectImageView *photoImageView;
 
-/**是否显示高清 */
-//@property (nonatomic, assign)BOOL isDisplayingHighQuality;
 
 - (void)prepareForReuse;
 

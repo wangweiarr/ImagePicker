@@ -406,9 +406,10 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
                 [array removeObjectAtIndex:0];
                 targetIndex = indexPath.item - 1;
             }
-            IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:array TargetIndex:targetIndex];
-            reader.maxCount = self.maxCount;
-            reader.currentCount = self.selectPhotoCount;
+            IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithDatas:array];
+            [reader setUpDefaultShowPage:targetIndex];
+            reader.maxSelectCount = self.maxCount;
+            reader.currentSelectCount = self.selectPhotoCount;
             reader.delegate = self;
             reader.ipVc = self;
             [self.navigationController pushViewController:reader animated:YES];
@@ -807,9 +808,10 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     NSIndexPath *path = [self.mainView indexPathForCell:cell];
     
-    IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithData:self.curImageModelArr TargetIndex:path.item];
-    reader.maxCount = self.maxCount;
-    reader.currentCount = self.selectPhotoCount;
+    IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithDatas:self.curImageModelArr];
+    [reader setUpDefaultShowPage:path.item];
+    reader.maxSelectCount = self.maxCount;
+    reader.currentSelectCount = self.selectPhotoCount;
     reader.delegate = self;
     reader.ipVc = self;
     reader.forceTouch = YES;
@@ -851,7 +853,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     else if ([toVC isKindOfClass:[IPTakePhotoViewController class]]) {
         if (operation == UINavigationControllerOperationPush) {
-            IPAnimationTakePhotoTransition *transition = [[IPAnimationTakePhotoTransition alloc]init];
+//            IPAnimationTakePhotoTransition *transition = [[IPAnimationTakePhotoTransition alloc]init];
             return nil;
         }else if (operation == UINavigationControllerOperationPop) {
             

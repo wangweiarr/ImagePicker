@@ -59,7 +59,7 @@
     _photoImageView = [[IPTapDetectImageView alloc] initWithFrame:CGRectZero];
     _photoImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     _photoImageView.autoresizesSubviews = YES;
-    _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
+    _photoImageView.contentMode = UIViewContentModeScaleAspectFill;
     _photoImageView.tapDelegate = self;
     _photoImageView.backgroundColor = [UIColor clearColor];
     [self addSubview:_photoImageView];
@@ -76,18 +76,13 @@
     _imageModel = nil;
     _photoImageView.hidden = YES;
     _photoImageView.image = nil;
-//    _isDisplayingHighQuality = NO;
 }
 
 - (void)setImageModel:(IPAssetModel *)imageModel{
     
     if (_imageModel != imageModel && imageModel != nil) {
         _imageModel = imageModel;
-//        if (self.isDisplayingHighQuality) {
-//            [self displayImageWithFullScreenImage];
-//        }else {
             [self displayImage];
-//        }
         
     }
 }
@@ -102,21 +97,7 @@
             if (!CGSizeEqualToSize(img.size, _photoImageView.image.size)) {
                 // Set image
                 _photoImageView.image = img;
-                _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
-//                // Setup photo frame
-//                CGRect photoImageViewFrame;
-//                photoImageViewFrame.origin = CGPointZero;
-//                
-//                CGFloat width = self.bounds.size.width;
-//                
-//                CGFloat height = width *  _imageModel.thumbnailScale;
-//                
-//                photoImageViewFrame.size = CGSizeMake(width, height);
-//                
-//                _photoImageView.frame = photoImageViewFrame;
-//                
-//                self.contentSize = photoImageViewFrame.size;
-//                self.isDisplayingHighQuality = YES;
+                _photoImageView.contentMode = UIViewContentModeScaleAspectFill;
                 // Set zoom to minimum zoom
                 [self setMaxMinZoomScalesForCurrentBounds];
                 [self setNeedsLayout];
@@ -146,7 +127,7 @@
                 self.minimumZoomScale = 1;
                 self.zoomScale = 1;
                 
-                 _photoImageView.contentMode = UIViewContentModeScaleAspectFit;
+                 _photoImageView.contentMode = UIViewContentModeScaleAspectFill;
                 // Set image
                 _photoImageView.image = img;
                 _photoImageView.hidden = NO;
