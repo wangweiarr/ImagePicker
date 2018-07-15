@@ -183,6 +183,17 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     }
 }
 
+- (NSUInteger)getCountOfAssetModel
+{
+    if (_dataArr) {
+        return _dataArr.count;
+    } else if (_dataSource) {
+        return [_dataSource numberOfAssetsOfImageReader:self];
+    } else {
+        return 0;
+    }
+}
+
 -(void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
@@ -332,23 +343,31 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 
 #pragma mark - UICollectionViewDataSource Delegate
 
-- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
-{
-    return 1;
-}
-
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    return self.dataArr.count;
+    return [self getCountOfAssetModel];
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
-    IPAssetModel *model = [self.dataArr objectAtIndex:indexPath.item];
+    IPAssetModel *model = [self getAssetModelWithIndex:indexPath.item];
 
-    IPLog(@"cellForItemAtIndexPath--%tu",indexPath.item);
-    cell.zoomScroll.imageModel = model;
+    IPLog(@"wjl cellForItemAtIndexPath--%tu",indexPath.item);
+    cell.zoomScroll.assetModel = model;
+    cell.zoomScroll.index = indexPath.item;
+    [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+        if ([cell.zoomScroll.assetModel isEqual:model]) {
+            if (image && success) {
+                [cell.zoomScroll displayImageWithImage:image];
+            } else {
+                [cell.zoomScroll displayImageWithError];
+            }
+            
+            [self loadAdjacentPhotosIfNecessary:model];
+        }
+    }];
+    
     return cell;
 }
 
@@ -357,11 +376,42 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     return self.view.bounds.size;
 }
 
-- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageReaderCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
-{
-    IPLog(@"didEndDisplayingCell--%tu",indexPath.item);
-//    [cell.zoomScroll prepareForReuse];
-    
+- (void)loadAdjacentPhotosIfNecessary:(id<IPAssetModel>)photo {
+    IPZoomScrollView *page = [self pageDisplayingPhoto:photo];
+    if (page) {
+        // If page is current page then initiate loading of previous and next pages
+        NSUInteger pageIndex = page.index;
+        if (_currentPage == pageIndex) {
+            if (pageIndex > 0) {
+                // Preload index - 1
+                id <IPAssetModel> photo = [self getAssetModelWithIndex:pageIndex-1];
+                if (![photo underlyingImage]) {
+                    [photo loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+                        if (image && success) {
+                            [page displayImageWithImage:image];
+                        } else {
+                            [page displayImageWithError];
+                        }
+                    }];
+                    IPLog(@"Pre-loading image at index %lu", (unsigned long)pageIndex-1);
+                }
+            }
+            if (pageIndex < [self getCountOfAssetModel] - 1) {
+                // Preload index + 1
+                id <IPAssetModel> photo = [self getAssetModelWithIndex:pageIndex+1];
+                if (![photo underlyingImage]) {
+                    [photo loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+                        if (image && success) {
+                            [page displayImageWithImage:image];
+                        } else {
+                            [page displayImageWithError];
+                        }
+                    }];
+                    IPLog(@"Pre-loading image at index %lu", (unsigned long)pageIndex+1);
+                }
+            }
+        }
+    }
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
@@ -430,7 +480,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 {
     IPZoomScrollView *thePage = nil;
     for (IPImageReaderCell *cell in self.collectionView.visibleCells) {
-        if (cell.zoomScroll.imageModel == model) {
+        if ([cell.zoomScroll.assetModel isEqual:model]) {
             thePage = cell.zoomScroll; break;
         }
     }

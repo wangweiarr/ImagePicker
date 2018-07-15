@@ -8,6 +8,12 @@
 
 #import "IPImageReaderCell.h"
 
+@interface IPImageReaderCell()
+
+@property (nonatomic, strong)IPZoomScrollView *zoomScroll;
+
+@end
+
 @implementation IPImageReaderCell
 
 - (instancetype)initWithFrame:(CGRect)frame{

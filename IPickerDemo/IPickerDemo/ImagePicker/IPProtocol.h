@@ -21,7 +21,7 @@
 
 // Called when the browser has determined the underlying images is not
 // already loaded into memory but needs it.
-- (void)loadUnderlyingImageAndNotify;
+- (void)loadUnderlyingImageAndComplete:(void(^)(BOOL success,UIImage *image))complete;
 
 // Fetch the image data from a source and notify when complete.
 // You must load the image asyncronously (and decompress it for better performance).
@@ -31,7 +31,7 @@
 // notification:
 // [[NSNotificationCenter defaultCenter] postNotificationName:MWPHOTO_LOADING_DID_END_NOTIFICATION
 //                                                     object:self];
-- (void)performLoadUnderlyingImageAndNotify;
+- (void)performLoadUnderlyingImageAndComplete:(void(^)(BOOL success,UIImage *image))complete;
 
 // This is called when the photo browser has determined the photo data
 // is no longer needed or there are low memory conditions

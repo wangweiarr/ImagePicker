@@ -152,88 +152,83 @@
     return _underlyingImage;
 }
 
-- (void)loadUnderlyingImageAndNotify {
+- (void)loadUnderlyingImageAndComplete:(void(^)(BOOL success,UIImage *image))complete {
     NSAssert([[NSThread currentThread] isMainThread], @"This method must be called on the main thread.");
     if (_loadingAssetInProgress) return;
     _loadingAssetInProgress = YES;
     @try {
         if (self.underlyingImage) {
-            [self imageLoadingComplete];
+            if (complete) {
+                _loadingAssetInProgress = NO;
+                complete(YES,self.underlyingImage);
+            }
         } else {
-            [self performLoadUnderlyingImageAndNotify];
+            [self performLoadUnderlyingImageAndComplete:complete];
         }
     }
     @catch (NSException *exception) {
         self.underlyingImage = nil;
         _loadingAssetInProgress = NO;
-        [self imageLoadingComplete];
+        if (complete) {
+            complete(NO,nil);
+        }
     }
     @finally {
     }
 }
 
-#pragma mark - loadImage
-
-- (void)imageLoadingComplete {
-    NSAssert([[NSThread currentThread] isMainThread], @"This method must be called on the main thread.");
-    // Complete so notify
-    _loadingAssetInProgress = NO;
-    // Notify on next run loop
-    [self performSelector:@selector(postCompleteNotification) withObject:nil afterDelay:0];
-}
-
-- (void)postCompleteNotification {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"MWPHOTO_LOADING_DID_END_NOTIFICATION"
-                                                        object:self];
-}
 
 #pragma mark - private
 
 // Set the underlyingImage
-- (void)performLoadUnderlyingImageAndNotify {
+- (void)performLoadUnderlyingImageAndComplete:(void (^)(BOOL success, UIImage *image))complete {
     
     // Get underlying image
     if (_image) {
         
         // We have UIImage!
         self.underlyingImage = _image;
-        [self imageLoadingComplete];
-        
+        if (complete) {
+            _loadingAssetInProgress = NO;
+            complete(YES,self.underlyingImage);
+        }
     } else if (_photoURL) {
         
         // Check what type of url it is
         if ([[[_photoURL scheme] lowercaseString] isEqualToString:@"assets-library"]) {
             
             // Load from assets library
-            [self _performLoadUnderlyingImageAndNotifyWithAssetsLibraryURL: _photoURL];
+            [self _performLoadUnderlyingImageWithAssetsLibraryURL: _photoURL complete:complete];
             
         } else if ([_photoURL isFileReferenceURL]) {
             
             // Load from local file async
-            [self _performLoadUnderlyingImageAndNotifyWithLocalFileURL: _photoURL];
+            [self _performLoadUnderlyingImageWithLocalFileURL: _photoURL complete:complete];
             
         } else {
             
             // Load async from web (using SDWebImage)
-            [self _performLoadUnderlyingImageAndNotifyWithWebURL: _photoURL];
+            [self _performLoadUnderlyingImageWithWebURL: _photoURL complete:complete];
             
         }
         
     } else if (_asset) {
         
         // Load from photos asset
-        [self _performLoadUnderlyingImageAndNotifyWithAsset: _asset targetSize:_assetTargetSize];
+        [self _performLoadUnderlyingImageWithAsset: _asset targetSize:_assetTargetSize complete:complete];
         
     } else {
         
         // Image is empty
-        [self imageLoadingComplete];
-        
+        if (complete) {
+            _loadingAssetInProgress = NO;
+            complete(NO,nil);
+        }
     }
 }
 
 // Load from local file
-- (void)_performLoadUnderlyingImageAndNotifyWithWebURL:(NSURL *)url {
+- (void)_performLoadUnderlyingImageWithWebURL:(NSURL *)url complete:(void (^)(BOOL success, UIImage *image))complete{
 //    @try {
 //        SDWebImageManager *manager = [SDWebImageManager sharedManager];
 //        _webImageOperation = [manager downloadImageWithURL:url
@@ -264,24 +259,39 @@
 //    }
 }
 
+
 // Load from local file
-- (void)_performLoadUnderlyingImageAndNotifyWithLocalFileURL:(NSURL *)url {
+- (void)_performLoadUnderlyingImageWithLocalFileURL:(NSURL *)url complete:(void (^)(BOOL success, UIImage *image))complete
+{
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         @autoreleasepool {
             @try {
                 self.underlyingImage = [UIImage imageWithContentsOfFile:url.path];
                 if (!_underlyingImage) {
                     NSLog(@"Error loading photo from path: %@", url.path);
+                    if (complete) {
+                        _loadingAssetInProgress = NO;
+                        complete(NO,nil);
+                    }
+                } else {
+                    if (complete) {
+                        _loadingAssetInProgress = NO;
+                        complete(YES,self.underlyingImage);
+                    }
                 }
             } @finally {
-                [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+                if (complete) {
+                    _loadingAssetInProgress = NO;
+                    complete(NO,nil);
+                }
             }
         }
     });
 }
 
 // Load from asset library async
-- (void)_performLoadUnderlyingImageAndNotifyWithAssetsLibraryURL:(NSURL *)url {
+- (void)_performLoadUnderlyingImageWithAssetsLibraryURL:(NSURL *)url complete:(void (^)(BOOL success, UIImage *image))complete
+{
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         @autoreleasepool {
             @try {
@@ -293,23 +303,33 @@
                                    if (iref) {
                                        self.underlyingImage = [UIImage imageWithCGImage:iref];
                                    }
-                                   [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+                                   if (complete) {
+                                       _loadingAssetInProgress = NO;
+                                       complete(YES,self.underlyingImage);
+                                   }
                                }
                               failureBlock:^(NSError *error) {
                                   self.underlyingImage = nil;
                                   NSLog(@"Photo from asset library error: %@",error);
-                                  [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+                                  if (complete) {
+                                      _loadingAssetInProgress = NO;
+                                      complete(NO,nil);
+                                  }
                               }];
             } @catch (NSException *e) {
                 NSLog(@"Photo from asset library error: %@", e);
-                [self performSelectorOnMainThread:@selector(imageLoadingComplete) withObject:nil waitUntilDone:NO];
+                if (complete) {
+                    _loadingAssetInProgress = NO;
+                    complete(NO,nil);
+                }
             }
         }
     });
 }
 
 // Load from photos library
-- (void)_performLoadUnderlyingImageAndNotifyWithAsset:(PHAsset *)asset targetSize:(CGSize)targetSize {
+- (void)_performLoadUnderlyingImageWithAsset:(PHAsset *)asset targetSize:(CGSize)targetSize  complete:(void (^)(BOOL success, UIImage *image))complete
+{
     
     PHImageManager *imageManager = [PHImageManager defaultManager];
     
@@ -328,7 +348,10 @@
     _assetRequestID = [imageManager requestImageForAsset:asset targetSize:targetSize contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage *result, NSDictionary *info) {
         dispatch_async(dispatch_get_main_queue(), ^{
             self.underlyingImage = result;
-            [self imageLoadingComplete];
+            if (complete) {
+                _loadingAssetInProgress = NO;
+                complete(YES,self.underlyingImage);
+            }
         });
     }];
     

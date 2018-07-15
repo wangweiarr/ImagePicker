@@ -13,14 +13,18 @@
 
 @interface IPZoomScrollView : UIScrollView
 
-@property (nonatomic) IPAssetModel * imageModel;
+@property(nonatomic, assign) NSUInteger index;
 
-@property (nonatomic, strong,readonly)IPTapDetectImageView *photoImageView;
+@property (nonatomic, strong) IPAssetModel * assetModel;
+
+@property (nonatomic, readonly) IPTapDetectImageView *photoImageView;
 
 
 - (void)prepareForReuse;
 
-- (void)displayImage;
+- (void)displayImageWithImage:(UIImage *)image;
+
+- (void)displayImageWithError;
 
 - (void)displayImageWithFullScreenImage;
 
