@@ -34,9 +34,6 @@ typedef void(^FunctionBlock)();
 
 @property (nonatomic, readonly) NSUInteger currentPage;
 
-/**核心组件*/
-@property (nonatomic, weak)IPickerViewController *ipVc;
-
 /**当前选择的图片数量*/
 @property (nonatomic, assign)NSUInteger currentSelectCount;
 

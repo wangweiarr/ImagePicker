@@ -411,7 +411,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
             reader.maxSelectCount = self.maxCount;
             reader.currentSelectCount = self.selectPhotoCount;
             reader.delegate = self;
-            reader.ipVc = self;
             [self.navigationController pushViewController:reader animated:YES];
         }else
         {
@@ -800,7 +799,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     reader.maxSelectCount = self.maxCount;
     reader.currentSelectCount = self.selectPhotoCount;
     reader.delegate = self;
-    reader.ipVc = self;
     reader.forceTouch = YES;
     [self showViewController:reader sender:self];
     

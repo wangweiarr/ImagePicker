@@ -141,7 +141,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     if (self.isFirst == NO) {
         
         if (self.defaultShowPage == 0) {//当滚动到0的位置时,默认是不调用scrolldidscroll方法的
-            IPAssetModel *model = self.dataArr[0];
+            IPAssetModel *model = [self getAssetModelWithIndex:0];
             self.rightButton.selected = model.isSelect;
         }
         
@@ -154,7 +154,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
         self.isRoration = NO;
-        IPAssetModel *model = self.dataArr[_currentPage];
+        IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
         IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
         [thePage displayImageWithFullScreenImage];
     }
@@ -162,7 +162,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
         
-        IPAssetModel *model = self.dataArr[_currentPage];
+        IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
         IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
         if (thePage) {
             self.forceTouch = NO;
@@ -172,11 +172,22 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     }
 }
 
+- (IPAssetModel *)getAssetModelWithIndex:(NSUInteger)index
+{
+    if (_dataArr.count > 0 && _dataArr.count > index) {
+        return self.dataArr[index];
+    } else if ([_dataSource imageReader:self assetModelWithIndex:index]) {
+        return [_dataSource imageReader:self assetModelWithIndex:index];
+    } else {
+        return nil;
+    }
+}
+
 -(void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
     self.headerView.hidden = NO;
-    IPAssetModel *model = self.dataArr[_defaultShowPage];
+    IPAssetModel *model = [self getAssetModelWithIndex:_defaultShowPage];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
     [thePage displayImageWithFullScreenImage];
     self.navigationController.delegate = self;
@@ -246,7 +257,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     }else {
         self.currentSelectCount --;
     }
-    IPAssetModel *model = self.dataArr[_currentPage];
+    IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
     model.isSelect = btn.selected;
     if (self.delegate && [self.delegate respondsToSelector:@selector(clickSelectBtnForReaderView:)]) {
         [self.delegate clickSelectBtnForReaderView:model];
@@ -292,7 +303,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     _currentPage = _pageIndexBeforeRotation;
     self.isRoration = YES;
     
-    IPAssetModel *model = self.dataArr[_currentPage];
+    IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
     self.rightButton.selected = model.isSelect;
     
     [self.collectionView reloadData];
@@ -311,7 +322,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     self.isRoration = NO;
-    IPAssetModel *model = self.dataArr[_currentPage];
+    IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
     [thePage displayImageWithFullScreenImage];
     
@@ -365,7 +376,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     NSUInteger previousCurrentPage = _currentPage;
     _currentPage = index;
     if (_currentPage != previousCurrentPage) {
-        IPAssetModel *model = self.dataArr[_currentPage];
+        IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
         self.rightButton.selected = model.isSelect;
     }
    
@@ -393,7 +404,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
 {
-    IPAssetModel *model = self.dataArr[_currentPage];
+    IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
     [thePage displayImageWithFullScreenImage];
     
