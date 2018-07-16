@@ -537,8 +537,15 @@ static IPAssetManager *manager;
         if (asset.mediaType == PHAssetMediaTypeImage) {
 //            if (asset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) type = IPAssetModelMediaTypeLivePhoto;
         }
+        // Photos library
+        UIScreen *screen = [UIScreen mainScreen];
+        CGFloat scale = screen.scale;
+        // Sizing is very rough... more thought required in a real implementation
+        CGFloat imageSize = MAX(screen.bounds.size.width, screen.bounds.size.height) * 1.5;
+        CGSize imageTargetSize = CGSizeMake(imageSize * scale, imageSize * scale);
+//        CGSize thumbTargetSize = CGSizeMake(imageSize / 3.0 * scale, imageSize / 3.0 * scale);
         
-        IPAssetModel *imgModel = [IPAssetModel assetModelWithAsset:asset targetSize:CGSizeMake(30, 30)];
+        IPAssetModel *imgModel = [IPAssetModel assetModelWithAsset:asset targetSize:imageTargetSize];
         imgModel.assetType = type;
         imgModel.localIdentiy = asset.localIdentifier;
         imgModel.assetUrl = [NSURL URLWithString:asset.localIdentifier];
@@ -954,7 +961,14 @@ static IPAssetManager *manager;
         
         if (asset.mediaSubtypes != PHAssetMediaSubtypeVideoHighFrameRate && asset.mediaSubtypes != PHAssetMediaSubtypeVideoTimelapse) {//慢动作,延时摄影
             IPAssetModelMediaType type = IPAssetModelMediaTypeVideo;
-            __block IPAssetModel *videoModel = [IPAssetModel assetModelWithAsset:asset targetSize:CGSizeMake(30, 30)];
+            
+            UIScreen *screen = [UIScreen mainScreen];
+            CGFloat scale = screen.scale;
+            // Sizing is very rough... more thought required in a real implementation
+            CGFloat imageSize = MAX(screen.bounds.size.width, screen.bounds.size.height) * 1.5;
+            CGSize imageTargetSize = CGSizeMake(imageSize * scale, imageSize * scale);
+            //        CGSize thumbTargetSize = CGSizeMake(imageSize / 3.0 * scale, imageSize / 3.0 * scale);
+            __block IPAssetModel *videoModel = [IPAssetModel assetModelWithAsset:asset targetSize:imageTargetSize];
             videoModel.assetType = type;
             videoModel.localIdentiy = asset.localIdentifier;
 

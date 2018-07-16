@@ -39,6 +39,11 @@
 // as long as the image can be re-loaded (from cache, file, or URL)
 - (void)unloadUnderlyingImage;
 
+
+- (void)loadFullScreenImageAndComplete:(void(^)(BOOL success,UIImage *image))complete;
+- (void)performLoadFullScreenImageAndComplete:(void(^)(BOOL success,UIImage *image))complete;
+- (void)unloadFullScreenImage;
+
 @optional
 
 // If photo is empty, in which case, don't show loading error icons

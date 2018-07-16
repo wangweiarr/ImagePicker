@@ -22,6 +22,7 @@
 @property (nonatomic, strong) NSURL *videoURL;
 @property (nonatomic, strong) NSURL *photoURL;
 @property (nonatomic, strong) UIImage *image;
+@property (nonatomic, strong) UIImage *fullScreenImage;
 @property (nonatomic) CGSize assetTargetSize;
 
 @end
@@ -142,6 +143,47 @@
 
 #pragma mark - IPAssetModelProtocol Methods
 
+- (void)loadFullScreenImageAndComplete:(void(^)(BOOL success,UIImage *image))complete
+{
+//    NSAssert([[NSThread currentThread] isMainThread], @"This method must be called on the main thread.");
+//    if (_loadingAssetInProgress) return;
+//    _loadingAssetInProgress = YES;
+//    @try {
+//        if (self.fullScreenImage) {
+//            if (complete) {
+//                _loadingAssetInProgress = NO;
+//                complete(YES,self.fullScreenImage);
+//            }
+//        } else {
+//            [self performLoadFullScreenImageAndComplete:complete];
+//        }
+//    }
+//    @catch (NSException *exception) {
+//        self.fullScreenImage = nil;
+//        _loadingAssetInProgress = NO;
+//        if (complete) {
+//            complete(NO,nil);
+//        }
+//    }
+//    @finally {
+//    }
+}
+
+- (void)performLoadFullScreenImageAndComplete:(void(^)(BOOL success,UIImage *image))complete
+{
+    if (_asset) {
+        
+        // Load from photos asset
+        [self _performLoadFullScreenImageWithAsset: _asset targetSize:_assetTargetSize complete:complete];
+        
+    }
+}
+
+- (void)unloadFullScreenImage
+{
+    
+}
+
 // Release if we can get it again from path or url
 - (void)unloadUnderlyingImage {
     _loadingAssetInProgress = NO;
@@ -178,7 +220,6 @@
 }
 
 
-#pragma mark - private
 
 // Set the underlyingImage
 - (void)performLoadUnderlyingImageAndComplete:(void (^)(BOOL success, UIImage *image))complete {
@@ -226,6 +267,8 @@
         }
     }
 }
+
+#pragma mark - private
 
 // Load from local file
 - (void)_performLoadUnderlyingImageWithWebURL:(NSURL *)url complete:(void (^)(BOOL success, UIImage *image))complete{
@@ -355,6 +398,34 @@
         });
     }];
     
+}
+
+- (void)_performLoadFullScreenImageWithAsset:(PHAsset *)asset targetSize:(CGSize)targetSize  complete:(void (^)(BOOL success, UIImage *image))complete
+{
+    
+    PHImageRequestOptions *options = [[PHImageRequestOptions alloc]init];
+    options.networkAccessAllowed = YES;
+    options.resizeMode = PHImageRequestOptionsResizeModeExact;
+    options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
+    options.synchronous = YES;
+    PHAsset *phAsset = asset;
+    //    PHImageManagerMaximumSize
+    [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info)
+    {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            //                IPLog(@"高清图--%@",info);
+            BOOL downloadFinined = (![[info objectForKey:PHImageCancelledKey] boolValue] && ![info objectForKey:PHImageErrorKey] && ![[info objectForKey:PHImageResultIsDegradedKey] boolValue]);
+            if (downloadFinined) {
+                _loadingAssetInProgress = NO;
+                self.fullScreenImage = result;
+                complete(downloadFinined,result);
+                
+            }else {
+                complete(nil,nil);
+            }
+        });
+        
+    }];
 }
 
 @end

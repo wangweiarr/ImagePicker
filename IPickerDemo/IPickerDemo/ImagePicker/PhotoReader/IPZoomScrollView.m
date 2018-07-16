@@ -70,40 +70,48 @@
 
 - (void)prepareForReuse
 {
-    _assetModel = nil;
     _photoImageView.hidden = YES;
     _photoImageView.image = nil;
 }
 
-- (void)setImageModel:(IPAssetModel *)imageModel
+- (void)setAssetModel:(IPAssetModel *)assetModel
 {
-    
-    if (_assetModel != imageModel) {
-        _assetModel = imageModel;
-//        [self displayImage];
+    if (_assetModel != assetModel) {
+        _assetModel = assetModel;
+        //        [self displayImage];
     }
 }
 
-- (void)displayImageWithFullScreenImage
+- (void)displayImageWithFullScreenImage:(UIImage *)image
 {
     CGSize size = CGSizeMake(self.bounds.size.width, self.bounds.size.height);
     if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
         size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
     }
-    
-    [[IPAssetManager defaultAssetManager] getFullScreenImageWithAsset:_assetModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
-        if (img) {
-            if (!CGSizeEqualToSize(img.size, _photoImageView.image.size)) {
-                // Set image
-                _photoImageView.image = img;
-                _photoImageView.contentMode = UIViewContentModeScaleAspectFill;
-                // Set zoom to minimum zoom
-                [self setMaxMinZoomScalesForCurrentBounds];
-                [self setNeedsLayout];
-            }
-            
+//    [[IPAssetManager defaultAssetManager] getFullScreenImageWithAsset:_assetModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
+//        if (img) {
+//            if (!CGSizeEqualToSize(img.size, _photoImageView.image.size)) {
+//                // Set image
+//                _photoImageView.image = img;
+//                _photoImageView.contentMode = UIViewContentModeScaleAspectFill;
+//                // Set zoom to minimum zoom
+//                [self setMaxMinZoomScalesForCurrentBounds];
+//                [self setNeedsLayout];
+//            }
+//            
+//        }
+//    }];
+    if (image) {
+        if (!CGSizeEqualToSize(image.size, _photoImageView.image.size)) {
+            // Set image
+            _photoImageView.image = image;
+            _photoImageView.contentMode = UIViewContentModeScaleAspectFill;
+            // Set zoom to minimum zoom
+            [self setMaxMinZoomScalesForCurrentBounds];
+            [self setNeedsLayout];
         }
-    }];
+        
+    }
 }
 - (void)displayImageWithError
 {
@@ -259,6 +267,7 @@
     
 }
 
+#pragma mark - UIScrollViewDelegate
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
 {

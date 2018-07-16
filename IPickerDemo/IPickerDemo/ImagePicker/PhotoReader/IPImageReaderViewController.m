@@ -156,7 +156,12 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
         self.isRoration = NO;
         IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
         IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-        [thePage displayImageWithFullScreenImage];
+        [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+            if (success && image) {
+                [thePage displayImageWithFullScreenImage:image];
+            }
+        }];
+        
     }
     if (self.forceTouch) {
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
@@ -166,7 +171,11 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
         IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
         if (thePage) {
             self.forceTouch = NO;
-            [thePage displayImageWithFullScreenImage];
+            [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+                if (success && image) {
+                    [thePage displayImageWithFullScreenImage:image];
+                }
+            }];
         }
         
     }
@@ -200,7 +209,12 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     self.headerView.hidden = NO;
     IPAssetModel *model = [self getAssetModelWithIndex:_defaultShowPage];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-    [thePage displayImageWithFullScreenImage];
+    
+    [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+        if (success && image) {
+            [thePage displayImageWithFullScreenImage:image];
+        }
+    }];
     self.navigationController.delegate = self;
     
 }
@@ -335,8 +349,11 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     self.isRoration = NO;
     IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-    [thePage displayImageWithFullScreenImage];
-    
+    [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+        if (success && image) {
+            [thePage displayImageWithFullScreenImage:image];
+        }
+    }];
 }
 //#endif
 
@@ -387,11 +404,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
                 id <IPAssetModel> photo = [self getAssetModelWithIndex:pageIndex-1];
                 if (![photo underlyingImage]) {
                     [photo loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
-                        if (image && success) {
-                            [page displayImageWithImage:image];
-                        } else {
-                            [page displayImageWithError];
-                        }
+                       
                     }];
                     IPLog(@"Pre-loading image at index %lu", (unsigned long)pageIndex-1);
                 }
@@ -401,11 +414,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
                 id <IPAssetModel> photo = [self getAssetModelWithIndex:pageIndex+1];
                 if (![photo underlyingImage]) {
                     [photo loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
-                        if (image && success) {
-                            [page displayImageWithImage:image];
-                        } else {
-                            [page displayImageWithError];
-                        }
+                        
                     }];
                     IPLog(@"Pre-loading image at index %lu", (unsigned long)pageIndex+1);
                 }
@@ -456,7 +465,11 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 {
     IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-    [thePage displayImageWithFullScreenImage];
+    [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+        if (success && image) {
+            [thePage displayImageWithFullScreenImage:image];
+        }
+    }];
     
     NSLog(@"scrollViewDidEndDecelerating");
 }

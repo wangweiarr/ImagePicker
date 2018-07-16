@@ -26,6 +26,6 @@
 
 - (void)displayImageWithError;
 
-- (void)displayImageWithFullScreenImage;
+- (void)displayImageWithFullScreenImage:(UIImage *)image;
 
 @end
