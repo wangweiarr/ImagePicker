@@ -94,6 +94,7 @@
 		34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPZoomScrollView.m; sourceTree = "<group>"; };
 		34E40DA11CCB5EBF00DCC366 /* IP3DTouchPreviewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IP3DTouchPreviewVC.h; sourceTree = "<group>"; };
 		34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IP3DTouchPreviewVC.m; sourceTree = "<group>"; };
+		F405D88020FAF36B0002EEF9 /* IPProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPProtocol.h; sourceTree = "<group>"; };
 		F419C0461E725088005231A4 /* IPVideoPlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPVideoPlayerViewController.h; sourceTree = "<group>"; };
 		F419C0471E725088005231A4 /* IPVideoPlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPVideoPlayerViewController.m; sourceTree = "<group>"; };
 		F48EF8F520CD89F1009CBC10 /* IPImageReaderCellLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPImageReaderCellLayout.h; sourceTree = "<group>"; };
@@ -174,6 +175,7 @@
 				34C4A5EC20BF9FBB004252BC /* PhotoReader */,
 				349EB9CA1E2E22A400351FC4 /* AnimationTranstion */,
 				34A524281DC9E5AA0094915B /* IPPrivateDefine.h */,
+				F405D88020FAF36B0002EEF9 /* IPProtocol.h */,
 				3453E6231CC8D99F004DAFDA /* IPAssetModel.h */,
 				3453E6241CC8D99F004DAFDA /* IPAssetModel.m */,
 				344F37D91C83D4C0006063B6 /* IPAlbumCell.h */,

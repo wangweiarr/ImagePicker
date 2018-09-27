@@ -12,6 +12,6 @@
 @interface IPImageReaderCell : UICollectionViewCell
 
 /**伸缩图*/
-@property (nonatomic, strong)IPZoomScrollView *zoomScroll;
+@property (nonatomic, readonly)IPZoomScrollView *zoomScroll;
 
 @end

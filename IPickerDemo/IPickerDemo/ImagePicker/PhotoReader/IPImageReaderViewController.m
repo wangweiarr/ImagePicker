@@ -141,7 +141,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     if (self.isFirst == NO) {
         
         if (self.defaultShowPage == 0) {//当滚动到0的位置时,默认是不调用scrolldidscroll方法的
-            IPAssetModel *model = self.dataArr[0];
+            IPAssetModel *model = [self getAssetModelWithIndex:0];
             self.rightButton.selected = model.isSelect;
         }
         
@@ -154,21 +154,52 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
         self.isRoration = NO;
-        IPAssetModel *model = self.dataArr[_currentPage];
+        IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
         IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-        [thePage displayImageWithFullScreenImage];
+        [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+            if (success && image) {
+                [thePage displayImageWithFullScreenImage:image];
+            }
+        }];
+        
     }
     if (self.forceTouch) {
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.currentPage inSection:0];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
         
-        IPAssetModel *model = self.dataArr[_currentPage];
+        IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
         IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
         if (thePage) {
             self.forceTouch = NO;
-            [thePage displayImageWithFullScreenImage];
+            [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+                if (success && image) {
+                    [thePage displayImageWithFullScreenImage:image];
+                }
+            }];
         }
         
+    }
+}
+
+- (IPAssetModel *)getAssetModelWithIndex:(NSUInteger)index
+{
+    if (_dataArr.count > 0 && _dataArr.count > index) {
+        return self.dataArr[index];
+    } else if ([_dataSource imageReader:self assetModelWithIndex:index]) {
+        return [_dataSource imageReader:self assetModelWithIndex:index];
+    } else {
+        return nil;
+    }
+}
+
+- (NSUInteger)getCountOfAssetModel
+{
+    if (_dataArr) {
+        return _dataArr.count;
+    } else if (_dataSource) {
+        return [_dataSource numberOfAssetsOfImageReader:self];
+    } else {
+        return 0;
     }
 }
 
@@ -176,9 +207,14 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 {
     [super viewDidAppear:animated];
     self.headerView.hidden = NO;
-    IPAssetModel *model = self.dataArr[_defaultShowPage];
+    IPAssetModel *model = [self getAssetModelWithIndex:_defaultShowPage];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-    [thePage displayImageWithFullScreenImage];
+    
+    [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+        if (success && image) {
+            [thePage displayImageWithFullScreenImage:image];
+        }
+    }];
     self.navigationController.delegate = self;
     
 }
@@ -246,7 +282,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     }else {
         self.currentSelectCount --;
     }
-    IPAssetModel *model = self.dataArr[_currentPage];
+    IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
     model.isSelect = btn.selected;
     if (self.delegate && [self.delegate respondsToSelector:@selector(clickSelectBtnForReaderView:)]) {
         [self.delegate clickSelectBtnForReaderView:model];
@@ -292,7 +328,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     _currentPage = _pageIndexBeforeRotation;
     self.isRoration = YES;
     
-    IPAssetModel *model = self.dataArr[_currentPage];
+    IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
     self.rightButton.selected = model.isSelect;
     
     [self.collectionView reloadData];
@@ -311,33 +347,44 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     self.isRoration = NO;
-    IPAssetModel *model = self.dataArr[_currentPage];
+    IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-    [thePage displayImageWithFullScreenImage];
-    
+    [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+        if (success && image) {
+            [thePage displayImageWithFullScreenImage:image];
+        }
+    }];
 }
 //#endif
 
 
 #pragma mark - UICollectionViewDataSource Delegate
 
-- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
-{
-    return 1;
-}
-
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    return self.dataArr.count;
+    return [self getCountOfAssetModel];
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     IPImageReaderCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseIdentifier forIndexPath:indexPath];
-    IPAssetModel *model = [self.dataArr objectAtIndex:indexPath.item];
+    IPAssetModel *model = [self getAssetModelWithIndex:indexPath.item];
 
-    IPLog(@"cellForItemAtIndexPath--%tu",indexPath.item);
-    cell.zoomScroll.imageModel = model;
+    IPLog(@"wjl cellForItemAtIndexPath--%tu",indexPath.item);
+    cell.zoomScroll.assetModel = model;
+    cell.zoomScroll.index = indexPath.item;
+    [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+        if ([cell.zoomScroll.assetModel isEqual:model]) {
+            if (image && success) {
+                [cell.zoomScroll displayImageWithImage:image];
+            } else {
+                [cell.zoomScroll displayImageWithError];
+            }
+            
+            [self loadAdjacentPhotosIfNecessary:model];
+        }
+    }];
+    
     return cell;
 }
 
@@ -346,11 +393,34 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     return self.view.bounds.size;
 }
 
-- (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageReaderCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath
-{
-    IPLog(@"didEndDisplayingCell--%tu",indexPath.item);
-//    [cell.zoomScroll prepareForReuse];
-    
+- (void)loadAdjacentPhotosIfNecessary:(id<IPAssetModel>)photo {
+    IPZoomScrollView *page = [self pageDisplayingPhoto:photo];
+    if (page) {
+        // If page is current page then initiate loading of previous and next pages
+        NSUInteger pageIndex = page.index;
+        if (_currentPage == pageIndex) {
+            if (pageIndex > 0) {
+                // Preload index - 1
+                id <IPAssetModel> photo = [self getAssetModelWithIndex:pageIndex-1];
+                if (![photo underlyingImage]) {
+                    [photo loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+                       
+                    }];
+                    IPLog(@"Pre-loading image at index %lu", (unsigned long)pageIndex-1);
+                }
+            }
+            if (pageIndex < [self getCountOfAssetModel] - 1) {
+                // Preload index + 1
+                id <IPAssetModel> photo = [self getAssetModelWithIndex:pageIndex+1];
+                if (![photo underlyingImage]) {
+                    [photo loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+                        
+                    }];
+                    IPLog(@"Pre-loading image at index %lu", (unsigned long)pageIndex+1);
+                }
+            }
+        }
+    }
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
@@ -365,7 +435,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     NSUInteger previousCurrentPage = _currentPage;
     _currentPage = index;
     if (_currentPage != previousCurrentPage) {
-        IPAssetModel *model = self.dataArr[_currentPage];
+        IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
         self.rightButton.selected = model.isSelect;
     }
    
@@ -393,9 +463,13 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 
 - (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
 {
-    IPAssetModel *model = self.dataArr[_currentPage];
+    IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
     IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-    [thePage displayImageWithFullScreenImage];
+    [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+        if (success && image) {
+            [thePage displayImageWithFullScreenImage:image];
+        }
+    }];
     
     NSLog(@"scrollViewDidEndDecelerating");
 }
@@ -419,7 +493,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 {
     IPZoomScrollView *thePage = nil;
     for (IPImageReaderCell *cell in self.collectionView.visibleCells) {
-        if (cell.zoomScroll.imageModel == model) {
+        if ([cell.zoomScroll.assetModel isEqual:model]) {
             thePage = cell.zoomScroll; break;
         }
     }

@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "IPProtocol.h"
 
 /**类型*/
 typedef NS_ENUM(NSUInteger,  IPAssetModelMediaType) {
@@ -18,14 +19,14 @@ typedef NS_ENUM(NSUInteger,  IPAssetModelMediaType) {
     IPAssetModelMediaTypeTakePhoto
 };
 
-@class AVPlayerItem,CLLocation;
+@class AVPlayerItem,CLLocation,PHAsset;
 typedef void(^functionBlock)(AVPlayerItem *);
 
 
 typedef void(^CellClickActionBlock)(id);
 
 
-@interface IPAssetModel : NSObject
+@interface IPAssetModel : NSObject<IPAssetModel>
 
 /**创建日期*/
 @property (nonatomic, strong)NSDate *creatDate;
@@ -72,5 +73,14 @@ typedef void(^CellClickActionBlock)(id);
 
 /**layer*/
 @property (nonatomic, weak)CALayer *previewLayer;
+
+
+@property (nonatomic) BOOL emptyImage;
+@property (nonatomic) BOOL isVideo;
+
++ (IPAssetModel *)assetModelWithImage:(UIImage *)image;
++ (IPAssetModel *)assetModelWithURL:(NSURL *)url;
++ (IPAssetModel *)assetModelWithAsset:(PHAsset *)asset targetSize:(CGSize)targetSize;
++ (IPAssetModel *)videoWithURL:(NSURL *)url; // Initialise video with no poster image
 
 @end

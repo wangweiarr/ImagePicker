@@ -243,12 +243,12 @@ static IPAssetManager *manager;
                     
                     if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypePhoto]) {
                         
-                        IPAssetModel *imgModel = [[IPAssetModel alloc]init];
+                        IPAssetModel *imgModel = [IPAssetModel assetModelWithURL:[result valueForProperty:ALAssetPropertyAssetURL]];
                         imgModel.creatDate = [result valueForProperty:ALAssetPropertyDate];
                         imgModel.location = [result valueForProperty:ALAssetPropertyLocation];
                         imgModel.assetType = IPAssetModelMediaTypePhoto;
-                        imgModel.asset = result;
-                        imgModel.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
+//                        imgModel.asset = result;
+//                        imgModel.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
                         
                         [weakSelf.reverserArray addObject:imgModel];
                         
@@ -329,10 +329,9 @@ static IPAssetManager *manager;
                 if (result!=NULL) {
                     
                     if ([[result valueForProperty:ALAssetPropertyType] isEqualToString:ALAssetTypePhoto]) {
-                        IPAssetModel *model = [[IPAssetModel alloc]init];
+                        IPAssetModel *model = [IPAssetModel assetModelWithURL:[result valueForProperty:ALAssetPropertyAssetURL]];
                         model.assetType = IPAssetModelMediaTypePhoto;
-                        model.asset = result;
-                        model.assetUrl = [result valueForProperty:ALAssetPropertyAssetURL];
+//                        model.asset = result;
                         [weakSelf.allImageModel enumerateObjectsUsingBlock:^(IPAssetModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
                             if ([obj.assetUrl isEqual:model.assetUrl]) {
                                 //此处逻辑要注意..当之前的那张图片已经存在过了,就加到当前数组中
@@ -538,8 +537,15 @@ static IPAssetManager *manager;
         if (asset.mediaType == PHAssetMediaTypeImage) {
 //            if (asset.mediaSubtypes == PHAssetMediaSubtypePhotoLive) type = IPAssetModelMediaTypeLivePhoto;
         }
+        // Photos library
+        UIScreen *screen = [UIScreen mainScreen];
+        CGFloat scale = screen.scale;
+        // Sizing is very rough... more thought required in a real implementation
+        CGFloat imageSize = MAX(screen.bounds.size.width, screen.bounds.size.height) * 1.5;
+        CGSize imageTargetSize = CGSizeMake(imageSize * scale, imageSize * scale);
+//        CGSize thumbTargetSize = CGSizeMake(imageSize / 3.0 * scale, imageSize / 3.0 * scale);
         
-        IPAssetModel *imgModel = [[IPAssetModel alloc]init];
+        IPAssetModel *imgModel = [IPAssetModel assetModelWithAsset:asset targetSize:imageTargetSize];
         imgModel.assetType = type;
         imgModel.localIdentiy = asset.localIdentifier;
         imgModel.assetUrl = [NSURL URLWithString:asset.localIdentifier];
@@ -955,10 +961,17 @@ static IPAssetManager *manager;
         
         if (asset.mediaSubtypes != PHAssetMediaSubtypeVideoHighFrameRate && asset.mediaSubtypes != PHAssetMediaSubtypeVideoTimelapse) {//慢动作,延时摄影
             IPAssetModelMediaType type = IPAssetModelMediaTypeVideo;
-            __block IPAssetModel *videoModel = [[IPAssetModel alloc]init];
+            
+            UIScreen *screen = [UIScreen mainScreen];
+            CGFloat scale = screen.scale;
+            // Sizing is very rough... more thought required in a real implementation
+            CGFloat imageSize = MAX(screen.bounds.size.width, screen.bounds.size.height) * 1.5;
+            CGSize imageTargetSize = CGSizeMake(imageSize * scale, imageSize * scale);
+            //        CGSize thumbTargetSize = CGSizeMake(imageSize / 3.0 * scale, imageSize / 3.0 * scale);
+            __block IPAssetModel *videoModel = [IPAssetModel assetModelWithAsset:asset targetSize:imageTargetSize];
             videoModel.assetType = type;
             videoModel.localIdentiy = asset.localIdentifier;
-            videoModel.asset = asset;
+
             if (type == IPAssetModelMediaTypeVideo) {
                 [[PHImageManager defaultManager] requestPlayerItemForVideo:asset options:nil resultHandler:^(AVPlayerItem * _Nullable playerItem, NSDictionary * _Nullable info) {
                     NSString *str = info[@"PHImageFileSandboxExtensionTokenKey"];
