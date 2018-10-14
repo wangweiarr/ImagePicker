@@ -16,7 +16,10 @@
 #import "IPImageReaderCell.h"
 #import "IPImageReaderCellLayout.h"
 
-@interface IPImageReaderViewController ()<UICollectionViewDelegateFlowLayout,UINavigationControllerDelegate>
+@interface IPImageReaderViewController ()<
+    UICollectionViewDelegateFlowLayout,
+    UINavigationControllerDelegate
+>
 
 /**图片数组*/
 @property (nonatomic, strong)NSArray *dataArr;
@@ -393,7 +396,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     return self.view.bounds.size;
 }
 
-- (void)loadAdjacentPhotosIfNecessary:(id<IPAssetModel>)photo {
+- (void)loadAdjacentPhotosIfNecessary:(id<IPAssetProtocol>)photo {
     IPZoomScrollView *page = [self pageDisplayingPhoto:photo];
     if (page) {
         // If page is current page then initiate loading of previous and next pages
@@ -401,7 +404,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
         if (_currentPage == pageIndex) {
             if (pageIndex > 0) {
                 // Preload index - 1
-                id <IPAssetModel> photo = [self getAssetModelWithIndex:pageIndex-1];
+                id <IPAssetProtocol> photo = [self getAssetModelWithIndex:pageIndex-1];
                 if (![photo underlyingImage]) {
                     [photo loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
                        
@@ -411,7 +414,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
             }
             if (pageIndex < [self getCountOfAssetModel] - 1) {
                 // Preload index + 1
-                id <IPAssetModel> photo = [self getAssetModelWithIndex:pageIndex+1];
+                id <IPAssetProtocol> photo = [self getAssetModelWithIndex:pageIndex+1];
                 if (![photo underlyingImage]) {
                     [photo loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
                         

@@ -8,7 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-
 @protocol IPTapDetectViewDelegate <NSObject>
 
 @optional
@@ -21,7 +20,7 @@
 
 
 
-@interface IPTapDetectView : UIView {}
+@interface IPTapDetectView : UIView
 
 @property (nonatomic, weak) id <IPTapDetectViewDelegate> tapDelegate;
 

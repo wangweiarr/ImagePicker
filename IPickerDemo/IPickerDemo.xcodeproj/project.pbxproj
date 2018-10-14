@@ -94,11 +94,11 @@
 		34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPZoomScrollView.m; sourceTree = "<group>"; };
 		34E40DA11CCB5EBF00DCC366 /* IP3DTouchPreviewVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IP3DTouchPreviewVC.h; sourceTree = "<group>"; };
 		34E40DA21CCB5EBF00DCC366 /* IP3DTouchPreviewVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IP3DTouchPreviewVC.m; sourceTree = "<group>"; };
-		F405D88020FAF36B0002EEF9 /* IPProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPProtocol.h; sourceTree = "<group>"; };
 		F419C0461E725088005231A4 /* IPVideoPlayerViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPVideoPlayerViewController.h; sourceTree = "<group>"; };
 		F419C0471E725088005231A4 /* IPVideoPlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPVideoPlayerViewController.m; sourceTree = "<group>"; };
 		F48EF8F520CD89F1009CBC10 /* IPImageReaderCellLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPImageReaderCellLayout.h; sourceTree = "<group>"; };
 		F48EF8F620CD89F1009CBC10 /* IPImageReaderCellLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IPImageReaderCellLayout.m; sourceTree = "<group>"; };
+		F4ACA57F2173968F0089CBDD /* IPAssetProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPAssetProtocol.h; sourceTree = "<group>"; };
 		F4B763981E6AB67100C31F80 /* IPMediaCenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPMediaCenter.h; sourceTree = "<group>"; };
 		F4B763991E6AB67100C31F80 /* IPMediaCenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPMediaCenter.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -175,7 +175,6 @@
 				34C4A5EC20BF9FBB004252BC /* PhotoReader */,
 				349EB9CA1E2E22A400351FC4 /* AnimationTranstion */,
 				34A524281DC9E5AA0094915B /* IPPrivateDefine.h */,
-				F405D88020FAF36B0002EEF9 /* IPProtocol.h */,
 				3453E6231CC8D99F004DAFDA /* IPAssetModel.h */,
 				3453E6241CC8D99F004DAFDA /* IPAssetModel.m */,
 				344F37D91C83D4C0006063B6 /* IPAlbumCell.h */,
@@ -241,6 +240,7 @@
 				34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */,
 				F48EF8F520CD89F1009CBC10 /* IPImageReaderCellLayout.h */,
 				F48EF8F620CD89F1009CBC10 /* IPImageReaderCellLayout.m */,
+				F4ACA57F2173968F0089CBDD /* IPAssetProtocol.h */,
 			);
 			path = PhotoReader;
 			sourceTree = "<group>";
@@ -276,7 +276,7 @@
 				TargetAttributes = {
 					344F37A31C814BC6006063B6 = {
 						CreatedOnToolsVersion = 7.2.1;
-						DevelopmentTeam = 8DZNQGC828;
+						DevelopmentTeam = NVAFMDWZJC;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -437,11 +437,11 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = 8DZNQGC828;
+				DEVELOPMENT_TEAM = NVAFMDWZJC;
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.JL.Ipicker;
+				PRODUCT_BUNDLE_IDENTIFIER = JL.IPicker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -455,11 +455,11 @@
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = 8DZNQGC828;
+				DEVELOPMENT_TEAM = NVAFMDWZJC;
 				INFOPLIST_FILE = IPickerDemo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.JL.Ipicker;
+				PRODUCT_BUNDLE_IDENTIFIER = JL.IPicker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";

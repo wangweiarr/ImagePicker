@@ -382,9 +382,9 @@
     options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
     options.synchronous = false;
     options.progressHandler = ^(double progress, NSError *error, BOOL *stop, NSDictionary *info) {
-        NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:
-                              [NSNumber numberWithDouble: progress], @"progress",
-                              self, @"photo", nil];
+//        NSDictionary* dict = [NSDictionary dictionaryWithObjectsAndKeys:
+//                              [NSNumber numberWithDouble: progress], @"progress",
+//                              self, @"photo", nil];
 //        [[NSNotificationCenter defaultCenter] postNotificationName:MWPHOTO_PROGRESS_NOTIFICATION object:dict];
     };
     

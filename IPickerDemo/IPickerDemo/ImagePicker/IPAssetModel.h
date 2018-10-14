@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "IPProtocol.h"
+#import "IPAssetProtocol.h"
 
 /**类型*/
 typedef NS_ENUM(NSUInteger,  IPAssetModelMediaType) {
@@ -26,7 +26,7 @@ typedef void(^functionBlock)(AVPlayerItem *);
 typedef void(^CellClickActionBlock)(id);
 
 
-@interface IPAssetModel : NSObject<IPAssetModel>
+@interface IPAssetModel : NSObject<IPAssetProtocol>
 
 /**创建日期*/
 @property (nonatomic, strong)NSDate *creatDate;

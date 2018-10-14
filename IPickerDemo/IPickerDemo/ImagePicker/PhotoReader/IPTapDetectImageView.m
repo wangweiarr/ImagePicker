@@ -10,28 +10,47 @@
 
 @implementation IPTapDetectImageView
 
-- (id)initWithFrame:(CGRect)frame {
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
+{
+    if (self = [super initWithCoder:aDecoder]) {
+        
+    }
+    return self;
+}
+
+
+- (id)initWithFrame:(CGRect)frame
+{
     if ((self = [super initWithFrame:frame])) {
-        self.userInteractionEnabled = YES;
+        [self _initlize];
     }
     return self;
 }
 
-- (id)initWithImage:(UIImage *)image {
+- (id)initWithImage:(UIImage *)image
+{
     if ((self = [super initWithImage:image])) {
-        self.userInteractionEnabled = YES;
+        [self _initlize];
     }
     return self;
 }
 
-- (id)initWithImage:(UIImage *)image highlightedImage:(UIImage *)highlightedImage {
+- (id)initWithImage:(UIImage *)image highlightedImage:(UIImage *)highlightedImage
+{
     if ((self = [super initWithImage:image highlightedImage:highlightedImage])) {
-        self.userInteractionEnabled = YES;
+        [self _initlize];
     }
     return self;
 }
 
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
+
+- (void)_initlize
+{
+    self.userInteractionEnabled = YES;
+}
+
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
     UITouch *touch = [touches anyObject];
     NSUInteger tapCount = touch.tapCount;
     switch (tapCount) {
@@ -50,17 +69,20 @@
     [[self nextResponder] touchesEnded:touches withEvent:event];
 }
 
-- (void)handleSingleTap:(UITouch *)touch {
+- (void)handleSingleTap:(UITouch *)touch
+{
     if ([_tapDelegate respondsToSelector:@selector(imageView:singleTapDetected:)])
         [_tapDelegate imageView:self singleTapDetected:touch];
 }
 
-- (void)handleDoubleTap:(UITouch *)touch {
+- (void)handleDoubleTap:(UITouch *)touch
+{
     if ([_tapDelegate respondsToSelector:@selector(imageView:doubleTapDetected:)])
         [_tapDelegate imageView:self doubleTapDetected:touch];
 }
 
-- (void)handleTripleTap:(UITouch *)touch {
+- (void)handleTripleTap:(UITouch *)touch
+{
     if ([_tapDelegate respondsToSelector:@selector(imageView:tripleTapDetected:)])
         [_tapDelegate imageView:self tripleTapDetected:touch];
 }

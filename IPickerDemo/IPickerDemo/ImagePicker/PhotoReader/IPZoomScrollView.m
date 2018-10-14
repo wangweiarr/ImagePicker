@@ -7,7 +7,6 @@
 //
 
 #import "IPZoomScrollView.h"
-#import "IPAssetModel.h"
 #import "IPTapDetectView.h"
 #import "IPAssetManager.h"
 #import "IPPrivateDefine.h"
@@ -43,26 +42,36 @@
 
 - (void)_initilization
 {
-    // Tap view for background
+
     _tapView = [[IPTapDetectView alloc] initWithFrame:self.bounds];
     _tapView.tapDelegate = self;
     _tapView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    _tapView.backgroundColor = [UIColor clearColor];
+    _tapView.backgroundColor = [UIColor blackColor];
     [self addSubview:_tapView];
     
     // Image view
     _photoImageView = [[IPTapDetectImageView alloc] initWithFrame:CGRectZero];
-    _photoImageView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
-    _photoImageView.autoresizesSubviews = YES;
-    _photoImageView.contentMode = UIViewContentModeScaleAspectFill;
+    _photoImageView.contentMode = UIViewContentModeCenter;
     _photoImageView.tapDelegate = self;
-    _photoImageView.backgroundColor = [UIColor clearColor];
+    _photoImageView.backgroundColor = [UIColor blackColor];
     [self addSubview:_photoImageView];
     
     self.backgroundColor = [UIColor blackColor];
     self.delegate = self;
     self.showsHorizontalScrollIndicator = NO;
     self.showsVerticalScrollIndicator = NO;
+    
+    /**
+     手指在UIScrollView上滑动后，会再减速一段距离，如果觉得减速之后滑动的距离太远了，可以通过decelerationRate的值来控制减速的距离。
+     
+     通过自定义值修改
+     decelerationRate类型为CGFloat，范围是（0.0，1.0）。
+     上面两个常量的值分别是：
+     UIScrollViewDecelerationRateNormal :0.998
+     UIScrollViewDecelerationRateFast：0.99
+     
+     如果以上值还不能满足需求的话，我们可以将其设为范围内的任意值。比如将其设置为0.1，会发现滑动之后很快就停下来了。
+     */
     self.decelerationRate = UIScrollViewDecelerationRateFast;
     self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
@@ -72,93 +81,69 @@
 {
     _photoImageView.hidden = YES;
     _photoImageView.image = nil;
+    
+//    [self hideImageFailure];
+//    self.photo = nil;
+//    self.captionView = nil;
+//    self.selectedButton = nil;
+//    self.playButton = nil;
+//    _index = NSUIntegerMax;
 }
 
-- (void)setAssetModel:(IPAssetModel *)assetModel
+- (void)setAssetModel:(id<IPAssetProtocol>)assetModel
 {
     if (_assetModel != assetModel) {
         _assetModel = assetModel;
-        //        [self displayImage];
     }
 }
 
 - (void)displayImageWithFullScreenImage:(UIImage *)image
 {
-    CGSize size = CGSizeMake(self.bounds.size.width, self.bounds.size.height);
-    if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
-        size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
-    }
-//    [[IPAssetManager defaultAssetManager] getFullScreenImageWithAsset:_assetModel photoWidth:size completion:^(UIImage *img, NSDictionary *info) {
-//        if (img) {
-//            if (!CGSizeEqualToSize(img.size, _photoImageView.image.size)) {
-//                // Set image
-//                _photoImageView.image = img;
-//                _photoImageView.contentMode = UIViewContentModeScaleAspectFill;
-//                // Set zoom to minimum zoom
-//                [self setMaxMinZoomScalesForCurrentBounds];
-//                [self setNeedsLayout];
-//            }
-//            
-//        }
-//    }];
-    if (image) {
-        if (!CGSizeEqualToSize(image.size, _photoImageView.image.size)) {
-            // Set image
-            _photoImageView.image = image;
-            _photoImageView.contentMode = UIViewContentModeScaleAspectFill;
-            // Set zoom to minimum zoom
-            [self setMaxMinZoomScalesForCurrentBounds];
-            [self setNeedsLayout];
-        }
-        
-    }
+    
 }
+
 - (void)displayImageWithError
 {
     
 }
+
 // Get and display image
 - (void)displayImageWithImage:(UIImage *)img
 {
-    CGSize size = CGSizeMake(self.bounds.size.width, self.bounds.size.height);
-    if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
-        size = CGSizeMake(self.bounds.size.height, self.bounds.size.width);
+    if (_assetModel) {
+        
+        // Reset
+        self.maximumZoomScale = 1;
+        self.minimumZoomScale = 1;
+        self.zoomScale = 1;
+        self.contentSize = CGSizeMake(0, 0);
+        if (img) {
+            
+            // Hide indicator
+            //        [self hideLoadingIndicator];
+            
+            // Set image
+            _photoImageView.image = img;
+            _photoImageView.hidden = NO;
+            
+            // Setup photo frame
+            CGRect photoImageViewFrame;
+            photoImageViewFrame.origin = CGPointZero;
+            photoImageViewFrame.size = img.size;
+            _photoImageView.frame = photoImageViewFrame;
+            self.contentSize = photoImageViewFrame.size;
+            
+            // Set zoom to minimum zoom
+            [self setMaxMinZoomScalesForCurrentBounds];
+        } else {
+            
+            // Show image failure
+//            [self displayImageFailure];
+        }
+        
+        [self setNeedsLayout];
     }
     
-    // Reset
-    self.maximumZoomScale = 1;
-    self.minimumZoomScale = 1;
-    self.zoomScale = 1;
-    
-    _photoImageView.contentMode = UIViewContentModeScaleAspectFill;
-    // Set image
-    _photoImageView.image = img;
-    _photoImageView.hidden = NO;
-    IPLog(@"displayImage imageSize %@",NSStringFromCGSize(img.size));
-    // Setup photo frame
-    CGRect photoImageViewFrame;
-    
-    
-    
-    if (UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation)) {
-        CGFloat height = self.bounds.size.height;
-        
-        CGFloat width = height * img.size.width /img.size.height;
-        photoImageViewFrame.size = CGSizeMake(width, height);
-        IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
-    }else {
-        
-        CGFloat width = self.bounds.size.width;
-        
-        CGFloat height = width * img.size.height /img.size.width;
-        photoImageViewFrame.size = CGSizeMake(width, height);
-        IPLog(@"displayImage%@",NSStringFromCGRect(photoImageViewFrame));
-        
-    }
-    photoImageViewFrame.origin = CGPointZero;
-    _photoImageView.frame = photoImageViewFrame;
-    
-    [self setNeedsLayout];
 }
 
 //设置当前情况下,最大和最小伸缩比
@@ -172,7 +157,7 @@
     
     // Bail if no image
     if (_photoImageView.image == nil) return;
-    IPLog(@"setMaxMinZoomScalesForCurrentBounds%@",NSStringFromCGRect(_photoImageView.frame));
+   
     // Reset position
     _photoImageView.frame = CGRectMake(0, 0, _photoImageView.frame.size.width, _photoImageView.frame.size.height);
     
@@ -199,10 +184,30 @@
     
     // Set min/max zoom
     self.maximumZoomScale = maxScale;
+    self.minimumZoomScale = minScale;
+    
+    // Initial zoom
+    self.zoomScale = [self initialZoomScaleWithMinScale];
+    
+    // If we're zooming to fill then centralise
+    if (self.zoomScale != minScale) {
+        
+        // Centralise
+        self.contentOffset = CGPointMake((imageSize.width * self.zoomScale - boundsSize.width) / 2.0,
+                                         (imageSize.height * self.zoomScale - boundsSize.height) / 2.0);
+        
+    }
+    
+    // If it's a video then disable zooming
+    if ([self displayingVideo]) {
+        self.maximumZoomScale = self.zoomScale;
+        self.minimumZoomScale = self.zoomScale;
+    }
     
     // Disable scrolling initially until the first pinch to fix issues with swiping on an initally zoomed in photo
     self.scrollEnabled = NO;
-    
+    // Layout
+    [self setNeedsLayout];
 }
 
 - (CGFloat)initialZoomScaleWithMinScale
@@ -226,6 +231,12 @@
     return zoomScale;
 }
 
+#pragma mark - tool Func
+
+- (BOOL)displayingVideo
+{
+    return [_assetModel respondsToSelector:@selector(isVideo)] && _assetModel.isVideo;
+}
 
 
 #pragma mark - Layout
@@ -260,7 +271,6 @@
     
     // Center
     if (!CGRectEqualToRect(_photoImageView.frame, frameToCenter)){
-         IPLog(@"layoutSubviews%@",NSStringFromCGRect(frameToCenter));
         _photoImageView.frame = frameToCenter;
     }
     
@@ -300,6 +310,11 @@
 
 - (void)handleDoubleTap:(CGPoint)touchPoint
 {
+    
+    // Dont double tap to zoom if showing a video
+    if ([self displayingVideo]) {
+        return;
+    }
     // Zoom
     if (self.zoomScale != self.minimumZoomScale && self.zoomScale != [self initialZoomScaleWithMinScale]) {
         

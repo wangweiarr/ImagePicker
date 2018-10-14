@@ -8,19 +8,16 @@
 
 #import <UIKit/UIKit.h>
 #import "IPTapDetectImageView.h"
-
-@class IPAssetModel;
+#import "IPAssetProtocol.h"
 
 @interface IPZoomScrollView : UIScrollView
 
 @property(nonatomic, assign) NSUInteger index;
 
-@property (nonatomic, strong) IPAssetModel * assetModel;
+@property (nonatomic, strong) id<IPAssetProtocol> assetModel;
 
 @property (nonatomic, readonly) IPTapDetectImageView *photoImageView;
 
-
-- (void)prepareForReuse;
 
 - (void)displayImageWithImage:(UIImage *)image;
 
