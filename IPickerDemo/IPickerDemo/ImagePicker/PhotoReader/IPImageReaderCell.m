@@ -7,6 +7,13 @@
 //
 
 #import "IPImageReaderCell.h"
+#import "IPZoomScrollView.h"
+
+@interface IPZoomScrollView (private)
+
+- (void)prepareForReuse;
+
+@end
 
 @interface IPImageReaderCell()
 
@@ -16,7 +23,8 @@
 
 @implementation IPImageReaderCell
 
-- (instancetype)initWithFrame:(CGRect)frame{
+- (instancetype)initWithFrame:(CGRect)frame
+{
     if (self = [super initWithFrame:frame]) {
         
         // Configure the cell
@@ -28,11 +36,15 @@
     }
     return self;
 }
-- (void)prepareForReuse{
+
+- (void)prepareForReuse
+{
     [super prepareForReuse];
-    [self.zoomScroll prepareForReuse];
+    [_zoomScroll prepareForReuse];
 }
-- (void)layoutSubviews{
+
+- (void)layoutSubviews
+{
     [super layoutSubviews];
     _zoomScroll.frame = self.bounds;
 }

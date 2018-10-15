@@ -7,11 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "IPZoomScrollView.h"
+
+@class IPZoomScrollView;
 
 @interface IPImageReaderCell : UICollectionViewCell
 
-/**伸缩图*/
-@property (nonatomic, readonly)IPZoomScrollView *zoomScroll;
+@property (nonatomic, readonly) IPZoomScrollView *zoomScroll;
 
 @end
