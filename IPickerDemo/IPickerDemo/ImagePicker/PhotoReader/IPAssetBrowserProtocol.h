@@ -9,7 +9,7 @@
 #ifndef IPAssetProtocol_h
 #define IPAssetProtocol_h
 
-@protocol IPAssetProtocol <NSObject>
+@protocol IPAssetBrowserProtocol <NSObject>
 
 @required
 

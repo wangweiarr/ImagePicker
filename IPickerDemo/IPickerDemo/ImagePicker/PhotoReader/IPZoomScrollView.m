@@ -90,7 +90,7 @@
 //    _index = NSUIntegerMax;
 }
 
-- (void)setAssetModel:(id<IPAssetProtocol>)assetModel
+- (void)setAssetModel:(id<IPAssetBrowserProtocol>)assetModel
 {
     if (_assetModel != assetModel) {
         _assetModel = assetModel;
