@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
+#import "IPAssetManager.h"
 
 typedef void (^CompressProgress)(float);
 
@@ -22,11 +23,6 @@ typedef NS_ENUM(NSInteger, IPTakeMediaType) {
     IPTakeMediaTypeVideo
 };
 
-typedef NS_ENUM(NSInteger, IPAuthorizationStatus) {
-    IPAuthorizationStatusNotDetermined = 0,
-    IPAuthorizationStatusAuthorized,
-    IPAuthorizationStatusAudioDenied
-};
 typedef NS_ENUM(NSInteger, IPVisionErrorType)
 {
     IPVisionErrorUnknown = -1,

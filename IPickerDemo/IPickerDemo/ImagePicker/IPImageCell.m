@@ -13,6 +13,8 @@
 #import "IPMediaCenter.h"
 
 
+NSString const *IPicker_CollectionID = @"IPicker_CollectionID";
+
 @interface IPImageCell ()
 /**缩略图*/
 @property (nonatomic, weak,readwrite) UIImageView *imgView;

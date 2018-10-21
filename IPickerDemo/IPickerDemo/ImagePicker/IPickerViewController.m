@@ -35,10 +35,20 @@ typedef NS_ENUM(NSUInteger,  GetImageType) {
 
 NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION";
 
-@interface IPickerViewController ()<UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,IPAlbumViewDelegate,IPAssetManagerDelegate,IPImageCellDelegate,IPImageReaderViewControllerDelegate,IPTakeVideoViewControllerDelegate,UIViewControllerPreviewingDelegate,CAAnimationDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate,IPTakePhotoViewControllerDelegate>
-/**图库*/
-//@property (nonatomic, strong)IPAssetManager *defaultAssetManager;
-
+@interface IPickerViewController ()<
+UICollectionViewDataSource,
+UICollectionViewDelegateFlowLayout,
+IPAlbumViewDelegate,
+IPAssetManagerDelegate,
+IPImageCellDelegate,
+IPImageReaderViewControllerDelegate,
+IPTakeVideoViewControllerDelegate,
+UIViewControllerPreviewingDelegate,
+CAAnimationDelegate,
+UIImagePickerControllerDelegate,
+UINavigationControllerDelegate,
+IPTakePhotoViewControllerDelegate
+>
 
 /**头部视图*/
 @property (nonatomic, weak)UIView *headerView;
@@ -101,7 +111,6 @@ NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOAD
 @end
 
 
-static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 @implementation IPickerViewController
 
@@ -127,7 +136,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 - (void)getDataFromManager
 {
-    [self.defaultAssetManager requestUserpermission];
+    [self.defaultAssetManager reloadImagesFromLibrary];
+//    [self.defaultAssetManager requestUserpermission];
 }
 
 - (void)dealloc
@@ -151,7 +161,31 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     [self addMainView];
     [self addHeaderView];
-    [self getDataFromManager];
+
+    if ([IPAssetManager authorizationStatus] != IPAuthorizationStatusAuthorized) {
+        [IPAssetManager requestAuthorization:^(IPAuthorizationStatus status) {
+            IPLog(@"requestAuthorization status:%ld",status);
+            if (status != IPAuthorizationStatusAuthorized) {
+                NSString *message = @"请在设置中启用访问图片的权限!";
+                if ([[[UIDevice currentDevice]systemVersion]floatValue]<6.0) {
+                    message = @"请在设置中启用访问图片的权限!";
+                }
+                UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片访问失败" message:message delegate:self cancelButtonTitle:@"关闭" otherButtonTitles:nil];
+                [alertView show];
+                
+                [self.centerBtn setTitle:@"访问相册失败" forState:UIControlStateNormal];
+                [self.centerBtn sizeToFit];
+                [self.view setNeedsLayout];
+                return ;
+            }
+            if (status == IPAuthorizationStatusAuthorized) {
+                [self getDataFromManager];
+            }
+        }];
+    } else {
+        [self getDataFromManager];
+    }
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -206,6 +240,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         [self.rightLabel setFrame:CGRectMake(CGRectGetMinX(self.rightBtn.frame) - labelW, STATUS_BAR_HEIGHT()+13, labelW, labelW)];
         
     }
+    CGPoint center = self.rightLabel.center;
+    center.y = CGRectGetMidY(self.rightBtn.frame);
+    self.rightLabel.center = center;
     
     self.arrowImge.frame = CGRectMake(CGRectGetMaxX(self.centerBtn.frame)- minMargin, STATUS_BAR_HEIGHT(), btnW/2, btnH);
     

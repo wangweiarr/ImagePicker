@@ -21,6 +21,16 @@ typedef NS_ENUM(NSUInteger,  IPAssetManagerDataType) {
     IPAssetManagerDataTypeVideo
 };
 
+typedef NS_ENUM(NSInteger, IPAuthorizationStatus) {
+    IPAuthorizationStatusNotDetermined = 0, // User has not yet made a choice with regards to this application
+    IPAuthorizationStatusRestricted,        // This application is not authorized to access photo data.
+    // The user cannot change this application’s status, possibly due to active restrictions
+    //   such as parental controls being in place.
+    IPAuthorizationStatusDenied,            // User has explicitly denied this application access to photos data.
+    IPAuthorizationStatusAuthorized         // User has authorized this application to access photos data.
+};
+
+
 @protocol IPAssetManagerDelegate <NSObject>
 
 
@@ -51,6 +61,9 @@ typedef NS_ENUM(NSUInteger,  IPAssetManagerDataType) {
 
 /**图库*/
 @property (nonatomic, strong)ALAssetsLibrary *defaultLibrary;
+
++ (IPAuthorizationStatus)authorizationStatus;
++ (void)requestAuthorization:(void(^)(IPAuthorizationStatus status))handler;
 
 + (instancetype)defaultAssetManager;
 - (void)clearAssetManagerData;

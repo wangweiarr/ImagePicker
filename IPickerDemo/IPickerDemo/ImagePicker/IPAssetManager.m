@@ -45,6 +45,38 @@
 
 @implementation IPAssetManager
 
++ (IPAuthorizationStatus)authorizationStatus
+{
+#ifdef __IPHONE_8_0
+    IPAuthorizationStatus status = (IPAuthorizationStatus)[PHPhotoLibrary authorizationStatus];
+    return status;
+#else
+    IPAuthorizationStatus status = (IPAuthorizationStatus)[ALAssetsLibrary authorizationStatus];
+    return status;
+#endif
+}
+
++ (void)requestAuthorization:(void(^)(IPAuthorizationStatus status))handler
+{
+#ifdef __IPHONE_8_0
+    [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            IPAuthorizationStatus ipStatus = (IPAuthorizationStatus)status;
+            if (handler) {
+                handler(ipStatus);
+            }
+        });
+        
+    }];
+    
+#else
+    IPAuthorizationStatus status = (IPAuthorizationStatus)[ALAssetsLibrary authorizationStatus];
+    if (handler) {
+        handler(status)
+    }
+#endif
+}
+
 static IPAssetManager *_manager;
 
 + (instancetype)defaultAssetManager{
