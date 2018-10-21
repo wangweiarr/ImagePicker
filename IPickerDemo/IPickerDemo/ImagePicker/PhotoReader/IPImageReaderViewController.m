@@ -15,10 +15,12 @@
 #import "IPAnimationTranstion.h"
 #import "IPImageReaderCell.h"
 #import "IPImageReaderCellLayout.h"
+#import "IPVideoPlayerViewController.h"
 
 @interface IPImageReaderViewController ()<
     UICollectionViewDelegateFlowLayout,
-    UINavigationControllerDelegate
+    UINavigationControllerDelegate,
+    IPImageReaderCellDelegate
 >
 
 /**图片数组*/
@@ -293,6 +295,17 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     
 }
 
+#pragma mark - IPImageReaderCellDelegate
+
+- (void)cell:(IPImageReaderCell *)cell videoPlayBtnClick:(UIButton *)btn
+{
+    id <IPAssetBrowserProtocol>model = cell.assetModel;
+    [[IPAssetManager defaultAssetManager] getVideoWithAsset:model Completion:^(AVPlayerItem *item, NSDictionary *info) {
+        IPVideoPlayerViewController *videoPlayer = [[IPVideoPlayerViewController alloc]initWithPlayerItem:item];
+        [self presentViewController:videoPlayer animated:YES completion:nil];
+    }];
+}
+
 #pragma mark - statusBar
 - (BOOL)prefersStatusBarHidden
 {
@@ -374,7 +387,8 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     IPAssetModel *model = [self getAssetModelWithIndex:indexPath.item];
 
     IPLog(@"wjl cellForItemAtIndexPath--%tu",indexPath.item);
-    cell.zoomScroll.assetModel = model;
+    cell.assetModel = model;
+    cell.delegate = self;
     cell.zoomScroll.index = indexPath.item;
     [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
         if ([cell.zoomScroll.assetModel isEqual:model]) {

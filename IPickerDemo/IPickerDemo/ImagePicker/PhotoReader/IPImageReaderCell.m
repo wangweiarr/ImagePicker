@@ -19,6 +19,8 @@
 
 @property (nonatomic, strong)IPZoomScrollView *zoomScroll;
 
+@property (nonatomic, strong) UIButton *playBtn;
+
 @end
 
 @implementation IPImageReaderCell
@@ -32,7 +34,14 @@
         self.contentView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         _zoomScroll  = [[IPZoomScrollView alloc]init];
         _zoomScroll.frame = self.bounds;
-        [self addSubview:_zoomScroll];
+        [self.contentView addSubview:_zoomScroll];
+        
+        _playBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        [_playBtn setImage:[UIImage imageNamed:@"PlayButtonOverlayLarge"] forState:UIControlStateNormal];
+        [_playBtn setImage:[UIImage imageNamed:@"PlayButtonOverlayLargeTap"] forState:UIControlStateHighlighted];
+        _playBtn.hidden = YES;
+        [_playBtn addTarget:self action:@selector(playBtnClick:) forControlEvents:UIControlEventTouchUpInside];
+        [self.contentView addSubview:_playBtn];
     }
     return self;
 }
@@ -41,12 +50,42 @@
 {
     [super prepareForReuse];
     [_zoomScroll prepareForReuse];
+    
+    _playBtn.hidden = YES;
 }
 
 - (void)layoutSubviews
 {
     [super layoutSubviews];
     _zoomScroll.frame = self.bounds;
+    
+    _playBtn.frame = CGRectMake(0, 0, 44, 44);
+    _playBtn.center = self.contentView.center;
+}
+
+- (void)setAssetModel:(id<IPAssetBrowserProtocol>)assetModel
+{
+    _assetModel = assetModel;
+    
+    if([self displayingVideo]) {
+        self.playBtn.hidden = NO;
+    }else {
+        self.playBtn.hidden = YES;
+    }
+    
+    self.zoomScroll.assetModel = assetModel;
+}
+
+- (void)playBtnClick:(UIButton *)sender
+{
+    if ([self.delegate respondsToSelector:@selector(cell:videoPlayBtnClick:)]) {
+        [self.delegate cell:self videoPlayBtnClick:sender];
+    }
+}
+
+- (BOOL)displayingVideo
+{
+    return [_assetModel respondsToSelector:@selector(isVideo)] && _assetModel.isVideo;
 }
 
 @end

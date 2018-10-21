@@ -77,45 +77,49 @@ static UIViewController *vc;
     
 }
 
-- (IBAction)pickerVideo:(UIButton *)sender {
+- (void)pickerVideo:(UIButton *)sender {
     IPickerViewController *ip = [IPickerViewController instanceWithDisplayStyle:IPickerViewControllerDisplayStyleVideo];
     ip.delegate = self;
     ip.maxCount = 9;
-    ip.popStyle = IPickerViewControllerPopStylePush;
     ip.canTakeVideo = YES;
     [self.navigationController pushViewController:ip animated:YES];
 }
 
-- (IBAction)popIPicker:(UIButton *)sender{
+- (void)popIPicker:(UIButton *)sender{
     IPickerViewController *ip = [IPickerViewController instanceWithDisplayStyle:IPickerViewControllerDisplayStyleImage];
     ip.delegate = self;
     ip.maxCount = 9;
-    ip.popStyle = IPickerViewControllerPopStylePush;
     ip.canTakePhoto = YES;
     [self.navigationController pushViewController:ip animated:YES];
 }
+
 - (BOOL)shouldAutorotate{
     return NO;
 }
+
 - (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation{
     return UIInterfaceOrientationPortrait;
 }
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-- (void)didClickCompleteBtn:(NSArray *)datas{
-   [datas enumerateObjectsUsingBlock:^(IPAssetModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
-       NSLog(@"%@--%@",obj.localIdentiy,obj.assetUrl.absoluteString);
-       
-   }];
-    
-}
+
 - (void)didFinishCaptureVideoUrl:(NSURL *)videourl videoDuration:(float)duration thumbailImage:(NSURL *)thumbailUrl{
     UIImage *thumbnailImage = [UIImage imageWithData:[NSData dataWithContentsOfURL:thumbailUrl
                                                       ]];
     
     [_img2 setImage:thumbnailImage];
+}
+
+- (void)ipicker:(IPickerViewController *)ipicker didClickCancelOrCompleteBtn:(UIButton *)sender
+{
+    [ipicker.currentSelectAssets enumerateObjectsUsingBlock:^(IPAssetModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSLog(@"%@--%@",obj.localIdentiy,obj.assetUrl.absoluteString);
+        
+    }];
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 @end

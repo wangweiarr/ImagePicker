@@ -7,11 +7,20 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "IPAssetBrowserProtocol.h"
 
-@class IPZoomScrollView;
+@class IPZoomScrollView,IPImageReaderCell;
+
+@protocol IPImageReaderCellDelegate <NSObject>
+
+- (void)cell:(IPImageReaderCell *)cell videoPlayBtnClick:(UIButton *)btn;
+
+@end
 
 @interface IPImageReaderCell : UICollectionViewCell
 
 @property (nonatomic, readonly) IPZoomScrollView *zoomScroll;
+@property (nonatomic, strong) id<IPAssetBrowserProtocol> assetModel;
+@property (nonatomic,weak) id<IPImageReaderCellDelegate> delegate;
 
 @end

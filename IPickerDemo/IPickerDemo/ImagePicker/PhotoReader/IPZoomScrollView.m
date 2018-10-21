@@ -20,6 +20,7 @@
 /**图像view*/
 @property (nonatomic, strong)IPTapDetectImageView *photoImageView;
 
+
 @end
 
 @implementation IPZoomScrollView
@@ -77,11 +78,49 @@
 
 }
 
+#pragma mark - Layout
+
+- (void)layoutSubviews
+{
+    
+    // Update tap view frame
+    _tapView.frame = self.bounds;
+    
+    // Super
+    [super layoutSubviews];
+    
+    // Center the image as it becomes smaller than the size of the screen
+    CGSize boundsSize = self.bounds.size;
+    CGRect frameToCenter = _photoImageView.frame;
+    
+    // Horizontally
+    if (frameToCenter.size.width < boundsSize.width) {
+        frameToCenter.origin.x = floorf((boundsSize.width - frameToCenter.size.width) / 2.0);
+    } else {
+        frameToCenter.origin.x = 0;
+    }
+    
+    // Vertically
+    if (frameToCenter.size.height < boundsSize.height) {
+        frameToCenter.origin.y = floorf((boundsSize.height - frameToCenter.size.height) / 2.0);
+    } else {
+        frameToCenter.origin.y = 0;
+    }
+    
+    // Center
+    if (!CGRectEqualToRect(_photoImageView.frame, frameToCenter)){
+        _photoImageView.frame = frameToCenter;
+    }
+    
+    
+}
+
+#pragma mark - reuse
+
 - (void)prepareForReuse
 {
     _photoImageView.hidden = YES;
     _photoImageView.image = nil;
-    
 //    [self hideImageFailure];
 //    self.photo = nil;
 //    self.captionView = nil;
@@ -90,13 +129,7 @@
 //    _index = NSUIntegerMax;
 }
 
-- (void)setAssetModel:(id<IPAssetBrowserProtocol>)assetModel
-{
-    if (_assetModel != assetModel) {
-        _assetModel = assetModel;
-    }
-}
-
+#pragma mark - TODO
 - (void)displayImageWithFullScreenImage:(UIImage *)image
 {
     
@@ -106,6 +139,8 @@
 {
     
 }
+
+#pragma mark - displayImg
 
 // Get and display image
 - (void)displayImageWithImage:(UIImage *)img
@@ -236,45 +271,6 @@
 - (BOOL)displayingVideo
 {
     return [_assetModel respondsToSelector:@selector(isVideo)] && _assetModel.isVideo;
-}
-
-
-#pragma mark - Layout
-
-- (void)layoutSubviews
-{
-   
-    // Update tap view frame
-    _tapView.frame = self.bounds;
-   
-    
-    // Super
-    [super layoutSubviews];
-    
-    // Center the image as it becomes smaller than the size of the screen
-    CGSize boundsSize = self.bounds.size;
-    CGRect frameToCenter = _photoImageView.frame;
-    
-    // Horizontally
-    if (frameToCenter.size.width < boundsSize.width) {
-        frameToCenter.origin.x = floorf((boundsSize.width - frameToCenter.size.width) / 2.0);
-    } else {
-        frameToCenter.origin.x = 0;
-    }
-    
-    // Vertically
-    if (frameToCenter.size.height < boundsSize.height) {
-        frameToCenter.origin.y = floorf((boundsSize.height - frameToCenter.size.height) / 2.0);
-    } else {
-        frameToCenter.origin.y = 0;
-    }
-    
-    // Center
-    if (!CGRectEqualToRect(_photoImageView.frame, frameToCenter)){
-        _photoImageView.frame = frameToCenter;
-    }
-    
-    
 }
 
 #pragma mark - UIScrollViewDelegate

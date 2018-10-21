@@ -941,7 +941,7 @@ static IPAssetManager *_manager;
                         IPAssetModel *videoModel = [[IPAssetModel alloc]init];
                         
                         videoModel.assetType = IPAssetModelMediaTypeVideo;
-                        
+                        videoModel.isVideo = YES;
                         videoModel.asset = result;
                         NSTimeInterval duration = [[result valueForProperty:ALAssetPropertyDuration] integerValue];
                         videoModel.duration = duration;

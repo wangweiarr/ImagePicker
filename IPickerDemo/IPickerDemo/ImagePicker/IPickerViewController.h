@@ -9,22 +9,10 @@
 #import <UIKit/UIKit.h>
 #import "IPAssetModel.h"
 
-
-/**弹出样式*/
-typedef NS_ENUM(NSUInteger,  IPickerViewControllerPopStyle) {
-    /**由上到下*/
-    IPickerViewControllerPopStylePresent,
-    /**由左到右*/
-    IPickerViewControllerPopStylePush
+typedef NS_OPTIONS(NSUInteger, IPickerViewControllerDisplayStyle) {
+    IPickerViewControllerDisplayStyleImage = 0,
+    IPickerViewControllerDisplayStyleVideo = 1 << 0
 };
-/**展示样式*/
-typedef NS_ENUM(NSUInteger,  IPickerViewControllerDisplayStyle) {
-    /**展示相册*/
-    IPickerViewControllerDisplayStyleImage,
-    /**展示视频*/
-    IPickerViewControllerDisplayStyleVideo
-};
-
 
 typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
 
@@ -34,12 +22,8 @@ typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
 @protocol IPickerViewControllerDelegate <NSObject>
 
 @optional
-/**
- *  选择图片完成后的回调方法
- *
- *  @param datas 图片URL数组
- */
-- (void)didClickCompleteBtn:(NSArray<NSURL *> *)datas;
+
+- (void)ipicker:(IPickerViewController *)ipicker didClickCancelOrCompleteBtn:(UIButton *)sender;
 
 /**
  *  拍摄视频完成后,的回调方法
@@ -56,11 +40,7 @@ typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
 
 @interface IPickerViewController : UIViewController
 
-/**
- *  弹出样式
- */
-@property (nonatomic, assign)IPickerViewControllerPopStyle popStyle;
-
+@property(nonatomic, readonly) NSArray <IPAssetModel *>*currentSelectAssets;
 
 /**
  *  最大可选择的图片数量
@@ -71,12 +51,6 @@ typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
 
 /**代理*/
 @property (nonatomic, weak)id<IPickerViewControllerDelegate> delegate;
-
-/*!
- @property
- @abstract 跳入此页面的层级
- */
-@property (nonatomic, assign) NSInteger navViewControllers;
 
 /**是否包含拍摄照片功能*/
 @property (nonatomic, assign)BOOL canTakePhoto;
@@ -92,14 +66,6 @@ typedef void(^RequestImageBlock)(UIImage *image,NSError *error);
  *  @return 实例
  */
 + (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style;
-
-
-/**
- *  此方法会根据animation的属性,做清除数据的处理
- *
- *  @param animation YES: 销毁控制器 NO:仅仅清除控制器数据
- */
-- (void)exitIPickerWithAnimation:(BOOL)animation;
 
 @end
 

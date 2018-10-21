@@ -11,6 +11,10 @@
 @class AVPlayerItem;
 @interface IPVideoPlayerViewController : UIViewController
 
-@property(nonatomic,strong) NSURL *videoURL;
-@property(nonatomic,strong) AVPlayerItem *playerItem;
+@property(nonatomic,readonly) NSURL *videoURL;
+@property(nonatomic,readonly) AVPlayerItem *playerItem;
+
+- (instancetype)initWithVideoUrl:(NSURL *)videoUrl;
+- (instancetype)initWithPlayerItem:(AVPlayerItem *)playerItem;
+
 @end

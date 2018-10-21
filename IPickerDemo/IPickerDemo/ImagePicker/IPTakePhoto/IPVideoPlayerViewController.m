@@ -12,38 +12,58 @@
 #import "IPPrivateDefine.h"
 
 @interface IPVideoPlayerViewController ()
-@property (nonatomic,strong) AVPlayer *player;//播放器对象
+@property(nonatomic,strong)AVPlayer *player;//播放器对象
 
-@property (weak, nonatomic)  UIView *container; //播放器容器
-@property (weak, nonatomic)  UIButton *playOrPause; //播放/暂停按钮
+@property(weak, nonatomic) UIView *container; //播放器容器
+@property(weak, nonatomic) UIButton *playOrPause; //播放/暂停按钮
 
 @property(nonatomic,weak) AVPlayerLayer *playerLayer;
 
-@property (weak, nonatomic)  UIView *controlView;
+@property(weak, nonatomic) UIView *controlView;
 
 /**头部标题*/
-@property (nonatomic, weak)UIView *headerBackGroundView;
+@property(nonatomic, weak)UIView *headerBackGroundView;
 /**返回btn*/
-@property (nonatomic, weak)UIButton *leftButton;
+@property(nonatomic, weak)UIButton *leftButton;
 
 
 
 /**底部标题*/
-@property (nonatomic, weak)UIView *bottomBackGroundView;
+@property(nonatomic, weak) UIView *bottomBackGroundView;
 
 //播放进度
-@property(nonatomic,weak)UIProgressView *playProgressView;
+@property(nonatomic,weak) UIProgressView *playProgressView;
 
-@property(nonatomic,weak)UILabel *currentTimeLabel;
-@property(nonatomic,weak)UILabel *totalDurationLabel;
+@property(nonatomic,weak) UILabel *currentTimeLabel;
+@property(nonatomic,weak) UILabel *totalDurationLabel;
 
 //时间监听者
-@property(nonatomic,weak)id timeObserver;
+@property(nonatomic,weak) id timeObserver;
 
+@property(nonatomic,strong) NSURL *videoURL;
+
+@property(nonatomic,strong) AVPlayerItem *playerItem;
 
 @end
 
 @implementation IPVideoPlayerViewController
+
+
+- (instancetype)initWithVideoUrl:(NSURL *)videoUrl
+{
+    if (self = [super initWithNibName:nil bundle:nil]) {
+        self.videoURL = videoUrl;
+    }
+    return self;
+}
+
+- (instancetype)initWithPlayerItem:(AVPlayerItem *)playerItem
+{
+    if (self = [super initWithNibName:nil bundle:nil]) {
+        self.playerItem = playerItem;
+    }
+    return self;
+}
 
 - (void)dealloc{
     IPLog(@"IPVideoPlayerViewController dealloc");
@@ -56,8 +76,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    
-    
+
     [self addMainView];
     
     [self addHeaderView];
@@ -129,7 +148,14 @@
     
 }
 - (void)back{
-    [self.navigationController popViewControllerAnimated:YES];
+    if (self.navigationController) {
+        [self.navigationController popViewControllerAnimated:YES];
+        return;
+    }
+    
+    if (self.presentingViewController) {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
     
 }
 - (void)addMainView{

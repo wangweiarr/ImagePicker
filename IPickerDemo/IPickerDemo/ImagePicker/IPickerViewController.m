@@ -112,17 +112,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     IPickerViewController *ipVC = [[IPickerViewController alloc]init];
     
     ipVC.displayStyle = style;
-    //    ipVC.defaultAssetManager.dataType = (IPAssetManagerDataType)style;
     return ipVC;
-}
-
-- (void)exitIPickerWithAnimation:(BOOL)animation
-{
-    if (animation) {
-        [self exitIPicker];
-    }else {
-        [self freeAllData];
-    }
 }
 
 #pragma mark - init
@@ -137,37 +127,12 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 - (void)getDataFromManager
 {
-//    if (self.refreshData == YES) return;
-//    
-//    self.refreshData = YES;
     [self.defaultAssetManager requestUserpermission];
-//    if (self.displayStyle == IPickerViewControllerDisplayStyleVideo) {
-//        self.arrowImge.hidden = YES;
-//        self.centerBtn.userInteractionEnabled = NO;
-//        [self.centerBtn setTitle:@"选择视频" forState:UIControlStateNormal];
-//        
-//        [self.defaultAssetManager reloadVideosFromLibrary];
-//        self.rightBtn.hidden = YES;
-//    }else {
-//        [self.defaultAssetManager reloadImagesFromLibrary];
-//    }
 }
-- (void)freeAllData
-{
-//    _refreshData = NO;
-//    _defaultAssetManager = nil;
-//    [_imageModelDic removeAllObjects];
-//    [_curImageModelArr removeAllObjects];
-//    _selectPhotoCount = 0;
-//    [_priCurrentSelArr removeAllObjects];
-//    [IPAssetManager freeAssetManger];
-}
-
 
 - (void)dealloc
 {
     NSLog(@"IPickerViewController--dealloc");
-    [self freeAllData];
     [IPMediaCenter realeaseCenter];
 }
 
@@ -264,7 +229,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [leftBtn setTitle:@"取消" forState:UIControlStateNormal];
     [leftBtn setTitleColor:[UIColor colorWithRed:74/255.0 green:112/255.0 blue:210/255.0 alpha:1.0] forState:UIControlStateNormal];
     [leftBtn.titleLabel setFont:[UIFont systemFontOfSize:15]];
-    [leftBtn addTarget:self action:@selector(exitIPicker) forControlEvents:UIControlEventTouchUpInside];
+    [leftBtn addTarget:self action:@selector(exitIPicker:) forControlEvents:UIControlEventTouchUpInside];
     [headerView addSubview:leftBtn];
     self.leftBtn = leftBtn;
     
@@ -306,7 +271,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [rightBtn setTitleColor:[UIColor colorWithRed:74/255.0 green:112/255.0 blue:210/255.0 alpha:1.0] forState:UIControlStateSelected];
     rightBtn.titleLabel.font = [UIFont systemFontOfSize:15];
     [rightBtn setTitle:@"完成" forState:UIControlStateNormal];
-    [rightBtn addTarget:self action:@selector(completeBtnClick) forControlEvents:UIControlEventTouchUpInside];
+    [rightBtn addTarget:self action:@selector(completeBtnClick:) forControlEvents:UIControlEventTouchUpInside];
     
     rightBtn.userInteractionEnabled = NO;
     [headerView addSubview:rightBtn];
@@ -407,43 +372,33 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 /**
  *  左上角的取消按钮点击
  */
-- (void)exitIPicker{
+- (void)exitIPicker:(UIButton *)sender
+{
     
-    CATransition * transition=[CATransition animation];
-    transition.duration=0.3f;
-    transition.timingFunction=[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-    transition.type=kCATransitionReveal;
-    if (self.popStyle == IPickerViewControllerPopStylePush) {
-        transition.subtype=kCATransitionFromLeft;
-    }else {
-        transition.subtype = kCATransitionFromBottom;
-    }
-    
-    transition.delegate=self;
-    if (self.navigationController) {
-        [self.navigationController.view.layer addAnimation:transition forKey:nil];
-        [self.navigationController popViewControllerAnimated:YES];
-        
-    }else if(self.presentingViewController){
-        
-        [self.view.layer addAnimation:transition forKey:nil];
-        [self dismissViewControllerAnimated:YES completion:nil];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(ipicker:didClickCancelOrCompleteBtn:)]) {
+        [self.delegate ipicker:self didClickCancelOrCompleteBtn:nil];
     }
 }
+
+- (NSArray<IPAssetModel *> *)currentSelectAssets
+{
+    return [self.priCurrentSelArr copy];
+}
+
 /**
  *  右上角 完成 按钮点击
  */
-- (void)completeBtnClick{
-    if (self.delegate && [self.delegate respondsToSelector:@selector(didClickCompleteBtn:)]) {
-        [self.delegate didClickCompleteBtn:[self.priCurrentSelArr copy]];
-    }
-    [self exitIPicker];
+- (void)completeBtnClick:(UIButton *)sender
+{
+    [self exitIPicker:sender];
 }
+
 #pragma mark 点击右上角的"对勾"对应的逻辑
 /**
  *  点击cell右上角的选中按钮
  */
-- (BOOL)clickRightCornerBtnForView:(IPAssetModel *)model{
+- (BOOL)clickRightCornerBtnForView:(IPAssetModel *)model
+{
     if (model.isSelect) {
         if (self.selectPhotoCount >= self.maxCount) {
             [IPAlertView showAlertViewAt:self.view MaxCount:self.maxCount];
@@ -455,19 +410,24 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     return YES;
 }
+
 /**
  *  点击大图浏览时的选中按钮的代理回调方法
  *
  *  @param assetModel 对应的imageModel对象
  */
-- (void)clickSelectBtnForReaderView:(IPAssetModel *)assetModel{
+
+- (void)clickSelectBtnForReaderView:(IPAssetModel *)assetModel
+{
     if (assetModel.isSelect) {
         [self addImageModel:assetModel WithIsAdd:YES];
     }else {
         [self addImageModel:assetModel WithIsAdd:NO];
     }
 }
-- (void)addImageModel:(IPAssetModel *)model WithIsAdd:(BOOL)isAdd{
+
+- (void)addImageModel:(IPAssetModel *)model WithIsAdd:(BOOL)isAdd
+{
     if (isAdd) {
         self.selectPhotoCount++;
         if (![self.priCurrentSelArr containsObject:model]) {
@@ -481,7 +441,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         
     }
 }
-- (void)setSelectPhotoCount:(NSUInteger)selectPhotoCount{
+
+- (void)setSelectPhotoCount:(NSUInteger)selectPhotoCount
+{
     if (_selectPhotoCount != selectPhotoCount) {
         _selectPhotoCount = selectPhotoCount;
         if (_selectPhotoCount <= 0) {
@@ -507,11 +469,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         [self.rightLabel setText:[NSString stringWithFormat:@"%tu",_selectPhotoCount]];
     }
 }
+
 #pragma mark 点击中心按钮对应的逻辑
 /**
  *  点击中部相册名称,展示相册列表
  */
-- (void)displayAlbumView:(UIButton *)btn{
+- (void)displayAlbumView:(UIButton *)btn
+{
     
     [self.centerBtn setTitle:@"选择相册" forState:UIControlStateNormal];
     if (_albumView == nil) {
@@ -548,10 +512,12 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     
 }
+
 /**
  *  将专辑列表移除
  */
-- (void)shouldRemoveFrom:(IPAlbumView *)view{
+- (void)shouldRemoveFrom:(IPAlbumView *)view
+{
     
     [self.centerBtn setTitle:self.defaultAssetManager.currentAlbumModel.albumName forState:UIControlStateNormal];
     
@@ -573,13 +539,15 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }];
     
 }
+
 /**
  *  选中专辑列表的某个cell时的回调方法
  *
  *  @param indexPath 点击对应的索引
  *  @param View      专辑列表 view
  */
-- (void)clickCellForIndex:(NSIndexPath *)indexPath ForView:(IPAlbumView *)View{
+- (void)clickCellForIndex:(NSIndexPath *)indexPath ForView:(IPAlbumView *)View
+{
     IPAlbumModel *model = [self.defaultAssetManager.albumArr objectAtIndex:indexPath.item];
     if (model == self.defaultAssetManager.currentAlbumModel) {
         [self shouldRemoveFrom:View];
@@ -602,6 +570,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     
 }
+
 #pragma mark - Rotation
 //- (BOOL)shouldAutorotate{
 //    return NO;
@@ -619,7 +588,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 
 #pragma mark 获取相册的所有图片
-- (void)loadImageUserDeny:(IPAssetManager *)manager{
+- (void)loadImageUserDeny:(IPAssetManager *)manager
+{
     NSString *message = @"请在设置->通用->访问限制->照片 启用访问图片的权限!";
     if ([[[UIDevice currentDevice]systemVersion]floatValue]<6.0) {
         message = @"请在设置->通用->访问限制->位置 启用定位服务!";
@@ -631,7 +601,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self.centerBtn sizeToFit];
     [self.view setNeedsLayout];
 }
-- (void)loadImageOccurError:(IPAssetManager *)manager{
+
+- (void)loadImageOccurError:(IPAssetManager *)manager
+{
     NSString *message = @"访问相册失败,请重试";
     
     UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"图片访问失败" message:message delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil];
@@ -641,7 +613,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self.centerBtn sizeToFit];
     [self.view setNeedsLayout];
 }
-- (void)loadImageDataFinish:(IPAssetManager *)manager{
+
+- (void)loadImageDataFinish:(IPAssetManager *)manager
+{
     
     self.curImageModelArr = [NSMutableArray arrayWithArray:self.defaultAssetManager.currentPhotosArr];
     if (self.defaultAssetManager.currentAlbumModel.albumIdentifier) {
@@ -670,12 +644,14 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 }
 
 #pragma mark - alert框的处理
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
-    [self exitIPicker];
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    [self exitIPicker:nil];
 }
 
 #pragma mark - lazy -
-- (IPAssetManager *)defaultAssetManager{
+- (IPAssetManager *)defaultAssetManager
+{
     IPAssetManager *defaultAssetManager =[IPAssetManager defaultAssetManager];
     defaultAssetManager.dataType = (IPAssetManagerDataType)self.displayStyle;
     defaultAssetManager.delegate = self;
@@ -683,7 +659,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return defaultAssetManager;
 }
 
-- (void)setMaxCount:(NSUInteger)maxCount{
+- (void)setMaxCount:(NSUInteger)maxCount
+{
     NSInteger tempCount = (NSInteger)maxCount;
     if (_maxCount != tempCount && tempCount > 0) {
         _maxCount = tempCount;
@@ -691,13 +668,17 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         _maxCount = 50;
     }
 }
-- (NSMutableArray *)priCurrentSelArr{
+
+- (NSMutableArray *)priCurrentSelArr
+{
     if (_priCurrentSelArr == nil) {
         _priCurrentSelArr = [NSMutableArray arrayWithCapacity:self.maxCount];
     }
     return _priCurrentSelArr;
 }
-- (NSMutableDictionary *)imageModelDic{
+
+- (NSMutableDictionary *)imageModelDic
+{
     if (_imageModelDic == nil) {
         _imageModelDic = [NSMutableDictionary dictionaryWithCapacity:self.defaultAssetManager.albumArr.count];
     }
@@ -706,13 +687,15 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 
 #pragma mark - about video -
-- (void)presentTakeVideoViewController:(IPAssetManager *)manager{
+- (void)presentTakeVideoViewController:(IPAssetManager *)manager
+{
     IPTakeVideoViewController *takeVideo = [[IPTakeVideoViewController alloc]init];
     takeVideo.delegate = self;
     [self presentViewController:takeVideo animated:YES completion:nil];
 }
 
-- (void)VisionDidCaptureFinish:(IPMediaCenter *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration{
+- (void)VisionDidCaptureFinish:(IPMediaCenter *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration
+{
     UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:thumbnail]];
     
     __weak typeof(self) weakSelf = self;
@@ -728,7 +711,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
                 [weakSelf.delegate imgPicker:weakSelf didFinishCaptureVideoItem:nil Videourl:nil videoDuration:duration thumbailImage:image];
             }
         }
-        [weakSelf popViewControllerCustomAnimation];
         
         //        [weakSelf exitIPickerWithAnimation:YES];
         
@@ -738,22 +720,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
 }
 
-- (void)popViewControllerCustomAnimation {
-    if (self.navViewControllers != 0 && self.navViewControllers < self.navigationController.viewControllers.count) {
-        UIViewController *ctrl = self.navigationController.viewControllers[self.navViewControllers];
-        CATransition * transition=[CATransition animation];
-        transition.duration=0.3f;
-        transition.timingFunction=[CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
-        transition.type=kCATransitionReveal;
-        transition.subtype = kCATransitionFromBottom;
-        [self.navigationController.view.layer addAnimation:transition forKey:@""];
-        [self.navigationController popToViewController:ctrl animated:NO];
-        return;
-    }
-}
-
 #pragma mark 3DTouch
-- (nullable UIViewController *)previewingContext:(id <UIViewControllerPreviewing>)previewingContext viewControllerForLocation:(CGPoint)location{
+- (nullable UIViewController *)previewingContext:(id <UIViewControllerPreviewing>)previewingContext viewControllerForLocation:(CGPoint)location
+{
     UICollectionViewCell *cell = (UICollectionViewCell *)previewingContext.sourceView;
     IPLog(@"%@",NSStringFromCGRect(previewingContext.sourceRect));
     NSIndexPath *path = [self.mainView indexPathForCell:cell];
@@ -765,6 +734,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return reader;
     
 }
+
 - (void)previewingContext:(id <UIViewControllerPreviewing>)previewingContext commitViewController:(UIViewController *)viewControllerToCommit
 {
     
@@ -846,7 +816,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 //        [cell setUpCameraPreviewLayer];
     }];
 }
-
 
 - (UICollectionViewCell *)targetCellForIndexPath:(NSIndexPath *)indexPath
 {
