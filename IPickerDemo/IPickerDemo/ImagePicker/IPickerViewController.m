@@ -201,14 +201,14 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [super viewDidLayoutSubviews];
     CGFloat viewW = self.view.bounds.size.width;
     CGFloat viewH = self.view.bounds.size.height;
-    CGFloat headerH = IOS7_STATUS_BAR_HEGHT + headerHeight;
+    CGFloat headerH = STATUS_BAR_HEIGHT() + headerHeight;
     CGFloat btnH = headerHeight;
     CGFloat btnW = headerHeight;
     CGFloat MaxMargin = 5.0f;
     
     
     self.headerView.frame = CGRectMake(0, 0, viewW, headerH);
-    self.leftBtn.frame = CGRectMake(MaxMargin, IOS7_STATUS_BAR_HEGHT, btnW, btnH);
+    self.leftBtn.frame = CGRectMake(MaxMargin, STATUS_BAR_HEIGHT(), btnW, btnH);
     
     CGSize tempSize = CGSizeZero;
     NSDictionary *attribute = @{NSFontAttributeName: [UIFont systemFontOfSize:15.0f]/*,NSParagraphStyleAttributeName:paragraph*/};
@@ -226,19 +226,19 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
             minMargin = 3;
         }
     }
-    self.centerBtn.frame = CGRectMake(self.headerView.center.x - size.width/2, IOS7_STATUS_BAR_HEGHT, size.width, btnH);
-    self.rightBtn.frame = CGRectMake(viewW - btnW -MaxMargin, IOS7_STATUS_BAR_HEGHT, btnW, btnH);
+    self.centerBtn.frame = CGRectMake(self.headerView.center.x - size.width/2, STATUS_BAR_HEIGHT(), size.width, btnH);
+    self.rightBtn.frame = CGRectMake(viewW - btnW -MaxMargin, STATUS_BAR_HEIGHT(), btnW, btnH);
     CGFloat labelW = 18.0f;
     if (_selectPhotoCount > 9) {
         
-        self.rightLabel.frame = CGRectMake(CGRectGetMinX(self.rightBtn.frame) - labelW-3, IOS7_STATUS_BAR_HEGHT+13, labelW+6, labelW);
+        self.rightLabel.frame = CGRectMake(CGRectGetMinX(self.rightBtn.frame) - labelW-3, STATUS_BAR_HEIGHT()+13, labelW+6, labelW);
     }else {
         
-        [self.rightLabel setFrame:CGRectMake(CGRectGetMinX(self.rightBtn.frame) - labelW, IOS7_STATUS_BAR_HEGHT+13, labelW, labelW)];
+        [self.rightLabel setFrame:CGRectMake(CGRectGetMinX(self.rightBtn.frame) - labelW, STATUS_BAR_HEIGHT()+13, labelW, labelW)];
         
     }
     
-    self.arrowImge.frame = CGRectMake(CGRectGetMaxX(self.centerBtn.frame)- minMargin, IOS7_STATUS_BAR_HEGHT, btnW/2, btnH);
+    self.arrowImge.frame = CGRectMake(CGRectGetMaxX(self.centerBtn.frame)- minMargin, STATUS_BAR_HEIGHT(), btnW/2, btnH);
     
     
     self.spliteView.frame = CGRectMake(0, headerH - 0.5,viewW, 0.5);
@@ -520,10 +520,10 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         CGFloat labelW = 18.0f;
         if (_selectPhotoCount > 9) {
             
-            self.rightLabel.frame = CGRectMake(CGRectGetMinX(self.rightBtn.frame) - labelW-3, IOS7_STATUS_BAR_HEGHT+13, labelW+6, labelW);
+            self.rightLabel.frame = CGRectMake(CGRectGetMinX(self.rightBtn.frame) - labelW-3, STATUS_BAR_HEIGHT()+13, labelW+6, labelW);
         }else {
             
-            [self.rightLabel setFrame:CGRectMake(CGRectGetMinX(self.rightBtn.frame) - labelW, IOS7_STATUS_BAR_HEGHT+13, labelW, labelW)];
+            [self.rightLabel setFrame:CGRectMake(CGRectGetMinX(self.rightBtn.frame) - labelW, STATUS_BAR_HEIGHT()+13, labelW, labelW)];
             
         }
         self.rightLabel.layer.cornerRadius = labelW/2;
@@ -545,7 +545,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
        
     }
     if (_albumBackView == nil) {
-        _albumBackView = [[UIView alloc]initWithFrame:CGRectMake(0, IOS7_STATUS_BAR_HEGHT + headerHeight, self.view.bounds.size.width, self.view.bounds.size.height - IOS7_STATUS_BAR_HEGHT - headerHeight)];
+        _albumBackView = [[UIView alloc]initWithFrame:CGRectMake(0, STATUS_BAR_HEIGHT() + headerHeight, self.view.bounds.size.width, self.view.bounds.size.height - STATUS_BAR_HEIGHT() - headerHeight)];
         _albumBackView.backgroundColor = [UIColor blackColor];
         _albumBackView.alpha = 0.0f;
     }
@@ -556,7 +556,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }
     
     [self.view insertSubview:_albumBackView belowSubview:self.headerView];
-    [_albumView setFrame:CGRectMake(0,-(self.view.bounds.size.height - IOS7_STATUS_BAR_HEGHT - headerHeight) , self.view.bounds.size.width, self.view.bounds.size.height - IOS7_STATUS_BAR_HEGHT - headerHeight)];
+    [_albumView setFrame:CGRectMake(0,-(self.view.bounds.size.height - STATUS_BAR_HEIGHT() - headerHeight) , self.view.bounds.size.width, self.view.bounds.size.height - STATUS_BAR_HEIGHT() - headerHeight)];
     [self.view insertSubview:_albumView atIndex:2];
     [UIView animateWithDuration:0.1 animations:^{
         _albumBackView.alpha = 0.6f;

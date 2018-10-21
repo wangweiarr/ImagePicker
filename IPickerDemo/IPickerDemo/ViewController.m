@@ -29,20 +29,6 @@ static UIViewController *vc;
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    NSMutableString *a = [NSMutableString stringWithString:@"Tom"];
-    NSLog(@"\n 定以前：------------------------------------\n\
-          a指向的堆中地址：%p；a在栈中的指针地址：%p", a, &a);               //a在栈区
-    void (^foo)(void) = ^{
-        a.string = @"Jerry";
-        NSLog(@"\n block内部：------------------------------------\n\
-              a指向的堆中地址：%p；a在栈中的指针地址：%p", a, &a);               //a在栈区
-//        a = [NSMutableString stringWithString:@"William"];
-    };
-    foo();
-    NSLog(@"\n 定以后：------------------------------------\n\
-          a指向的堆中地址：%p；a在栈中的指针地址：%p", a, &a);               //a在栈区
-    
-        
     _img1 = [[UIImageView alloc]initWithFrame:CGRectMake(0, 50, 100, 100)];
     [self.view addSubview:_img1];
     _img2 = [[UIImageView alloc]initWithFrame:CGRectMake(130, 50, 100, 100)];

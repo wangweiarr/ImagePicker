@@ -30,7 +30,11 @@ static inline BOOL iOS9Later()
     return [UIDevice currentDevice].systemVersion.floatValue >= 9.0f;
 }
 
-#define headerHeight 44.0f
-#define IOS7_STATUS_BAR_HEGHT (iOS7Later ? 20.0f : 0.0f)
+static inline CGFloat STATUS_BAR_HEIGHT()
+{
+    return CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
+}
+
+#define headerHeight 44
 
 #endif /* Header_h */

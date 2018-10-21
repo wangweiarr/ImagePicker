@@ -130,9 +130,9 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
-    self.headerView.frame = CGRectMake(0, 0, self.view.bounds.size.width, IOS7_STATUS_BAR_HEGHT + 44);
-    self.leftButton.frame = CGRectMake(-5, IOS7_STATUS_BAR_HEGHT, 44, 44);
-    self.rightButton.frame = CGRectMake(self.view.bounds.size.width - 44, IOS7_STATUS_BAR_HEGHT, 44, 44);
+    self.headerView.frame = CGRectMake(0, 0, self.view.bounds.size.width, STATUS_BAR_HEIGHT() + 44);
+    self.leftButton.frame = CGRectMake(-5, STATUS_BAR_HEIGHT(), 44, 44);
+    self.rightButton.frame = CGRectMake(self.view.bounds.size.width - 44, STATUS_BAR_HEIGHT(), 44, 44);
     
     NSUInteger maxIndex = self.dataArr.count - 1;
     NSUInteger minIndex = 0;
