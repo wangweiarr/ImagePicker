@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "IPAssetProtocol.h"
+#import "IPAssetBrowserProtocol.h"
 
 /**类型*/
 typedef NS_ENUM(NSUInteger,  IPAssetModelMediaType) {
@@ -26,7 +26,7 @@ typedef void(^functionBlock)(AVPlayerItem *);
 typedef void(^CellClickActionBlock)(id);
 
 
-@interface IPAssetModel : NSObject<IPAssetProtocol>
+@interface IPAssetModel : NSObject<IPAssetBrowserProtocol>
 
 /**创建日期*/
 @property (nonatomic, strong)NSDate *creatDate;
@@ -76,7 +76,6 @@ typedef void(^CellClickActionBlock)(id);
 
 
 @property (nonatomic) BOOL emptyImage;
-@property (nonatomic) BOOL isVideo;
 
 + (IPAssetModel *)assetModelWithImage:(UIImage *)image;
 + (IPAssetModel *)assetModelWithURL:(NSURL *)url;

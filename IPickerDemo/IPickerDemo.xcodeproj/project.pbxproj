@@ -98,7 +98,7 @@
 		F419C0471E725088005231A4 /* IPVideoPlayerViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPVideoPlayerViewController.m; sourceTree = "<group>"; };
 		F48EF8F520CD89F1009CBC10 /* IPImageReaderCellLayout.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPImageReaderCellLayout.h; sourceTree = "<group>"; };
 		F48EF8F620CD89F1009CBC10 /* IPImageReaderCellLayout.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = IPImageReaderCellLayout.m; sourceTree = "<group>"; };
-		F4ACA57F2173968F0089CBDD /* IPAssetProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPAssetProtocol.h; sourceTree = "<group>"; };
+		F4ACA57F2173968F0089CBDD /* IPAssetBrowserProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IPAssetBrowserProtocol.h; sourceTree = "<group>"; };
 		F4B763981E6AB67100C31F80 /* IPMediaCenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IPMediaCenter.h; sourceTree = "<group>"; };
 		F4B763991E6AB67100C31F80 /* IPMediaCenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IPMediaCenter.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -240,7 +240,7 @@
 				34C4A5F620BF9FBC004252BC /* IPZoomScrollView.m */,
 				F48EF8F520CD89F1009CBC10 /* IPImageReaderCellLayout.h */,
 				F48EF8F620CD89F1009CBC10 /* IPImageReaderCellLayout.m */,
-				F4ACA57F2173968F0089CBDD /* IPAssetProtocol.h */,
+				F4ACA57F2173968F0089CBDD /* IPAssetBrowserProtocol.h */,
 			);
 			path = PhotoReader;
 			sourceTree = "<group>";

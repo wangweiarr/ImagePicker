@@ -28,20 +28,23 @@
 
 
 @implementation IPAnimationTranstion
-- (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext{
+
+- (NSTimeInterval)transitionDuration:(id <UIViewControllerContextTransitioning>)transitionContext
+{
     return 0.3f;
 }
 
 //UIViewControllerAnimatedTransitioning
-- (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext{
+- (void)animateTransition:(id <UIViewControllerContextTransitioning>)transitionContext
+{
     //获取两个VC 和 动画发生的容器
     __block IPickerViewController *fromVC = (IPickerViewController *)[transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
-    __block IPImageReaderViewController *toVC   = (IPImageReaderViewController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
+    __block IPImageReaderViewController *toVC = (IPImageReaderViewController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
     __block UIView *containerView = [transitionContext containerView];
     
     //对Cell上的 imageView 截图，同时将这个 imageView 本身隐藏
     __block IPImageCell *cell =(IPImageCell *)[fromVC.mainView cellForItemAtIndexPath:[[fromVC.mainView indexPathsForSelectedItems] firstObject]];
-    fromVC.indexPath = [[fromVC.mainView indexPathsForSelectedItems]firstObject];
+    fromVC.indexPath = [[fromVC.mainView indexPathsForSelectedItems] firstObject];
     
     __block CGSize size = CGSizeMake(fromVC.view.bounds.size.width, fromVC.view.bounds.size.height);
     

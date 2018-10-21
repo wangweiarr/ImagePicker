@@ -29,7 +29,7 @@
 
 @implementation IPAssetModel
 @synthesize underlyingImage = _underlyingImage; // synth property from protocol
-
+@synthesize isVideo;
 
 #pragma mark - class
 
@@ -409,7 +409,7 @@
     options.deliveryMode = PHImageRequestOptionsDeliveryModeHighQualityFormat;
     options.synchronous = YES;
     PHAsset *phAsset = asset;
-    //    PHImageManagerMaximumSize
+    
     [[PHImageManager defaultManager] requestImageForAsset:phAsset targetSize:PHImageManagerMaximumSize contentMode:PHImageContentModeAspectFit options:options resultHandler:^(UIImage * _Nullable result, NSDictionary * _Nullable info)
     {
         dispatch_async(dispatch_get_main_queue(), ^{

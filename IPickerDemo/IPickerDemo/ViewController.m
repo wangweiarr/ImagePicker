@@ -28,7 +28,7 @@
 static UIViewController *vc;
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+   
     _img1 = [[UIImageView alloc]initWithFrame:CGRectMake(0, 50, 100, 100)];
     [self.view addSubview:_img1];
     _img2 = [[UIImageView alloc]initWithFrame:CGRectMake(130, 50, 100, 100)];
@@ -36,13 +36,8 @@ static UIViewController *vc;
     _img3 = [[UIImageView alloc]initWithFrame:CGRectMake(0, 170, 100, 100)];
     [self.view addSubview:_img3];
     _img4 = [[UIImageView alloc]initWithFrame:CGRectMake(130, 170, 100, 100)];
-    [self.view addSubview:_img4];
-    NSLog(@"%@",vc);
-    vc = [[UIViewController alloc]init];
-    NSLog(@"%@",vc);
-//    D7DD1D1D-DC89-4A5A-B30F-E735F3589C19/L0/001
+
     UICollectionViewFlowLayout *flow = [[UICollectionViewFlowLayout alloc]init];
-    
     flow.scrollDirection = UICollectionViewScrollDirectionHorizontal;
     flow.minimumInteritemSpacing = 0;
     flow.minimumLineSpacing = 0;
@@ -98,13 +93,6 @@ static UIViewController *vc;
     ip.popStyle = IPickerViewControllerPopStylePush;
     ip.canTakePhoto = YES;
     [self.navigationController pushViewController:ip animated:YES];
-//    [self presentViewController:ip animated:YES completion:nil];
-    vc = nil;
-//    free((__bridge void *)(vc));
-    if ([vc isEqual:[NSNull null]]) {
-        NSLog(@"vc已经被释放了");
-    }
-     NSLog(@"%@",vc);
 }
 - (BOOL)shouldAutorotate{
     return NO;
@@ -119,14 +107,7 @@ static UIViewController *vc;
 - (void)didClickCompleteBtn:(NSArray *)datas{
    [datas enumerateObjectsUsingBlock:^(IPAssetModel *obj, NSUInteger idx, BOOL * _Nonnull stop) {
        NSLog(@"%@--%@",obj.localIdentiy,obj.assetUrl.absoluteString);
-       if (idx == 0) {
-                   }else if (idx == 1){
-                       
-                   }else if (idx == 2){
-                       
-                   }else if (idx == 3){
-                       
-                   }
+       
    }];
     
 }

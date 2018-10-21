@@ -107,7 +107,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 
 #pragma mark interface
-+ (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style{
++ (instancetype)instanceWithDisplayStyle:(IPickerViewControllerDisplayStyle)style
+{
     IPickerViewController *ipVC = [[IPickerViewController alloc]init];
     
     ipVC.displayStyle = style;
@@ -115,7 +116,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     return ipVC;
 }
 
-- (void)exitIPickerWithAnimation:(BOOL)animation{
+- (void)exitIPickerWithAnimation:(BOOL)animation
+{
     if (animation) {
         [self exitIPicker];
     }else {
@@ -125,21 +127,16 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 #pragma mark - init
 
-- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil{
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
     if (self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil]) {
         self.maxCount = 50;
-        
     }
     return self;
 }
-- (instancetype)init{
-    if (self = [super init]) {
-        self.maxCount = 50;
-        
-    }
-    return self;
-}
-- (void)getDataFromManager{
+
+- (void)getDataFromManager
+{
 //    if (self.refreshData == YES) return;
 //    
 //    self.refreshData = YES;
@@ -155,7 +152,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 //        [self.defaultAssetManager reloadImagesFromLibrary];
 //    }
 }
-- (void)freeAllData{
+- (void)freeAllData
+{
 //    _refreshData = NO;
 //    _defaultAssetManager = nil;
 //    [_imageModelDic removeAllObjects];
@@ -166,13 +164,15 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 }
 
 
-- (void)dealloc{
+- (void)dealloc
+{
     NSLog(@"IPickerViewController--dealloc");
     [self freeAllData];
     [IPMediaCenter realeaseCenter];
-    
 }
-- (BOOL)prefersStatusBarHidden{
+
+- (BOOL)prefersStatusBarHidden
+{
     return NO;
 }
 
@@ -189,15 +189,19 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [self getDataFromManager];
 }
 
-- (void)didReceiveMemoryWarning {
+- (void)didReceiveMemoryWarning
+{
     [super didReceiveMemoryWarning];
 }
-- (void)viewDidAppear:(BOOL)animated{
+
+- (void)viewDidAppear:(BOOL)animated
+{
     [super viewDidAppear:animated];
     self.navigationController.delegate = self;
 }
 
-- (void)viewDidLayoutSubviews{
+- (void)viewDidLayoutSubviews
+{
     [super viewDidLayoutSubviews];
     CGFloat viewW = self.view.bounds.size.width;
     CGFloat viewH = self.view.bounds.size.height;
@@ -245,7 +249,9 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     
     self.mainView.frame = CGRectMake(0, headerH, viewW, viewH - headerH);
 }
-- (void)addHeaderView{
+
+- (void)addHeaderView
+{
     
     UIView *headerView = [[UIView alloc]init];
     [headerView setBackgroundColor:[UIColor whiteColor]];
@@ -274,7 +280,6 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     [headerView addSubview:centerBtn];
     self.centerBtn = centerBtn;
     
-    
     UIImageView *arrowImge = [[UIImageView alloc]init];
     arrowImge.contentMode = UIViewContentModeCenter;
     UIImage *image =[UIImage imageNamed:@"common_icon_arrow"];
@@ -283,8 +288,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     arrowImge.hidden = YES;
     self.arrowImge = arrowImge;
     
-    UILabel    *rightLabel = [[UILabel alloc]init];
-//    rightLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewContentModeBottom | UIViewContentModeBottomRight;
+    UILabel *rightLabel = [[UILabel alloc]init];
     rightLabel.font = [UIFont systemFontOfSize:12];
     rightLabel.textAlignment = NSTextAlignmentCenter;
     rightLabel.clipsToBounds = YES;
@@ -315,7 +319,8 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     self.spliteView = spliteView;
 }
 
-- (void)addMainView{
+- (void)addMainView
+{
     _flowOut = [[UICollectionViewFlowLayout alloc]init];
     _flowOut.sectionInset = UIEdgeInsetsMake(5, 0, 0, 0);
     UICollectionView *mainView = [[UICollectionView alloc]initWithFrame:CGRectZero collectionViewLayout:_flowOut];
@@ -331,11 +336,13 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 
 #pragma mark - collectionview
 
-- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+{
     return self.curImageModelArr.count;
 }
 
-- (IPImageCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
+- (IPImageCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+{
     IPImageCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:IPicker_CollectionID forIndexPath:indexPath];
     if (self.curImageModelArr.count > indexPath.item) {
         
@@ -347,81 +354,50 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         if (self.traitCollection.forceTouchCapability == UIForceTouchCapabilityAvailable) {
             [self registerForPreviewingWithDelegate:self sourceView:cell];
         }
-        
     }
-    
     return cell;
 }
 
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath{
-    
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
+{
     NSUInteger rowCount = 4;
     NSUInteger margin = 5;
     CGFloat itemWidth = (collectionView.frame.size.width - (rowCount-1)*margin)/rowCount;
     return CGSizeMake(itemWidth, itemWidth);
 }
-- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section{
+
+- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section
+{
     return 5;
 }
-- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section{
+
+- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section
+{
     return 5;
 }
+
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     if (indexPath.item < self.curImageModelArr.count)
     {
-        IPAssetModel *model = self.curImageModelArr[indexPath.item];
+//        IPAssetModel *model = self.curImageModelArr[indexPath.item];
         
-            
-        __weak typeof(self) weakSelf = self;
-
-        if(model.assetType == IPAssetModelMediaTypeVideo)
-        {
-            
-            [[IPAssetManager defaultAssetManager] getVideoWithAsset:model Completion:^(AVPlayerItem *item, NSDictionary *info) {
-                IPVideoPlayerViewController *videoPlayer = [[IPVideoPlayerViewController alloc]init];
-                videoPlayer.playerItem = item;
-                [weakSelf.navigationController pushViewController:videoPlayer animated:YES];
-            }];
-            
-            
-//            __block IPAlertView *alert = [IPAlertView showAlertViewAt:self.view Text:@"视频加载中..."];
-//            [self.defaultAssetManager compressVideoWithAssetModel:model CompleteBlock:^(AVPlayerItem *item) {
-//                [alert dismissFromHostView];
-//                if (weakSelf.delegate && [weakSelf.delegate respondsToSelector:@selector(imgPicker:didFinishCaptureVideoItem:Videourl:videoDuration:thumbailImage:)]) {
-//
-//                    [weakSelf.delegate imgPicker:weakSelf didFinishCaptureVideoItem:item Videourl:nil videoDuration:(float)model.duration thumbailImage:model.VideoThumbail];
-//
-//                }
-//                NSLog(@"%@",[NSThread currentThread]);
-//                
-//            }];
-            
+        NSMutableArray *array = [NSMutableArray arrayWithArray:self.curImageModelArr];
+        NSUInteger targetIndex = indexPath.item;
+        if (self.canTakePhoto || self.canTakeVideo) {
+            [array removeObjectAtIndex:0];
+            targetIndex = indexPath.item - 1;
         }
-        else if (model.assetType == IPAssetModelMediaTypePhoto)
-        {
-            NSMutableArray *array = [NSMutableArray arrayWithArray:self.curImageModelArr];
-            NSUInteger targetIndex = indexPath.item;
-            if (self.canTakePhoto) {
-                [array removeObjectAtIndex:0];
-                targetIndex = indexPath.item - 1;
-            }
-            IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithDatas:array];
-            [reader setUpDefaultShowPage:targetIndex];
-            reader.maxSelectCount = self.maxCount;
-            reader.currentSelectCount = self.selectPhotoCount;
-            reader.delegate = self;
-            [self.navigationController pushViewController:reader animated:YES];
-        }else
-        {
-            if (model.cellClickBlock)
-            {
-                model.cellClickBlock(model);
-            }
-        }
+        IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithDatas:array];
+        [reader setUpDefaultShowPage:targetIndex];
+        reader.maxSelectCount = self.maxCount;
+        reader.currentSelectCount = self.selectPhotoCount;
+        reader.delegate = self;
+        [self.navigationController pushViewController:reader animated:YES];
     }
     
 }
+
 - (void)collectionView:(UICollectionView *)collectionView didEndDisplayingCell:(IPImageCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath{
     [cell endDisplay];
 }
@@ -761,6 +737,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     }];
     
 }
+
 - (void)popViewControllerCustomAnimation {
     if (self.navViewControllers != 0 && self.navViewControllers < self.navigationController.viewControllers.count) {
         UIViewController *ctrl = self.navigationController.viewControllers[self.navViewControllers];
@@ -774,6 +751,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         return;
     }
 }
+
 #pragma mark 3DTouch
 - (nullable UIViewController *)previewingContext:(id <UIViewControllerPreviewing>)previewingContext viewControllerForLocation:(CGPoint)location{
     UICollectionViewCell *cell = (UICollectionViewCell *)previewingContext.sourceView;
@@ -851,6 +829,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
         return nil;
     }
 }
+
 - (void)didClickCancelBtnInTakePhotoViewController:(IPTakePhotoViewController *)takePhotoViewController
 {
     IPImageCell *cell = (IPImageCell *)[self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
@@ -859,6 +838,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
 //    [takePhotoViewController dismissViewControllerAnimated:YES completion:^{}];
     [self.navigationController popViewControllerAnimated:YES];
 }
+
 - (void)VisionDidClickCancelBtn:(IPTakeVideoViewController *)takevideoVC
 {
     [self dismissViewControllerAnimated:takevideoVC completion:^{
@@ -897,6 +877,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     };
     return model;
 }
+
 - (IPAssetModel *)setUpTakeVideoData
 {
     __weak typeof(self) weakSelf = self;
@@ -915,6 +896,7 @@ static NSString *IPicker_CollectionID = @"IPicker_CollectionID";
     };
     return model;
 }
+
 @end
 
 @implementation IPickerViewController(GetImage)
