@@ -23,8 +23,8 @@
     IPImageReaderCellDelegate
 >
 
-/**图片数组*/
-@property (nonatomic, strong)NSArray *dataArr;
+/*asset数组*/
+@property (nonatomic, strong)NSMutableArray *assets;
 
 /**第一次出现时,要滚动到指定位置*/
 @property (nonatomic, assign)BOOL isFirst;
@@ -67,7 +67,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     }
     
     IPImageReaderViewController *vc = [[IPImageReaderViewController alloc]initWithCollectionViewLayout:[IPImageReaderCellLayout new]];
-    vc.dataArr = assets;
+    vc.assets = [NSMutableArray arrayWithArray:assets];
     return vc;
 }
 
@@ -91,8 +91,8 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 - (void)setUpDefaultShowPage:(NSUInteger)page
 {
     NSUInteger totalPage;
-    if (_dataArr.count > 0) {
-        totalPage = _dataArr.count;
+    if (_assets.count > 0) {
+        totalPage = _assets.count;
     } else if (_dataSource) {
         totalPage = [_dataSource numberOfAssetsOfImageReader:self];
     } else {
@@ -122,13 +122,6 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     
 }
 
-
-- (void)viewWillLayoutSubviews
-{
-    [super viewWillLayoutSubviews];
-    
-}
-
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
@@ -136,7 +129,7 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     self.leftButton.frame = CGRectMake(-5, STATUS_BAR_HEIGHT(), 44, 44);
     self.rightButton.frame = CGRectMake(self.view.bounds.size.width - 44, STATUS_BAR_HEIGHT(), 44, 44);
     
-    NSUInteger maxIndex = self.dataArr.count - 1;
+    NSUInteger maxIndex = self.assets.count - 1;
     NSUInteger minIndex = 0;
     if (self.defaultShowPage < minIndex) {
         self.defaultShowPage = minIndex;
@@ -188,8 +181,8 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 
 - (IPAssetModel *)getAssetModelWithIndex:(NSUInteger)index
 {
-    if (_dataArr.count > 0 && _dataArr.count > index) {
-        return self.dataArr[index];
+    if (_assets.count > 0 && _assets.count > index) {
+        return self.assets[index];
     } else if ([_dataSource imageReader:self assetModelWithIndex:index]) {
         return [_dataSource imageReader:self assetModelWithIndex:index];
     } else {
@@ -199,8 +192,8 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
 
 - (NSUInteger)getCountOfAssetModel
 {
-    if (_dataArr) {
-        return _dataArr.count;
+    if (_assets) {
+        return _assets.count;
     } else if (_dataSource) {
         return [_dataSource numberOfAssetsOfImageReader:self];
     } else {
@@ -270,7 +263,6 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     }else {
         [self.navigationController popViewControllerAnimated:YES];
     }
-    
 }
 
 - (void)selectBtn:(UIButton *)btn
@@ -397,8 +389,6 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
             } else {
                 [cell.zoomScroll displayImageWithError];
             }
-            
-            [self loadAdjacentPhotosIfNecessary:model];
         }
     }];
     
@@ -448,12 +438,11 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     CGRect visibleBounds = scrollView.bounds;
     NSInteger index = (NSInteger)(floorf(CGRectGetMidX(visibleBounds) / CGRectGetWidth(visibleBounds)));
     if (index < 0) index = 0;
-    if (index > [self.dataArr count] - 1) index = [self.dataArr count] - 1;
+    if (index > [self.assets count] - 1) index = [self.assets count] - 1;
     NSUInteger previousCurrentPage = _currentPage;
     _currentPage = index;
     if (_currentPage != previousCurrentPage) {
-        IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
-        self.rightButton.selected = model.isSelect;
+        [self didStartViewingPageAtIndex:index];
     }
    
 }
@@ -491,6 +480,28 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     NSLog(@"scrollViewDidEndDecelerating");
 }
 
+- (void)didStartViewingPageAtIndex:(NSUInteger)index
+{
+    // Handle 0 photos
+    if (![self getCountOfAssetModel]) {
+        // Show controls
+//        [self setControlsHidden:NO animated:YES permanent:YES];
+        return;
+    }
+    
+    // Release images further away than +/-1
+    // TODO
+    
+    // Load adjacent images if needed and the photo is already
+    // loaded. Also called after photo has been loaded in background
+    IPAssetModel *currentPhoto = [self getAssetModelWithIndex:index];
+    if ([currentPhoto underlyingImage]) {
+        // photo loaded so load ajacent now
+        [self loadAdjacentPhotosIfNecessary:currentPhoto];
+    }
+    
+    self.rightButton.selected = currentPhoto.isSelect;
+}
 
 #pragma mark <UINavigationControllerDelegate>
 - (id <UIViewControllerAnimatedTransitioning>)navigationController:(UINavigationController *)navigationController

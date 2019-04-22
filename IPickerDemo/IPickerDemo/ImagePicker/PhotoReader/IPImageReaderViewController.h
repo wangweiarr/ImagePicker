@@ -30,7 +30,7 @@ typedef void(^FunctionBlock)();
 
 @property (nonatomic, weak) id <IPImageReaderViewControllerDelegate> delegate;
 @property (nonatomic, weak) id <IPImageReaderViewControllerDataSource> dataSource;
-@property (nonatomic, strong) NSArray <IPAssetModel *>*assets;
+@property (nonatomic, readonly) NSMutableArray <IPAssetModel *> *assets;
 
 @property (nonatomic, readonly) NSUInteger currentPage;
 
