@@ -382,20 +382,26 @@ IPTakePhotoViewControllerDelegate
 {
     if (indexPath.item < self.curImageModelArr.count)
     {
-//        IPAssetModel *model = self.curImageModelArr[indexPath.item];
-        
-        NSMutableArray *array = [NSMutableArray arrayWithArray:self.curImageModelArr];
-        NSUInteger targetIndex = indexPath.item;
-        if (self.canTakePhoto || self.canTakeVideo) {
-            [array removeObjectAtIndex:0];
-            targetIndex = indexPath.item - 1;
+        IPAssetModel *model = self.curImageModelArr[indexPath.item];
+        if (model.assetType == IPAssetModelMediaTypeTakePhoto) {
+            
+        } else if (model.assetType == IPAssetModelMediaTypeTakeVideo) {
+            
+        } else {
+            NSMutableArray *array = [NSMutableArray arrayWithArray:self.curImageModelArr];
+            NSUInteger targetIndex = indexPath.item;
+            if (self.canTakePhoto || self.canTakeVideo) {
+                [array removeObjectAtIndex:0];
+                targetIndex = indexPath.item - 1;
+            }
+            IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithDatas:array];
+            [reader setUpDefaultShowPage:targetIndex];
+            reader.maxSelectCount = self.maxCount;
+            reader.currentSelectCount = self.selectPhotoCount;
+            reader.delegate = self;
+            [self.navigationController pushViewController:reader animated:YES];
         }
-        IPImageReaderViewController *reader = [IPImageReaderViewController imageReaderViewControllerWithDatas:array];
-        [reader setUpDefaultShowPage:targetIndex];
-        reader.maxSelectCount = self.maxCount;
-        reader.currentSelectCount = self.selectPhotoCount;
-        reader.delegate = self;
-        [self.navigationController pushViewController:reader animated:YES];
+        
     }
     
 }

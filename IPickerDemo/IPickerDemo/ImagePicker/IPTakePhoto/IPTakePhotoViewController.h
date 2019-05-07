@@ -17,6 +17,8 @@
 @end
 
 @interface IPTakePhotoViewController : UIViewController
+
 /**代理*/
 @property (nonatomic, weak)id<IPTakePhotoViewControllerDelegate> delegate;
+
 @end
