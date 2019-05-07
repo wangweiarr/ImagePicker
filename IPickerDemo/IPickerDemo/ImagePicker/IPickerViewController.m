@@ -384,6 +384,9 @@ IPTakePhotoViewControllerDelegate
     {
         IPAssetModel *model = self.curImageModelArr[indexPath.item];
         if (model.assetType == IPAssetModelMediaTypeTakePhoto) {
+            if (model.cellClickBlock) {
+                model.cellClickBlock(indexPath);
+            }
             
         } else if (model.assetType == IPAssetModelMediaTypeTakeVideo) {
             
@@ -794,6 +797,8 @@ IPTakePhotoViewControllerDelegate
     [self showViewController:reader sender:self];
     
 }
+
+#pragma mark - delegate
 
 #pragma mark 拍照
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(nullable NSDictionary<NSString *,id> *)editingInfo NS_DEPRECATED_IOS(2_0, 3_0){

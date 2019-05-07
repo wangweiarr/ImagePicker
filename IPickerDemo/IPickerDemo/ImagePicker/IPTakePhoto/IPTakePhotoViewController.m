@@ -33,9 +33,11 @@
 @end
 
 @implementation IPTakePhotoViewController
+
 - (void)dealloc{
     IPLog(@"IPTakePhotoViewController dealloc");
 }
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
@@ -187,4 +189,5 @@
 - (BOOL)prefersStatusBarHidden{
     return YES;
 }
+
 @end
