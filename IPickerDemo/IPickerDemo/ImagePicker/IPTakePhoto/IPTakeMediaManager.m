@@ -50,8 +50,15 @@
 - (BOOL)setupSession:(NSError **)error{
     
     _captureSession = [[AVCaptureSession alloc]init];
+    if ([_captureSession canSetSessionPreset:AVCaptureSessionPresetPhoto]) {
+        [_captureSession setSessionPreset:AVCaptureSessionPresetPhoto];
+    }
+    
     _videoDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
 
+    if (!_videoDevice) {
+        return NO;
+    }
     AVCaptureDeviceInput *videoInput = [AVCaptureDeviceInput deviceInputWithDevice:_videoDevice error:error];
     if (videoInput) {
         if ([_captureSession canAddInput:videoInput]) {
@@ -398,4 +405,8 @@ static const NSString *IPCameraAdjustingExposureContext;
         [self.movieOutput stopRecording];
     }
 }
+- (void)captureOutput:(nonnull AVCaptureFileOutput *)output didFinishRecordingToOutputFileAtURL:(nonnull NSURL *)outputFileURL fromConnections:(nonnull NSArray<AVCaptureConnection *> *)connections error:(nullable NSError *)error {
+    
+}
+
 @end

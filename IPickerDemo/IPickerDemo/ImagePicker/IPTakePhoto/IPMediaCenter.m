@@ -74,7 +74,7 @@ static uint64_t const IPVisionRequiredMinimumDiskSpaceInBytes = 49999872; // ~ 4
  前置摄像头
  */
 @property(nonatomic,strong) AVCaptureDevice *captureDeviceFront;
-@property(nonatomic,strong)AVCaptureDeviceInput *captureDeviceInputFront;
+@property(nonatomic,strong) AVCaptureDeviceInput *captureDeviceInputFront;
 
 /**
  后置摄像头
@@ -210,7 +210,7 @@ static IPMediaCenter *defaultManager = nil;
     self = [super init];
     if (self) {
         //VGA 视频输出的质量
-        _captureSessionPreset = AVCaptureSessionPreset640x480;
+        _captureSessionPreset = AVCaptureSessionPresetPhoto;
 //        self.captureDirectory = nil;
 //        _videoSegments = [[NSMutableArray alloc] init];
 //        
@@ -351,6 +351,9 @@ static IPMediaCenter *defaultManager = nil;
         _captureDeviceAudio = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeAudio];
         _captureDeviceInputAudio = [AVCaptureDeviceInput deviceInputWithDevice:_captureDeviceAudio error:&error];
         
+        if ([_captureSession canAddInput:_captureDeviceInputAudio]) {
+            [_captureSession addInput:_captureDeviceInputAudio];
+        }
         if (error) {
             IPLog(@"error setting up audio input (%@)", error);
         }
@@ -359,16 +362,12 @@ static IPMediaCenter *defaultManager = nil;
         
         [_captureMovieFileOutput addObserver:self forKeyPath:@"recordedDuration" options:NSKeyValueObservingOptionNew context:(__bridge void *)IPVisionCaptureDurationObserverContext];
         _currentOutput = _captureMovieFileOutput;
-        
-        if ([_captureSession canAddInput:_captureDeviceInputAudio]) {
-            [_captureSession addInput:_captureDeviceInputAudio];
+        if ([_captureSession canAddOutput:_captureMovieFileOutput]) {
+            [_captureSession addOutput:_captureMovieFileOutput];
         }
         
         // capture device initial settings
         _videoFrameRate = 30;
-    }
-    if ([_captureSession canAddOutput:_currentOutput]) {
-        [_captureSession addOutput:_currentOutput];
     }
     
     if ([_captureSession canAddInput:_captureDeviceInputBack]) {
@@ -439,6 +438,14 @@ static IPMediaCenter *defaultManager = nil;
     IPLog(@"camera destroyed");
 }
 
+- (AVCaptureSession *)captureSession
+{
+    if (_captureSession == nil) {
+        _captureSession = [[AVCaptureSession alloc] init];
+    }
+    return _captureSession;
+}
+
 /**
  配置相机  
  @note only call from the session queue
@@ -450,6 +457,7 @@ static IPMediaCenter *defaultManager = nil;
         return;
     
     // create session
+    
     _captureSession = [[AVCaptureSession alloc] init];
     
     if (_usesApplicationAudioSession) {
@@ -1690,6 +1698,80 @@ static IPMediaCenter *defaultManager = nil;
 - (BOOL)isRecording
 {
     return _flags.recording;
+}
+
+#pragma mark - Tool
+
+- (AVCaptureDevice *)cameraWithPosition:(AVCaptureDevicePosition)position{
+    NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+    for (AVCaptureDevice *device in devices) {
+        if (device.position == position) {
+            return device;
+        }
+    }
+    return nil;
+}
+
+/**
+ *  获得尚未激活的摄像头
+ */
+- (AVCaptureDevice *)inactiveCamera
+{
+    AVCaptureDevice *device = nil;
+    if ([self cameraCount] > 1) {
+        if ([self.currentInput device].position == AVCaptureDevicePositionBack) {
+            device = [self cameraWithPosition:AVCaptureDevicePositionFront];
+        } else {
+            device = [self cameraWithPosition:AVCaptureDevicePositionBack];
+        }
+    }
+    return device;
+}
+
+- (NSUInteger)cameraCount
+{
+    return [[AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] count];
+}
+
+- (BOOL)canSwitchCameras
+{
+    return [self cameraCount] > 1;
+}
+
+- (BOOL)swichCameras
+{
+    if (![self canSwitchCameras]) {
+        return NO;
+    }
+    NSError *error;
+    NSArray *inputs = self.captureSession.inputs;
+    AVCaptureDeviceInput *activeDeviceInput;
+    for (AVCaptureDeviceInput *input in inputs) {
+        if ([input isEqual:_captureDeviceInputBack] || [input isEqual:_captureDeviceInputFront]) {
+            activeDeviceInput = input;
+            break;
+        }
+    }
+    if (activeDeviceInput) {
+        AVCaptureDeviceInput *inactiveDeviceInput = [activeDeviceInput isEqual:_captureDeviceInputBack] ? _captureDeviceInputFront :_captureDeviceInputBack;
+        [self.captureSession beginConfiguration];
+        
+        [self.captureSession removeInput:activeDeviceInput];
+        
+        if ([self.captureSession canAddInput:inactiveDeviceInput]) {
+            [self.captureSession addInput:inactiveDeviceInput];
+            self.currentInput = inactiveDeviceInput;
+        }else {
+            [self.captureSession addInput:activeDeviceInput];
+        }
+        
+        [self.captureSession commitConfiguration];
+    } else {
+        [self.delegate deviceConfigurationFailedWithError:error];
+        return NO;
+    }
+    
+    return YES;
 }
 
 @end

@@ -14,6 +14,8 @@
 
 - (void)didClickCancelBtnInTakePhotoViewController:(IPTakePhotoViewController *)takePhotoViewController;
 
+- (void)takePhotoViewController:(IPTakePhotoViewController *)takePhotoViewController takeImage:(UIImage *)image;
+
 @end
 
 @interface IPTakePhotoViewController : UIViewController

@@ -800,15 +800,37 @@ IPTakePhotoViewControllerDelegate
 
 #pragma mark - delegate
 
+- (void)didClickCancelBtnInTakePhotoViewController:(IPTakePhotoViewController *)takePhotoViewController
+{
+    IPImageCell *cell = (IPImageCell *)[self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
+    [cell setUpCameraPreviewLayer];
+    
+    [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)takePhotoViewController:(IPTakePhotoViewController *)takePhotoViewController takeImage:(UIImage *)image
+{
+    IPImageCell *cell = (IPImageCell *)[self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
+    [cell setUpCameraPreviewLayer];
+    
+    [self.navigationController popViewControllerAnimated:YES];
+    
+}
+
 #pragma mark 拍照
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(nullable NSDictionary<NSString *,id> *)editingInfo NS_DEPRECATED_IOS(2_0, 3_0){
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingImage:(UIImage *)image editingInfo:(nullable NSDictionary<NSString *,id> *)editingInfo NS_DEPRECATED_IOS(2_0, 3_0)
+{
     IPLog(@"didFinishPickingImage");
 }
-- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
+
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info
+{
     IPLog(@"didFinishPickingMediaWithInfo");
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
-- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker{
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
     IPLog(@"imagePickerControllerDidCancel");
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
@@ -848,14 +870,7 @@ IPTakePhotoViewControllerDelegate
     }
 }
 
-- (void)didClickCancelBtnInTakePhotoViewController:(IPTakePhotoViewController *)takePhotoViewController
-{
-    IPImageCell *cell = (IPImageCell *)[self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
-    [cell setUpCameraPreviewLayer];
-    
-//    [takePhotoViewController dismissViewControllerAnimated:YES completion:^{}];
-    [self.navigationController popViewControllerAnimated:YES];
-}
+
 
 - (void)VisionDidClickCancelBtn:(IPTakeVideoViewController *)takevideoVC
 {

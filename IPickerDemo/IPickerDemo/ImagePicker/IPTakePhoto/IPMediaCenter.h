@@ -48,6 +48,9 @@ typedef NS_ENUM(NSInteger, IPVisionErrorType)
 
 - (void)mediaCenter:(IPMediaCenter *)mediaCenter didChangeCleanAperture:(CGRect)cleanAperture;
 
+
+- (void)deviceConfigurationFailedWithError:(NSError *)error;
+
 // focus / exposure
 
 - (void)mediaCenter:(IPMediaCenter *)mediaCenter visionWillStartFocus:(AVCaptureDevice *)device;
@@ -83,47 +86,47 @@ typedef NS_ENUM(NSInteger, IPVisionErrorType)
 /**
  是否使用手机的音量会话  如果手机音量处于关闭时，软件也会没有声音
  */
-@property(nonatomic,assign)BOOL usesApplicationAudioSession;
+@property(nonatomic, assign)BOOL usesApplicationAudioSession;
 
 //视频支持镜像  就是视频内容做个反射
-@property (nonatomic) IPMirroringMode mirroringMode;
+@property (nonatomic, assign)IPMirroringMode mirroringMode;
 
-@property (nonatomic,weak) id delegate;
+@property (nonatomic, weak)id delegate;
 
-@property (nonatomic,strong,readonly) AVCaptureVideoPreviewLayer *previewLayer;
+@property (nonatomic, readonly)AVCaptureVideoPreviewLayer *previewLayer;
 
 /**
  默认是输出照片,(video,image)
  */
-@property(nonatomic,assign)IPTakeMediaType takeMediaType;
+@property (nonatomic, assign)IPTakeMediaType takeMediaType;
 
-@property(nonatomic,assign)BOOL autoUpdatePreviewOrientation;
-@property(nonatomic,assign) AVCaptureVideoOrientation cameraOrientation;
-@property (nonatomic,assign) UIImagePickerControllerCameraDevice cameraDevice;
-@property(nonatomic,assign) AVCaptureVideoOrientation previewOrientation;
+@property (nonatomic, assign)BOOL autoUpdatePreviewOrientation;
+@property (nonatomic, assign)AVCaptureVideoOrientation cameraOrientation;
+@property (nonatomic, assign)UIImagePickerControllerCameraDevice cameraDevice;
+@property (nonatomic, assign)AVCaptureVideoOrientation previewOrientation;
 //VIDEO
 
 //缩略图 地址
-@property (nonatomic,strong) NSURL *thumbnail;
+@property (nonatomic, strong)NSURL *thumbnail;
 /*
  AVAssetExportPresetLowQuality=3
  AVAssetExportPresetMediumQuality=2
  AVAssetExportPresetHighestQuality=1
  */
-@property (nonatomic,assign) NSInteger exportPresetQuality;
-@property (nonatomic,assign) CGFloat exportVideoWidth;
-@property (nonatomic,assign) CGFloat exportVideoHeight;
+@property (nonatomic, assign)NSInteger exportPresetQuality;
+@property (nonatomic, assign)CGFloat exportVideoWidth;
+@property (nonatomic, assign)CGFloat exportVideoHeight;
 
-@property(nonatomic,assign)Float64 capturedVideoSeconds;
-@property (nonatomic) CMTime maximumCaptureDuration; // automatically triggers vision:capturedVideo:error: after exceeding threshold, (kCMTimeInvalid records without threshold)
+@property (nonatomic, assign)Float64 capturedVideoSeconds;
+@property (nonatomic, assign)CMTime maximumCaptureDuration; // automatically triggers vision:capturedVideo:error: after exceeding threshold, (kCMTimeInvalid records without threshold)
 
 // video
 // use pause/resume if a session is in progress, end finalizes that recording session
 
-@property (nonatomic, readonly) BOOL supportsVideoCapture;
-@property (nonatomic, readonly) BOOL canCaptureVideo;
-@property (nonatomic, readonly, getter=isRecording) BOOL recording;
-@property (nonatomic, readonly, getter=isPaused) BOOL paused;
+@property (nonatomic, readonly)BOOL supportsVideoCapture;
+@property (nonatomic, readonly)BOOL canCaptureVideo;
+@property (nonatomic, readonly, getter=isRecording)BOOL recording;
+@property (nonatomic, readonly, getter=isPaused)BOOL paused;
 
 +(IPMediaCenter *)defaultCenter;
 +(void)realeaseCenter;
@@ -140,5 +143,8 @@ typedef NS_ENUM(NSInteger, IPVisionErrorType)
 - (void)startPreview;
 - (void)stopPreview;
 - (void)captureStillImage:(void (^)(UIImage *image))block;
+
+//切换前后摄像头
+- (BOOL)swichCameras;
 
 @end
