@@ -79,12 +79,16 @@
     CGContextClosePath(context);//封起来
     CGContextFillPath(context); //填充
     
-    CGSize textsize = [self.text sizeWithFont:self.font
-                            constrainedToSize:CGSizeMake(MAXFLOAT, 0.0)
-                                lineBreakMode:NSLineBreakByWordWrapping];
+    NSMutableParagraphStyle * paragraphStyle = [[NSMutableParagraphStyle defaultParagraphStyle] mutableCopy];
+    paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
+    CGSize textsize = [self.text boundingRectWithSize:CGSizeMake(MAXFLOAT, CGFLOAT_MAX)
+                                             options:NSStringDrawingUsesLineFragmentOrigin
+                                          attributes:@{NSFontAttributeName:self.font, NSParagraphStyleAttributeName:paragraphStyle}
+                                             context:nil].size;
     // text
     [self.textColor set];
-    [self.text drawInRect:CGRectMake((rect.size.width-textsize.width)/2, (rect.size.height-8-textsize.height)/2, rect.size.width-10, rect.size.height-10) withFont:self.font];
+    
+    [self.text drawInRect:CGRectMake((rect.size.width-textsize.width)/2, (rect.size.height-8-textsize.height)/2, rect.size.width-10, rect.size.height-10) withAttributes:@{NSFontAttributeName:self.font}];
     
 }
 @end

@@ -33,6 +33,8 @@ typedef NS_ENUM(NSUInteger,  GetImageType) {
     GetImageTypeFullScreen
 };
 
+static CGFloat const kItemMargin = 2.0;
+
 NSString * const IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION = @"IPICKER_LOADING_DID_END_Thumbnail_NOTIFICATION";
 
 @interface IPickerViewController ()<
@@ -164,7 +166,7 @@ IPTakePhotoViewControllerDelegate
 
     if ([IPAssetManager authorizationStatus] != IPAuthorizationStatusAuthorized) {
         [IPAssetManager requestAuthorization:^(IPAuthorizationStatus status) {
-            IPLog(@"requestAuthorization status:%ld",status);
+            IPLog(@"requestAuthorization status:%ld",(long)status);
             if (status != IPAuthorizationStatusAuthorized) {
                 NSString *message = @"请在设置中启用访问图片的权限!";
                 if ([[[UIDevice currentDevice]systemVersion]floatValue]<6.0) {
@@ -324,11 +326,11 @@ IPTakePhotoViewControllerDelegate
 - (void)addMainView
 {
     _flowOut = [[UICollectionViewFlowLayout alloc]init];
-    _flowOut.sectionInset = UIEdgeInsetsMake(5, 0, 0, 0);
+    _flowOut.sectionInset = UIEdgeInsetsMake(kItemMargin, 0, kItemMargin, 0);
     UICollectionView *mainView = [[UICollectionView alloc]initWithFrame:CGRectZero collectionViewLayout:_flowOut];
     mainView.showsHorizontalScrollIndicator = NO;
     mainView.showsVerticalScrollIndicator = NO;
-    [mainView setBackgroundColor:[UIColor lightGrayColor]];
+    [mainView setBackgroundColor:[UIColor whiteColor]];
     mainView.delegate = self;
     mainView.dataSource = self;
     [mainView registerClass:[IPImageCell class] forCellWithReuseIdentifier:IPicker_CollectionID];
@@ -362,20 +364,19 @@ IPTakePhotoViewControllerDelegate
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSUInteger rowCount = 4;
-    NSUInteger margin = 5;
-    CGFloat itemWidth = (collectionView.frame.size.width - (rowCount-1)*margin)/rowCount;
+    CGFloat rowCount = 4.0;
+    CGFloat itemWidth = floor((collectionView.frame.size.width - (rowCount-1)*kItemMargin)/rowCount);
     return CGSizeMake(itemWidth, itemWidth);
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section
 {
-    return 5;
+    return kItemMargin;
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section
 {
-    return 5;
+    return kItemMargin;
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
@@ -740,7 +741,7 @@ IPTakePhotoViewControllerDelegate
     [self presentViewController:takeVideo animated:YES completion:nil];
 }
 
-- (void)VisionDidCaptureFinish:(IPMediaCenter *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration
+- (void)visionDidCaptureFinish:(IPMediaCenter *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration
 {
     UIImage *image = [UIImage imageWithData:[NSData dataWithContentsOfURL:thumbnail]];
     
@@ -872,9 +873,9 @@ IPTakePhotoViewControllerDelegate
 
 
 
-- (void)VisionDidClickCancelBtn:(IPTakeVideoViewController *)takevideoVC
+- (void)visionDidClickCancelBtn:(IPTakeVideoViewController *)takevideoVC
 {
-    [self dismissViewControllerAnimated:takevideoVC completion:^{
+    [self dismissViewControllerAnimated:takevideoVC != nil completion:^{
 //        IPImageCell *cell = (IPImageCell *)[self.mainView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
 //        [cell setUpCameraPreviewLayer];
     }];

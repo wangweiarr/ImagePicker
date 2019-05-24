@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "IPAssetManager.h"
 
-typedef void(^FunctionBlock)();
+typedef void(^FunctionBlock)(void);
 
 @class IPAssetModel,IPickerViewController,IPImageReaderViewController;
 

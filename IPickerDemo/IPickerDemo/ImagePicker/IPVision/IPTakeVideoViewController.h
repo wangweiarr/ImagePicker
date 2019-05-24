@@ -16,10 +16,10 @@
 @protocol IPTakeVideoViewControllerDelegate <NSObject>
 
 @optional
-//-(void) VisionDidCaptureFinish:(IPVision *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration;
+//-(void)visionDidCaptureFinish:(IPVision *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration;
 
--(void) VisionDidCaptureFinish:(IPMediaCenter *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration;
--(void) VisionDidClickCancelBtn:(IPTakeVideoViewController *)takevideoVC;
+-(void)visionDidCaptureFinish:(IPMediaCenter *)vision withThumbnail:(NSURL *)thumbnail withVideoDuration:(float)duration;
+-(void)visionDidClickCancelBtn:(IPTakeVideoViewController *)takevideoVC;
 @end
 
 

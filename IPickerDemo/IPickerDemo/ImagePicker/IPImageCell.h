@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-extern NSString const *IPicker_CollectionID;
+extern NSString * const IPicker_CollectionID;
 
 @class IPAssetModel;
 @protocol IPImageCellDelegate<NSObject>

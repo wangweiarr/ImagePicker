@@ -316,23 +316,8 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     return UIInterfaceOrientationMaskAll;
 }
 
-
-//#if __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
-//- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator{
-//    // Perform layout
-//    _currentPage = _pageIndexBeforeRotation;
-//    self.isRoration = YES;
-//    
-//    IPAssetModel *model = self.dataArr[_currentPage];
-//    self.rightButton.selected = model.isSelect;
-//    
-//    [self.collectionView reloadData];
-//}
-//#else
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
-    
-    // Perform layout
     _currentPage = _pageIndexBeforeRotation;
     self.isRoration = YES;
     
@@ -341,29 +326,17 @@ static NSString * const reuseIdentifier = @"IPImageReaderViewControllerCell";
     
     [self.collectionView reloadData];
     
-}
-
-- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
-{
-    
-    // Remember page index before rotation
-    _pageIndexBeforeRotation = _currentPage;
-    
-    
-}
-
-- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
-{
-    self.isRoration = NO;
-    IPAssetModel *model = [self getAssetModelWithIndex:_currentPage];
-    IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
-    [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
-        if (success && image) {
-            [thePage displayImageWithFullScreenImage:image];
-        }
+    [coordinator animateAlongsideTransition:nil completion:^(id<UIViewControllerTransitionCoordinatorContext>  _Nonnull context) {
+        self.isRoration = NO;
+        IPAssetModel *model = [self getAssetModelWithIndex:self.currentPage];
+        IPZoomScrollView *thePage = [self pageDisplayingPhoto:model];
+        [model loadUnderlyingImageAndComplete:^(BOOL success, UIImage *image) {
+            if (success && image) {
+                [thePage displayImageWithFullScreenImage:image];
+            }
+        }];
     }];
 }
-//#endif
 
 
 #pragma mark - UICollectionViewDataSource Delegate

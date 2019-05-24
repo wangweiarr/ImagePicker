@@ -13,7 +13,7 @@
 #import "IPMediaCenter.h"
 
 
-NSString const *IPicker_CollectionID = @"IPicker_CollectionID";
+NSString * const IPicker_CollectionID = @"IPicker_CollectionID";
 
 @interface IPImageCell ()
 /**缩略图*/
@@ -85,20 +85,12 @@ NSString const *IPicker_CollectionID = @"IPicker_CollectionID";
     [self.contentView addSubview:imgView];
     imgView.image = [UIImage imageNamed:@"default_8_120"];
     self.imgView = imgView;
-    
-//    UIButton *rightCornerBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.bounds.size.width - 18-5, 5, 18, 18)];
-//   
-//    [rightCornerBtn addTarget:self action:@selector(clickBtnInCell:) forControlEvents:UIControlEventTouchUpInside];
-//    [self.contentView addSubview:rightCornerBtn];
-//    self.rightCornerBtn = rightCornerBtn;
-    
-
-    
 }
+
 - (UIButton *)rightCornerBtn{
     if (_rightCornerBtn == nil) {
-        _rightCornerBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.bounds.size.width - 18-5, 5, 18, 18)];
-        
+        _rightCornerBtn = [[UIButton alloc]initWithFrame:CGRectMake(self.bounds.size.width - 36, 0, 36, 36)];
+        [_rightCornerBtn setImageEdgeInsets:UIEdgeInsetsMake(4, 14, 14, 4)];
         [_rightCornerBtn addTarget:self action:@selector(clickBtnInCell:) forControlEvents:UIControlEventTouchUpInside];
         
         [self.contentView addSubview:_rightCornerBtn];
@@ -231,7 +223,7 @@ NSString const *IPicker_CollectionID = @"IPicker_CollectionID";
     btn.selected = !btn.selected;
     self.model.isSelect = btn.selected;
     
-    BOOL denySelect;
+    BOOL denySelect = NO;
     if (self.delegate && [self.delegate respondsToSelector:@selector(clickRightCornerBtnForView:)]) {
         denySelect = [self.delegate clickRightCornerBtnForView:self.model];
     }

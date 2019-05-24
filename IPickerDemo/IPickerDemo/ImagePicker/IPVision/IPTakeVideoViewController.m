@@ -308,8 +308,8 @@
     {
 //        [[IPVision sharedInstance] cancelVideoCapture];
         [[IPMediaCenter defaultCenter] cancelVideoCapture];
-        if ([_delegate respondsToSelector:@selector(VisionDidClickCancelBtn:)]) {
-            [_delegate VisionDidClickCancelBtn:self];
+        if ([_delegate respondsToSelector:@selector(visionDidClickCancelBtn:)]) {
+            [_delegate visionDidClickCancelBtn:self];
         }
         
     }
@@ -502,8 +502,8 @@
 
 -(void) visionDidEndVideoCapture:(IPMediaCenter *)vision
 {
-//    if (self.delegate && [self.delegate respondsToSelector:@selector(VisionDidCaptureFinish:withThumbnail:withVideoDuration:)]){
-//        [self.delegate VisionDidCaptureFinish:vision withThumbnail:vision.thumbnail withVideoDuration:_progressBar.currentValue];
+//    if (self.delegate && [self.delegate respondsToSelector:@selector(visionDidCaptureFinish:withThumbnail:withVideoDuration:)]){
+//        [self.delegate visionDidCaptureFinish:vision withThumbnail:vision.thumbnail withVideoDuration:_progressBar.currentValue];
 //    }
 }
 
